@@ -1,0 +1,52 @@
+﻿@using static DMD_Prototype.Controllers.MTIController;
+@model Bite
+@{
+    ViewData["Title"] = "MTI-ONPROCESS";
+}
+
+<div class="row">
+    <div class="col-9" style="height:600px">
+        <div class="w-100 h-100">
+            <marquee class="border-3 border-dark bg-dark text-white">Please finish your traveler before proceeding to the next steps of your MTI, have a great day!</marquee>
+            <embed class="w-100 h-100 border-3 border-dark" src="@Url.Action("ShowDoc", "MTI")" />
+        </div>
+    </div>
+    <div class="col-sm-3 h-100">
+        <div class="card border-3 border-dark mt-3">
+            <div class="card-header text-white border-3 border-dark" style="background-color:darkslateblue">
+                <h4 class="card-title text-center">Documents</h4>
+            </div>
+            <div class="card-body row">
+                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'">Assembly Drawing</button>
+                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'">Bills of Materials</button>
+                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'">One Point Lesson</button>
+                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'">Schematic Diagram</button>
+                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'">Workmanship Standard (MPI)</button>
+                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'">Deviation Documents</button>
+            </div>
+        </div>
+        <div class="card mt-1 border-3 border-dark">
+            <div class="card-header text-white border-3 border-dark" style="background-color:darkslateblue">
+                <h4 class="card-title text-center">Process</h4>
+            </div>
+            <div class="card-body row">
+                <button class="w-75 my-1 mx-auto btn btn-secondary border-1 border-dark">Submit Problem Log</button>
+                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark">Open Traveler</button>
+                <button class="w-75 my-1 mx-auto btn btn-success border-1 border-dark">Finish</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-content w-75 h-100" id="assemblydrawing" style="z-index:2001">
+    <button class="btn btn-danger modal-close" onclick="document.getElementById('assemblydrawing').style.display = 'none'">X</button>
+    <div class="h-100">
+        <iframe class="w-100 h-100 border-3 border-dark" src="@Url.Action("ShowDoc", "MTI")"></iframe>
+    </div>
+</div>
+
+<script>
+
+</script>
+
+

@@ -1,0 +1,257 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@*<form asp-controller="MTI" asp-action="ShowTraveler" enctype="multipart/form-data">
+    <input class="form-control w-25" type="file" name="file" />
+    <input type="submit" class="btn btn-primary" />
+</form>*@
+
+@*<a class="btn btn-primary" asp-controller="MTI" asp-action="MTIView">Button</a>*@
+
+<style>
+    body {
+        font-family: 'Franklin Gothic', sans-serif; /* Apply the desired font to the entire body */
+        font-weight: 500;
+    }
+
+    /* Rest of your styles */
+
+    .btn,
+    .card,
+    .button,
+    .text-center,
+    .card-title,
+    .card-header {
+        font-family: 'Franklin Gothic', sans-serif; /* Apply the desired font to specific elements */
+    }
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container-fluid row mx-0">
+    <div class="flex-column col-sm-12 col-md-8 mb-2">
+        <div class="row">
+            <div class="col-sm-12 col-md-6">
+                <div class="card border-2 border-dark h-100 mt-3" style="background-color:#E9E4E9">
+                    <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A;font-size:30px; font-family:'Franklin Gothic'">Document List</h4>
+                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-evenly">
+                        <div class="w-75 mx-auto h-auto">
+                            <button class="w-100 btn btn-primary border-2 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'" style="font-size:20px">PNP HEAD MX</button>
+                        </div>
+                        <div class="w-75 mx-auto h-auto">
+                            <button class="w-100 btn btn-primary border-2 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'" style="font-size:20px">JLP</button>
+                        </div>
+                        <div class="w-75 mx-auto h-auto">
+                            <button class="w-100 btn btn-primary border-2 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'" style="font-size:20px">JTP</button>
+                        </div>
+                        <div class="w-75 mx-auto h-auto">
+                            <button class="w-100 btn btn-primary border-2 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'" style="font-size:20px">OLB</button>
+                        </div>
+                        <div class="w-75 mx-auto h-auto">
+                            <button class="w-100 btn btn-primary border-2 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'" style="font-size:20px">TERADYNE</button>
+                        </div>
+                        <div class="w-75 mx-auto h-auto">
+                            <button class="w-100 btn btn-primary border-2 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'" style="font-size:20px">SPARES</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div class="card border-2 border-dark h-100 mt-3" style="background-color:#E9E4E9">
+                    <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A;font-size:30px">Documents Status</h4>
+                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
+                        <div class="card w-75 border-2 border-dark">
+                            <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">
+                                <p class="card-title text-center">Controlled Documents</p>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-center" style="font-size:30px">100</p>
+                            </div>
+                        </div>
+                        <div class="card w-75 border-2 border-dark">
+                            <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">
+                                <p class="card-title text-center">Uncontrolled Documents</p>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-center" style="font-size:30px">5</p>
+                            </div>
+                        </div>
+                        <div class="card w-75 border-2 border-dark mb-sm-2">
+                            <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">
+                                <p class="card-title text-center">Obsolete Documents</p>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-center" style="font-size:30px">3</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="flex-column col-sm-12 col-md-4">
+        <div class="w-100 mb-2">
+            <div class="card w-100 border-2 border-dark" style="background-color:#E9E4E9">
+                <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">Problem Log</h4>
+                <div>
+                    <canvas id="bar"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="w-100">
+            <div class="card w-100 h-auto border-2 border-dark" style="background-color:#E9E4E9">
+                <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">Some chart</h4>
+                <div class="d-flex justify-content-center">
+                    <canvas id="pieChartValid" class="h-50 w-50"></canvas>             
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var months = ["JLP", "JTP", "PNP", "OLB"];
+        var bgiv = '';
+        var bgv = '#F57653';
+
+        var ctx = document.getElementById('bar').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Problem Log Count',
+                        data: [3, 6, 1, 2],
+                        backgroundColor: bgv,
+                        borderColor: 'black',
+                        borderWidth: 0,
+                        pointStyle: 'rect'
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {},
+                        ticks: {
+                            color: 'black',
+                            precision: 0,
+                            max: Math.max(...[3, 6, 1, 2], ...[3, 6, 1, 2]) + 2,
+                        },
+                        title: {
+                            color: 'black',
+                            display: true,
+                            text: ''
+                        },
+                    },
+                    x: {
+                        ticks: {
+                            color: 'black',
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true,
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var data = [1, 2];
+        var labels = ['Complete', 'Incomplete'];
+
+        var pp = document.getElementById('pieChartValid').getContext('2d');
+        var piechart = new Chart(pp, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        data: data,
+                        backgroundColor: [
+                            '#2BC58B',
+                            '#F57653'
+                        ],
+                        borderColor: [
+                            'black'
+                        ],
+                        borderWidth: 2,
+                        pointStyle: 'circle'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true,
+                        }
+                    }
+                },
+
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var data = [1, 2, 3, 4];
+        var labels = ['Function', 'Form', 'Fit', 'Safety'];
+
+        var fs = document.getElementById('fs').getContext('2d');
+        var fsChart = new Chart(fs, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        data: data,
+                        backgroundColor: [
+                            '#E83800',
+                            '#3BD1B8',
+                            '#ACEB63',
+                            '#FFF85E'
+                        ],
+                        borderColor: [
+                            'black'
+                        ],
+                        borderWidth: 2,
+                        pointStyle: 'circle'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true,
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+    function submitForm() {
+        document.getElementById("myForm").submit();
+    }
+</script>

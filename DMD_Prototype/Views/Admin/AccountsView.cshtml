@@ -1,0 +1,127 @@
+﻿@model IEnumerable<DMD_Prototype.Models.AccountModel>
+
+@{
+    ViewData["Title"] = "DMD Accounts";
+}
+
+
+<div class="container">
+    <div class="w-100 d-flex justify-content-end my-2">
+        <a class="btn btn-success" onclick="document.getElementById('createuser').style.display = 'block'">Create User</a>
+    </div>
+    <table class="table table-bordered border-secondary border-1">
+        <thead class="thead">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.UserID)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.AccName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Email)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Username)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DateCreated)
+                </th>
+                <th>
+
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.Count() > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.UserID)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.AccName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Email)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Username)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.DateCreated)
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.AccID">Edit</a> |
+                                <a asp-action="Details" asp-route-id="@item.AccID">Details</a> |
+                                <a asp-action="Delete" asp-route-id="@item.AccID">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-content w-50 h-75" id="createuser">
+    <div class="modal-close">
+        <button class="btn btn-danger" onclick="document.getElementById('createuser').style.display = 'none'">X</button>
+    </div>
+    <div class="modal-header w-100">
+        <p class="modal-title w-100 text-center fw-bolder">Create User</p>
+    </div>
+    <div class="modal-body">
+        <div class="input-group flex-column">
+            <label class="form-label">
+                Account Name:
+            </label>
+            <input class="form-control w-50" required/>
+        </div>
+        <div class="input-group flex-column">
+            <label class="form-label">
+                Email:
+            </label>
+            <div class="d-flex">
+                <input class="form-control" name="email" />
+                <select class="form-select" name="sec">
+                    <option>&#64;pimes</option>
+                    <option>&#64;gmail</option>
+                    <option>&#64;yahoo</option>
+                    <option>&#64;outlook</option>
+                </select>
+                <select class="form-select" name="dom">
+                    <option>.com.ph</option>
+                    <option>.com</option>
+                </select>
+            </div>         
+        </div>
+        <div class="input-group flex-column">
+            <label class="form-label">
+                Username:
+            </label>
+            <input class="form-control w-50" required />
+        </div>
+        <div class="input-group flex-column">
+            <label class="form-label">
+                Password:
+            </label>
+            <input class="form-control w-50" required />
+        </div>
+        <div class="input-group flex-column">
+            <label class="form-label">
+                Role:
+            </label>
+            <select class="form-select" name="role">
+                <option value="" selected hidden>Select Role</option>
+                @foreach (var role in Enum.GetValues(typeof(Roles)))
+                {                  
+                    <option value="@role.ToString()">@role.ToString()</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>

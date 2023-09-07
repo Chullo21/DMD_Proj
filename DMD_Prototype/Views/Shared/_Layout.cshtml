@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DMD_ATS</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/DMD_Prototype.styles.css" asp-append-version="true" />
+    
+</head>
+<body style="background-color:lightgray">
+    <header class="header-nav" style="font-family:'Franklin Gothic'">
+        <nav class="navbar navbar-expand-lg navbar-light" style="background-color:blue; height:125px">
+            <div class="container-fluid h-100 flex-md-column flex-sm-row">
+                <div class="w-100 d-flex justify-content-between align-self-start">
+                    <div>
+                        <img style="width:60px; height: 30px" src="~/pimeslogo.png" />
+                    </div>
+                    <div>
+                        <img style="width:60px; height: 30px" src="~/ats wbg.png" />
+                    </div>
+                </div>
+                <div class="w-100 mt-0 d-flex justify-content-center h-auto align-self-center">
+                    <div class="h-100">
+                        <h3 class="text-white h-100" style="font-weight:900; font-size:xx-large">ATS DIGITAL MANUFACTURING DOCUMENTS</h3>
+                    </div>
+                </div>
+                <div class="w-100 d-flex justify-content-between">
+                    <div class="d-flex">
+                        <div class="mx-2">
+                            <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="Index">Home</a>
+                        </div>
+                        <div>
+                            <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="AdminHome">Dashboard</a>
+                        </div>
+                        <div>
+                            <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="AdminHome">About</a>
+                        </div>
+                        <div>
+                            <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="AdminHome">More</a>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="align-items-center text-white d-flex justify-content-center" style="margin-left:15px">
+                            <form asp-controller="Home" asp-action="LogoutOptions" id="logout" onchange="this.submit()">
+                                <select class="form-select bg-primary w-auto text-white border-1 border-dark" name="option">
+                                    <option selected hidden>
+                                        &#10004;
+                                        Toledo, John Gabriel
+                                    </option>
+                                    <option class="bg-white text-black" value="Accounts">
+                                        &#128101;
+                                        Admin
+                                    </option>
+                                    <option class="bg-white text-black" value="Actions">
+                                        &#128190;
+                                        Actions
+                                    </option>
+                                    <option class="bg-white text-black" value="Announcements">
+                                        &#128204;
+                                        Announcements
+                                    </option>
+                                    <option class="text-danger bg-white" value="Log-out">&#9889; Log-out</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container-fluid" style="margin-top:130px">
+        <main role="main" class="">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footerLayout">
+        <div class="text-white">
+            &copy; 2023 - DIGITALIZATION OF MANUFACTURING DOCUMENTS
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
