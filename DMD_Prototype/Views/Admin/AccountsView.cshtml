@@ -1,4 +1,4 @@
-﻿@model IEnumerable<DMD_Prototype.Models.AccountModel>
+﻿@model IEnumerable<AccountModel>
 
 @{
     ViewData["Title"] = "DMD Accounts";
@@ -7,25 +7,25 @@
 
 <div class="container">
     <div class="w-100 d-flex justify-content-end my-2">
-        <a class="btn btn-success" onclick="document.getElementById('createuser').style.display = 'block'">Create User</a>
+        <a class="btn btn-secondary" onclick="document.getElementById('createuser').style.display = 'block'">Create User</a>
     </div>
-    <table class="table table-bordered border-secondary border-1">
+    <table class="table table-bordered border-secondary border-1 table-hover text-center">
         <thead class="thead">
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.UserID)
+                    Name
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.AccName)
+                    Role
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Email)
+                    Email
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Username)
+                    Username
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.DateCreated)
+                    Password
                 </th>
                 <th>
 
@@ -38,26 +38,36 @@
                 {
                     foreach (var item in Model)
                     {
+                        string thisEmail = item.Email + item.Sec + item.Dom;
                         <tr>
                             <td>
-                                @Html.DisplayFor(modelItem => item.UserID)
+                                @item.AccName
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.AccName)
+                                @item.Role
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.Email)
+                                @thisEmail
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.Username)
+                                @item.Username
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.DateCreated)
+                                <div class="d-flex justify-content-center">
+                                    <button class="btn btn-secondary" onclick="userandpass('@item.Username', '@item.Password')">Password</button>
+                                </div>
                             </td>
                             <td>
-                                <a asp-action="Edit" asp-route-id="@item.AccID">Edit</a> |
-                                <a asp-action="Details" asp-route-id="@item.AccID">Details</a> |
-                                <a asp-action="Delete" asp-route-id="@item.AccID">Delete</a>
+                                <div class="w-100 d-flex justify-content-between">
+                                    <div class="w-100">
+                                        <button class="btn btn-success w-100" onclick="editAccount('@item.AccName', '@item.Email', '@item.Username', '@item.Password', '@item.Sec', '@item.Dom', '@item.AccID', '@item.Role', '@item.UserID')">Edit</button>
+                                    </div>
+                                    <div class="mx-1">
+                                    </div>
+                                    <div class="w-100">
+                                        <button class="btn btn-danger w-100" onclick="deleteAccount('@item.AccName', '@item.Email@item.Sec@item.Dom', '@item.Username', '@item.Password', '@item.AccID', '@item.Role', '@item.UserID')">Delete</button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -67,61 +77,292 @@
     </table>
 </div>
 
-<div class="modal-content w-50 h-75" id="createuser">
-    <div class="modal-close">
-        <button class="btn btn-danger" onclick="document.getElementById('createuser').style.display = 'none'">X</button>
+<script>
+    function deleteAccount(name, email, user, pass, acc, role, userid) {
+        document.getElementById('createuser').style.display = 'none';
+        document.getElementById('pass').style.display = 'none';
+        document.getElementById('edituser').style.display = 'none';
+        document.getElementById('deleteuser').style.display = 'block';
+
+        document.getElementById('deleteaccid').value = acc;
+        document.getElementById('deletename').value = name;
+        document.getElementById('deleteemail').value = email;
+        document.getElementById('deleteuserid').value = userid;
+        document.getElementById('deleteusername').value = user;
+        document.getElementById('deleterole').value = role;
+        document.getElementById('deletepassword').value = pass;
+    }
+</script>
+
+<div class="modal-content" id="deleteuser" style="min-width:400px">
+    <div class="d-flex w-100 justify-content-between">
+        <h4 class="text-center w-100">Delete this account?</h4>
+        <button class="btn btn-danger modal-close" onclick="document.getElementById('deleteuser').style.display = 'none'">X</button>
     </div>
-    <div class="modal-header w-100">
-        <p class="modal-title w-100 text-center fw-bolder">Create User</p>
-    </div>
-    <div class="modal-body">
-        <div class="input-group flex-column">
+    <hr />
+    <form asp-controller="Admin" asp-action="DeleteAccount" method="post">
+        <input id="deleteaccid" name="AccID" hidden />
+        <div>
             <label class="form-label">
-                Account Name:
+                Account Name
             </label>
-            <input class="form-control w-50" required/>
+            <input class="form-control" id="deletename" readonly />
         </div>
-        <div class="input-group flex-column">
+        <div>
             <label class="form-label">
-                Email:
+                User ID
+            </label>
+            <input class="form-control" id="deleteuserid" readonly />
+        </div>
+        <div>
+            <label class="form-label">
+                Role
+            </label>
+            <input class="form-control" value="" id="deleterole" readonly />
+        </div>
+        <div>
+            <label class="form-label">
+                Email
+            </label>
+            <input class="form-control" value="" id="deleteemail" readonly />
+        </div>
+        <div>
+            <label class="form-label">
+                Username
+            </label>
+            <input class="form-control" value="" id="deleteusername" readonly />
+        </div>
+        <div>
+            <label class="form-label">
+                Password
+            </label>
+            <input class="form-control" value="" id="deletepassword" readonly />
+        </div>
+        <div class="w-100 d-flex justify-content-center">
+            <input type="submit" class="btn btn-danger mt-2" value="Delete" />
+        </div>
+    </form>
+</div>
+
+<script>
+   function editAccount(name, email, user, pass, sec, dom, acc, role, userid) {
+
+        document.getElementById('createuser').style.display = 'none';
+        document.getElementById('pass').style.display = 'none';
+        document.getElementById('deleteuser').style.display = 'none';
+
+        var Sec = document.getElementById('editsec');
+        var Dom = document.getElementById('editdom');
+        var Role = document.getElementById('editrole');
+        
+        document.getElementById('accid').value = acc;
+        document.getElementById('editname').value = name;
+        document.getElementById('editemail').value = email;
+        document.getElementById('editusername').value = user;
+        document.getElementById('editpassword').value = pass;
+        document.getElementById('edituserid').value = userid;
+
+
+        for (var i = 0; i < Sec.options.length; i++) {
+            if (Sec.options[i].value === sec) {
+                Sec.selectedIndex = i;
+                break;
+            }
+        }
+
+        for (var i = 0; i < Dom.options.length; i++) {
+            if (Dom.options[i].value === dom) {
+                 Dom.selectedIndex = i;
+                 break;
+            }
+        }
+
+        for (var i = 0; i < Role.options.length; i++) {
+            if (Role.options[i].value === role) {
+                Role.selectedIndex = i;
+                break;
+            }
+        }
+
+        document.getElementById('edituser').style.display = 'block';
+    }
+</script>
+
+<div class="modal-content" id="edituser">
+    <div class="d-flex w-100 justify-content-between">
+        <h4 class="text-center w-100">Edit User</h4>
+        <button class="btn btn-danger modal-close" onclick="document.getElementById('edituser').style.display = 'none'">X</button>
+    </div>
+    <hr />
+    <form asp-controller="Admin" asp-action="EditAccount" method="post">
+        <input id="accid" name="AccID" hidden />
+        <div>
+            <label class="form-label">
+                Account Name
+            </label>
+            <input class="form-control" id="editname" name="AccName" required />
+        </div>
+        <div>
+            <label class="form-label">
+                User ID
+            </label>
+            <input class="form-control" id="edituserid" name="UserID" readonly />
+        </div>
+        <div>
+            <label class="form-label">
+                Role
+            </label>
+            <div>
+                <select class="form-select w-50" id="editrole" name="Role">
+                    @foreach (var role in Enum.GetValues(typeof(Roles)))
+                    {
+                        <option value="@role.ToString()">@role.ToString()</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div>
+            <label class="form-label">
+                Email
             </label>
             <div class="d-flex">
-                <input class="form-control" name="email" />
-                <select class="form-select" name="sec">
+                <input class="form-control" value="" id="editemail" name="Email" required />
+                <select class="form-select" id="editsec" name="Sec">
                     <option>&#64;pimes</option>
                     <option>&#64;gmail</option>
-                    <option>&#64;yahoo</option>
                     <option>&#64;outlook</option>
+                    <option>&#64;yahoo</option>
                 </select>
-                <select class="form-select" name="dom">
+                <select class="form-select" id="editdom" name="Dom">
                     <option>.com.ph</option>
                     <option>.com</option>
                 </select>
-            </div>         
-        </div>
-        <div class="input-group flex-column">
+            </div>
+        </div>      
+        <div>
             <label class="form-label">
-                Username:
+                Username
             </label>
-            <input class="form-control w-50" required />
+            <input class="form-control" value="" id="editusername" name="Username" required />
         </div>
-        <div class="input-group flex-column">
+        <div>
             <label class="form-label">
-                Password:
+                Password
             </label>
-            <input class="form-control w-50" required />
+            <input class="form-control" value="" id="editpassword" name="Password" required />
         </div>
-        <div class="input-group flex-column">
-            <label class="form-label">
-                Role:
-            </label>
-            <select class="form-select" name="role">
-                <option value="" selected hidden>Select Role</option>
-                @foreach (var role in Enum.GetValues(typeof(Roles)))
-                {                  
-                    <option value="@role.ToString()">@role.ToString()</option>
-                }
-            </select>
+        <div class="w-100 d-flex justify-content-center">
+            <input type="submit" class="btn btn-primary mt-2" />
+        </div>
+    </form>
+</div>
+
+<script>
+    function userandpass(user, pass) {
+        document.getElementById('pass').style.display = 'block';
+        document.getElementById('username').value = user;
+        document.getElementById('password').value = pass;
+    }
+</script>
+
+<div class="modal-content w-auto h-auto" id="pass">
+    <div class="modal-close">
+        <button class="btn btn-danger" onclick="document.getElementById('pass').style.display = 'none'">X</button>
+    </div>
+    <div class="modal-body w-100 d-flex justify-content-center">
+        <div class="w-100">
+            <table class="text-center">
+                <thead>
+                    <tr>
+                        <th>
+                            Username
+                        </th>
+                        <th>
+                            Password
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <input id="username" value="" class="border-0 text-center" readonly />
+                        </td>
+                        <td>
+                            <input id="password" value="" class="border-0 text-center" readonly />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+<div class="modal-content border-dark border-2 w-auto h-auto" id="createuser">
+    <div class="modal-close">
+        <button class="btn btn-danger" onclick="document.getElementById('createuser').style.display = 'none'">X</button>
+    </div>
+    <div class="modal-header w-100 border-dark border-2 mt-0">
+        <p class="modal-title w-100 text-center fw-bolder">Create User</p>
+    </div>
+    <div class="modal-body">
+        <form asp-controller="Admin" asp-action="CreateAccount">
+            <div class="input-group flex-column">
+                <label class="form-label">
+                    Account Name:
+                </label>
+                <input class="form-control w-50" name="accname" required />
+            </div>
+            <div class="input-group flex-column">
+                <label class="form-label">
+                    Role:
+                </label>
+                <div>
+                    <select class="form-select w-50" name="role" required>
+                        <option value="" selected hidden>Select Role</option>
+                        @foreach (var role in Enum.GetValues(typeof(Roles)))
+                        {
+                            <option value="@role.ToString()">@role.ToString()</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="input-group flex-column">
+                <label class="form-label">
+                    Email:
+                </label>
+                <div class="d-flex">
+                    <input class="form-control" name="email" required/>
+                    <select class="form-select" name="sec">
+                        <option>&#64;pimes</option>
+                        <option>&#64;gmail</option>
+                        <option>&#64;yahoo</option>
+                        <option>&#64;outlook</option>
+                    </select>
+                    <select class="form-select" name="dom">
+                        <option>.com.ph</option>
+                        <option>.com</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group flex-column">
+                <label class="form-label">
+                    Username:
+                </label>
+                <input class="form-control w-50" name="username" required />
+            </div>
+            <div class="input-group flex-column">
+                <label class="form-label">
+                    Password:
+                </label>
+                <input class="form-control w-50" name="password" required />
+            </div>
+            
+            <div class="w-100 d-flex justify-content-center my-2">
+                <input type="submit" class="btn btn-primary w-50" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+

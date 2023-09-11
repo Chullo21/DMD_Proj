@@ -1,0 +1,107 @@
+﻿@model IEnumerable<DMD_Prototype.Models.MTIModel>
+
+@{
+    ViewData["Title"] = "Engineering Documents " + TempData["Subj"].ToString();
+    string[] accData = TempData["EN"] as string[];
+}
+
+@section scripts {
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
+    <script>
+        $(document).ready(function () {
+            $('#myTable').DataTable({
+                searching: true,
+                lengthChange: false,
+                pageLength: 7,
+                order: [],
+                ordering: false
+            });
+        });
+    </script>
+}
+
+<div class="container flex-column">
+    @if (accData[1] == "ADMIN")
+    {
+        <div class="w-100 d-flex justify-content-start">
+            <div>
+                <a class="btn btn-success" asp-controller="MTI" asp-action="CreateMTIView">Add Document</a>
+            </div>
+        </div>
+    }
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center" id="myTable">
+            <thead class="thead">
+                <tr>
+                    <th>
+                        Originator's name
+                    </th>
+                    <th>
+                        Doc. #
+                    </th>
+                    <th>
+                        Assembly P/N
+                    </th>
+                    <th>
+                        Assembly Desc.
+                    </th>
+                    <th>
+                        Rev. #
+                    </th>
+                    <th>
+                        Date Created
+                    </th>
+
+                    <th>
+                        Obsolete?
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    string tdColor = "green";
+
+                    @if (item.ObsoleteStat) tdColor = "red";
+
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.OriginatorName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DocumentNumber)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.AssemblyPN)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.AssemblyDesc)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.RevNo)
+                        </td>
+                        <td>
+                            @item.DateCreated.ToShortDateString()
+                        </td>
+                        
+                        <td class="text-center" style="background-color:@tdColor">
+                            @item.ObsoleteStat.ToString()
+                        </td>
+                        <td>
+                            <div class="d-flex">
+                                <button class="btn btn-primary w-100">View</button>
+                                @if (accData[1] == "ADMIN")
+                                {
+                                    <button class="btn btn-success w-100 mx-2">Edit</button>
+                                    <button class="btn btn-danger w-100">Obsolete</button>
+                                }                           
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

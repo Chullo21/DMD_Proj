@@ -27,7 +27,7 @@
                 <img style="height:30px; margin-inline:25px" src="~/photos/pimeslogo.png" />
             </div>
             <div class="align-self-center">
-                <a class="text-white billsfont text-decoration-none text-wrap" href="https://pimes.com.ph/">P. IMES Corp. ATS - QA</a>
+                <a class="text-white billsfont text-decoration-none text-wrap" href="https://pimes.com.ph/">P. IMES Corp. ATS - ENGINEERING</a>
             </div>
             <div class="align-self-center">
                 <img style="height:30px" src="~/photos/ats wbg.png" />
@@ -42,11 +42,22 @@
         <div id="loading-icon" class="loading-icon"></div>
         <div class="row vh-100 justify-content-around">
             <div class="col-sm-12 col-lg-4 h-100 d-flex justify-content-center" style="backdrop-filter: blur(3px); border: 3px solid; border-color:blue">
-                <div class="card bg-white border-0 w-75 h-auto my-auto">
-                    <form asp-controller="Login" asp-action="LoginAcc" method="post" onsubmit="ShowLoading()" class="d-flex flex-column align-items-center">
-                        <div class="w-100 d-flex justify-content-center">
-                            <h3 class="text-center card-header text-white text-nowrap w-100" style="background-color:blue; border-radius:5px">Welcome to CSat Portal</h3>
+                <div class="card bg-white w-75 h-auto my-auto border-4 border-dark">
+                    <form asp-controller="Login" asp-action="TryLogin" method="post" onsubmit="ShowLoading()" class="d-flex flex-column align-items-center">
+                        <div class="w-100 d-flex justify-content-center border-3 border-dark">
+                            <h3 class="text-center card-header text-white w-100" style="background-color:blue; border-radius:5px">Welcome to DMD Portal</h3>
                         </div>
+                        @{
+                            string? catchFailedLogin = TempData["LoginTemp"] as string;
+
+                            if (!string.IsNullOrEmpty(catchFailedLogin))
+                            {
+                                //<div class="border-3 border-danger w-100 text-center" style="background-color:indianred" >
+                                //    @catchFailedLogin
+                                //</div>
+                                <div class="alert alert-danger mt-1 border-3" role="alert">@catchFailedLogin</div>
+                            }
+                        }
                         <div class="input-group my-2 mx-auto w-75">
                             <span class="input-group-text fw-bolder" id="basic-addon1">&#64;</span>
                             <input class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" name="user">
@@ -65,7 +76,7 @@
                 <div class="h-100 card bg-transparent m-3 border-0">
                     <div class="d-flex align-items-center h-25">
                         <div class="text-center">
-                            <p class="text-nowrap loginfont text-decoration-underline my-auto" style="color: white; backdrop-filter: blur(10px)">CSat Portal</p>
+                            <p class="text-nowrap loginfont text-decoration-underline my-auto" style="color: white; backdrop-filter: blur(10px)">DMD Portal</p>
                         </div>
                         <div class="mx-4">
                             <img class="w-100" src="~/photos/csatlogo.png" />

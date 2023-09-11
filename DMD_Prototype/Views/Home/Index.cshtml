@@ -32,13 +32,31 @@
 
 <div class="container-fluid row mx-0">
     <div class="flex-column col-sm-12 col-md-8 mb-2">
+        <form asp-controller="" asp-action="">
+            <div class="w-100 d-flex">
+                <div class="w-25">
+                    <select class="form-select">
+                        <option value="" selected hidden>Select Category</option>
+                        <option>PNP HEAD MX</option>
+                        <option>JLP</option>
+                        <option>JTP</option>
+                        <option>OLB</option>
+                        <option>TERADYNE</option>
+                        <option>SPARES</option>
+                    </select>
+                </div>
+                <div class="w-75">
+                    <input class="form-control" type="search" placeholder="Search document" />
+                </div>
+            </div>
+        </form>
         <div class="row">
             <div class="col-sm-12 col-md-6">
-                <div class="card border-2 border-dark h-100 mt-3" style="background-color:#E9E4E9">
-                    <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A;font-size:30px; font-family:'Franklin Gothic'">Document List</h4>
+                <div class="card border-2 border-dark h-100 mt-2" style="background-color:#E9E4E9">
+                    <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A;font-size:30px; font-family:'Franklin Gothic'">Documents Lists</h4>
                     <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-evenly">
                         <div class="w-75 mx-auto h-auto">
-                            <button class="w-100 btn btn-primary border-2 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'" style="font-size:20px">PNP HEAD MX</button>
+                            <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="PNP">PNP HEAD MX</a>
                         </div>
                         <div class="w-75 mx-auto h-auto">
                             <button class="w-100 btn btn-primary border-2 border-dark" onclick="document.getElementById('assemblydrawing').style.display = 'block'" style="font-size:20px">JLP</button>
@@ -59,8 +77,8 @@
                 </div>
             </div>
             <div class="col-sm-12 col-md-6">
-                <div class="card border-2 border-dark h-100 mt-3" style="background-color:#E9E4E9">
-                    <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A;font-size:30px">Documents Status</h4>
+                <div class="card border-2 border-dark h-100 mt-2" style="background-color:#E9E4E9">
+                    <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A;font-size:30px">Documents Statuses</h4>
                     <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
                         <div class="card w-75 border-2 border-dark">
                             <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">

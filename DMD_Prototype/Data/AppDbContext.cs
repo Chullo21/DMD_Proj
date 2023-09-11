@@ -14,6 +14,6 @@ namespace DMD_Prototype.Data
 
         public DbSet<InstructionModel> InsDb { get; set; }
 
-        public DbSet<DMD_Prototype.Models.AccountModel>? AccountModel { get; set; }
+        public DbSet<AccountModel> AccountDb { get; set; }
     }
 }

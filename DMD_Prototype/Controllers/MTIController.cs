@@ -1,6 +1,8 @@
 ﻿using DMD_Prototype.Data;
-using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using System.IO;
 
 namespace DMD_Prototype.Controllers
 {
@@ -14,46 +16,36 @@ namespace DMD_Prototype.Controllers
         }
         public IActionResult MTIView()
         {
-
             return View();
         }
 
         public IActionResult CreateMTIView()
         {
+            string folderPath = Path.Combine("D:", "jtoledo", "Desktop", "DocumentsHere");
+
+
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
             return View();
         }
 
-        public IActionResult ShowTraveler(IFormFile file)
+        public IActionResult PNPViewDocs()
         {
-            MTIModel mti = new MTIModel();
-
-            MemoryStream ms = new MemoryStream();
-            file.CopyTo(ms);
-
-            byte[] filearray = ms.ToArray();
-            mti.Documnet1 = filearray;
-            mti.Numberchuchu = "pewpew";
-
-            _Db.MTIDb.Add(mti);
-            _Db.SaveChanges();
-
-            return View("MTIView", filearray);
+            return View("MTIList");
         }
 
-        public IActionResult ShowDoc()
+        public IActionResult CreateMTI()
         {
-            MTIModel mti = _Db.MTIDb.Find(29);
 
-            byte[] fileBytes = mti.Documnet1;
-
-            return File(fileBytes, "application/pdf");
+            return View();
         }
 
-
-
-        public class Bite
+        public void CreateNewFolder()
         {
-            public byte[] Photo { get; set; }
+            
         }
     }
 }

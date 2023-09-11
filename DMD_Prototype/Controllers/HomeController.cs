@@ -1,4 +1,5 @@
-﻿using DMD_Prototype.Models;
+﻿using DMD_Prototype.Data;
+using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -6,15 +7,18 @@ namespace DMD_Prototype.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly AppDbContext _Db;
+        private readonly List<MTIModel> _MTIModels;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(AppDbContext _context)
         {
-            _logger = logger;
+           _Db = _context;
+            _MTIModels = _Db.MTIDb.ToList();
         }
 
         public IActionResult Index()
         {
+
             return View();
         }
 
@@ -37,11 +41,21 @@ namespace DMD_Prototype.Controllers
                     {
                         return RedirectToAction("AdminView", "Admin");
                     }
+                case "Logout":
+                    {
+                        return RedirectToAction("LoginPage", "Login");
+                    }
                 default:
                     {
                         return RedirectToAction("AdminView", "Admin");
                     }
             }
+        }
+
+        public IActionResult MTIList(string whichDoc)
+        {
+            TempData["Subj"] = whichDoc;
+            return View(_MTIModels.Where(j => j.Product == whichDoc));
         }
     }
 }
