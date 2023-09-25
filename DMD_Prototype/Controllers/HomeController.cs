@@ -18,7 +18,6 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult Index()
         {
-
             return View();
         }
 
@@ -52,10 +51,13 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public IActionResult MTIList(string whichDoc)
+        public IActionResult MTIList(string whichDoc, string? whichType)
         {
+            string type = whichType ?? "MPI";
+
             TempData["Subj"] = whichDoc;
-            return View(_MTIModels.Where(j => j.Product == whichDoc));
+            TempData["DocType"] = type;
+            return View(_MTIModels.Where(j => j.Product == whichDoc && j.DocType == type));
         }
     }
 }

@@ -1,15 +1,203 @@
 ﻿@{
-    ViewData["Title"] = "CreateMTIView";
+    ViewData["Title"] = "Upload Documents";
+    string subj = TempData["Subj"] as string;
+    string type = TempData["DocType"] as string;
+    TempData.Keep();
 }
-
-<h1>CreateMTIView</h1>
-
-<div class="container row">
-    <div class="col-6">
-        1231323123
+@if (!string.IsNullOrEmpty(TempData["Error"] as string) && TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-1 border-3" role="alert">@TempData["Error"].ToString()</div>
+}
+<form asp-controller="MTI" asp-action="CreateMTI" enctype="multipart/form-data" id="uploaddocumentform">
+    <input value="@type" name="doctype" hidden />
+    <input value="@subj" name="product" hidden/>
+    <input type="submit" id="submituploadform" hidden/>
+<div class="container-fluid">
+    <div class="w-100 card border-dark border-3">
+        <div class="card-body d-flex">
+            <div class="input-group mx-1">
+                <label class="form-label my-auto mx-1">Doc #:</label>
+                <input class="form-control" type="text" name="documentnumber" required/>
+            </div>
+            <div class="input-group mx-1">
+                <label class="form-label my-auto mx-1">Assy #:</label>
+                <input class="form-control" type="text" name="assynumber" required/>
+            </div>
+            <div class="input-group mx-1">
+                <label class="form-label my-auto mx-1">Assy. Desc:</label>
+                <input class="form-control" type="text" name="assydesc" required/>
+            </div>
+            <div class="input-group mx-1">
+                <label class="form-label my-auto mx-1">Rev. #:</label>
+                <input class="form-control" type="text" name="revnumber" required/>
+            </div>
+            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#submitdocuments" @*onclick="document.getElementById('submitdocuments').style.display = 'block'"*@>Submit</button>
+        </div>
     </div>
-    <div class="col-6">
-        12312312312
+    <div class="row">
+        <div class="col-4">
+            <div class="card w-100 h-auto mt-2">
+                <div>
+                    <p class="card-header text-center">Documents</p>
+                </div>
+                <div class="card-body" style="overflow-y:auto; max-height:400px">
+                        <div class="my-2 w-100">
+                            <div class="d-flex">
+                                <label class="form-label my-auto w-100">
+                                    @{
+                                        Write(type + " Document");
+                                    }
+                                </label>
+                                <select class="form-select">
+                                    <option>Controlled</option>
+                                    <option>Uncontrolled</option>
+                                </select>
+                            </div>
+                            <input class="form-control w-100" type="file" name="mpti" accept=".pdf" required />
+                        </div>
+                        <div class="my-2 w-100" style="border-top:2px dotted;">
+                            <div class="d-flex">
+                                <label class="form-label my-auto w-100">
+                                    Assembly Drawing
+                                </label>
+                                <select class="form-select">
+                                    <option>Controlled</option>
+                                    <option>Uncontrolled</option>
+                                </select>
+                            </div>
+                            <input class="form-control w-100" type="file" name="assemblydrawing" accept=".pdf" required />
+
+                        </div>
+                        <div class="my-2 w-100" style="border-top:2px dotted;">
+                            <div class="d-flex">
+                                <label class="form-label my-auto w-100">
+                                    Bills Of Material
+                                </label>
+                                <select class="form-select">
+                                    <option>Controlled</option>
+                                    <option>Uncontrolled</option>
+                                </select>
+                            </div>
+                            <input class="form-control w-100" type="file" name="billsofmaterial" accept=".pdf" required />
+
+                        </div>
+                        <div class="my-2 w-100" style="border-top:2px dotted;">
+                            <div class="d-flex">
+                                <label class="form-label my-auto w-100">
+                                    Schematic Diagram
+                                </label>
+                                <select class="form-select">
+                                    <option>Controlled</option>
+                                    <option>Uncontrolled</option>
+                                </select>
+                            </div>
+                            <input class="form-control w-100" type="file" name="schematicdiagram" accept=".pdf" required />
+
+                        </div>
+                        <div class="my-2 w-100" style="border-top:2px dotted;">
+                            <div class="d-flex">
+                                <label class="form-label my-auto w-100">
+                                    O.P.L (Multiple or None)
+                                </label>
+                            </div>
+                            <input class="form-control w-100" type="file" name="onepointlesson" accept=".pdf" multiple />
+
+                        </div>
+                        <div class="w-100 my-2" style="border-top:2px dotted;">
+                            <div class="d-flex">
+                                <label class="form-label my-auto w-100">
+                                    PRCO (Multiple or None)
+                                </label>
+                            </div>
+                            <input class="form-control w-100" type="file" name="prco" accept=".pdf" multiple />
+
+                        </div>
+                        <div class="w-100 my-2" style="border-top:2px dotted;">
+                            <label class="form-label my-auto w-100">
+                                Derogation (Multiple or None)
+                            </label>
+                            <input class="form-control w-100" type="file" name="derogation" accept=".pdf" multiple />
+                        </div>
+                        <div class="w-100 my-2" style="border-top:2px dotted;">
+                            <div class="d-flex">
+                                <label class="form-label my-auto w-100">
+                                    MEMO (Multiple or None)
+                                </label>
+                            </div>
+                            <input class="form-control w-100" type="file" name="engineeringmemo" accept=".pdf" multiple />
+
+                        </div>
+                    </div>
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="card w-100 h-auto mt-2">
+                <div class="text-center">
+                    <p class="card-header">Create Traveler</p>
+                </div>
+                    <div class="card-body" style="max-height:400px; overflow-y:auto">
+                    <div class="w-100 d-flex justify-content-end">
+                        <input class="form-control w-25 mx-2" type="number" id="range" value="1"/>
+                        <button class="btn btn-primary my-auto" type="button" onclick="addRows()">+</button>
+                    </div>
+                    <div class="" >
+                        <table id="instable" class="table table-bordered border-2 border-dark">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Step No.
+                                    </th>
+                                    <th class="w-75">
+                                        Task
+                                    </th>
+                                    <th>
+                                        Cell Division
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+</form>
 
+<div class="modal fade" id="submitdocuments" data-bs-backdrop="static" >
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title fs-5">Are you sure?</p>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-evenly">
+                    <button class="btn btn-danger" type="button" data-bs-dismiss="modal" aria-label="Close" @*onclick="document.getElementById('submitdocuments').style.display = 'none'"*@>Cancel</button>
+
+                    <button class="btn btn-primary" onclick="document.getElementById('submituploadform').click()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function addRows()
+    {
+        var tab = document.getElementById('instable');
+        var range = document.getElementById('range').value;
+
+        for (var i = 1; i <= range; i++) {
+            var row = tab.insertRow(-1); // Append row to the end of the table
+            var cell1 = row.insertCell(0); // Insert cell for Step No.
+            var cell2 = row.insertCell(1); // Insert cell for Instruction
+            var cell3 = row.insertCell(2); // Insert an empty cell
+
+            cell1.innerHTML = '<input class="form-control w-100" type="number" name="stepNumber"/>'; // Set Step No.
+            cell2.innerHTML = '<input class="form-control w-100" type="text" name="instruction"/>'; // Set Instruction (you can add content here if needed)
+            cell3.innerHTML = '<div class="d-flex justify-content-around"><select class="form-select" name="byThree"><option value="s">Single</option><option value="t">Three</option></select></div>';
+        }
+    }
+</script>

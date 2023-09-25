@@ -70,26 +70,6 @@ namespace DMD_Prototype.Migrations
                     b.ToTable("AccountDb");
                 });
 
-            modelBuilder.Entity("DMD_Prototype.Models.InstructionModel", b =>
-                {
-                    b.Property<int>("InsID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InsID"));
-
-                    b.Property<byte[]>("InsPhoto")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<int>("Page")
-                        .HasColumnType("int");
-
-                    b.HasKey("InsID");
-
-                    b.ToTable("InsDb");
-                });
-
             modelBuilder.Entity("DMD_Prototype.Models.MTIModel", b =>
                 {
                     b.Property<int>("MTIID")
@@ -102,22 +82,14 @@ namespace DMD_Prototype.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AssemblyDrawing")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("AssemblyPN")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BillsOfMaterial")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Derogation")
+                    b.Property<string>("DocType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -125,22 +97,10 @@ namespace DMD_Prototype.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EngrMemo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("ObsoleteStat")
                         .HasColumnType("bit");
 
-                    b.Property<string>("OnePointLesson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("OriginatorName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PRCO")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -149,14 +109,6 @@ namespace DMD_Prototype.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RevNo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SchematicDiagram")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WorkmanshipStandard")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

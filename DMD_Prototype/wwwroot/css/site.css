@@ -38,10 +38,9 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 2000;
 }
 
-.modal-overlay {
+/*.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -51,7 +50,7 @@ body {
     display: none;
 }
 
-/* Modal content */
+ Modal content 
 .modal-content {
     position: fixed;
     top: 50%;
@@ -69,7 +68,7 @@ body {
     border-color: black;
 }
 
-/* Close button */
+ Close button 
 .modal-close {
     position: absolute;
     top: 10px;
@@ -80,7 +79,7 @@ body {
 
 .modal-header {
     
-}
+}*/
 
 .loginbg {
     background-image: url('../pimesbg6.jpg');
@@ -89,12 +88,30 @@ body {
     background-size: 100% 95%;
 }
 
-.table {
+/*.table {
     background-color: lightgray;
+}*/
+
+/*.thead {
+    background-color: darkslategray;
+    color: white;
+    text-align: center;
+}*/
+
+.card {
+    border: 3px solid;
+    border-color: black;
 }
 
-.thead {
-    background-color:darkslategray;
+.card-header {
+    border-bottom: 3px solid;
+    border-color: black;
+    font-weight:bold;
+    background-color: darkslateblue;
     color: white;
-    text-align:center;
 }
+
+/*.input-group {
+    display: flex;
+    flex-direction: column;
+}*/
