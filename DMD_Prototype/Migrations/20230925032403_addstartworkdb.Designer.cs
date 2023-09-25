@@ -4,6 +4,7 @@ using DMD_Prototype.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DMD_Prototype.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230925032403_addstartworkdb")]
+    partial class addstartworkdb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,32 +120,6 @@ namespace DMD_Prototype.Migrations
                     b.ToTable("MTIDb");
                 });
 
-            modelBuilder.Entity("DMD_Prototype.Models.PauseWorkModel", b =>
-                {
-                    b.Property<int>("PWID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PWID"));
-
-                    b.Property<DateTime>("PauseDT")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PauseReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RestartDT")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SessionID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("PWID");
-
-                    b.ToTable("PauseWorkDb");
-                });
-
             modelBuilder.Entity("DMD_Prototype.Models.StartWorkModel", b =>
                 {
                     b.Property<int>("SWID")
@@ -165,7 +142,7 @@ namespace DMD_Prototype.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserID")
+                    b.Property<string>("TechName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

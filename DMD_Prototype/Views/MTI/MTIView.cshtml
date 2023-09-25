@@ -2,6 +2,8 @@
 @{
     Layout = null;
     ViewData["Title"] = "View Documents";
+    string[] EN = TempData["EN"] as string[];
+    TempData.Keep();
     int counter;
 }
 
@@ -20,33 +22,53 @@
         <div class="w-100">
             <div class="row bg-primary" style="height:60px">
                 <div class="col-1 align-self-center d-flex justify-content-center">
-                    <a class="btn btn-secondary mx-1" asp-controller="Home" asp-action="Index">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-square-fill" viewBox="0 0 16 16">
-                                <path d="M16 14a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12zm-4.5-6.5H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5a.5.5 0 0 0 0-1z" />
-                            </svg>
-                            <div class="mx-2">
-                                Back
+                    @if (!Model.WorkingStat)
+                    {
+                        <a class="btn btn-secondary mx-1" asp-controller="Home" asp-action="Index">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-square-fill" viewBox="0 0 16 16">
+                                    <path d="M16 14a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12zm-4.5-6.5H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5a.5.5 0 0 0 0-1z" />
+                                </svg>
+                                <div class="mx-2">
+                                    Back
+                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    }
                 </div>
                 <div class="col-7 d-flex justify-content-center align-self-center border-3 border-dark bg-dark ">
                     <marquee class="border-3 border-dark bg-dark text-white">Please follow the steps of your MPI alongside your traveler, have a great day!</marquee>
                 </div>
                 <div class="col-4 d-flex justify-content-around">
                     <div class="align-self-center">
-                        <button class="btn btn-success">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-skip-start-circle-fill" viewBox="0 0 16 16">
-                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM9.71 5.093 7 7.028V5.5a.5.5 0 0 0-1 0v5a.5.5 0 0 0 1 0V8.972l2.71 1.935a.5.5 0 0 0 .79-.407v-5a.5.5 0 0 0-.79-.407z" />
-                                </svg>
-                                <div class="mx-2">
-                                    Start
+                        @if (Model.WorkingStat)
+                        {
+                            <button class="btn btn-success" data-bs-target="#pausemodal" data-bs-toggle="modal">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pause-btn-fill" viewBox="0 0 16 16">
+                                        <path d="M0 12V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm6.25-7C5.56 5 5 5.56 5 6.25v3.5a1.25 1.25 0 1 0 2.5 0v-3.5C7.5 5.56 6.94 5 6.25 5zm3.5 0c-.69 0-1.25.56-1.25 1.25v3.5a1.25 1.25 0 1 0 2.5 0v-3.5C11 5.56 10.44 5 9.75 5z" />
+                                    </svg>
+                                    <div class="mx-2">
+                                        Pause
+                                    </div>
                                 </div>
-                            </div>
-                        </button>
+                            </button>
+                        }
+                        else
+                        {
+                            <a class="btn btn-success" asp-controller="Work" asp-action="StartWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-skip-start-circle-fill" viewBox="0 0 16 16">
+                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM9.71 5.093 7 7.028V5.5a.5.5 0 0 0-1 0v5a.5.5 0 0 0 1 0V8.972l2.71 1.935a.5.5 0 0 0 .79-.407v-5a.5.5 0 0 0-.79-.407z" />
+                                    </svg>
+                                    <div class="mx-2">
+                                        Start
+                                    </div>
+                                </div>
+                            </a>
+                        }
                     </div>
+                    
                     <div class="align-self-center">
                         <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#travmodal">
                             <div class="d-flex justify-content-between align-items-center">
@@ -200,39 +222,74 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <form asp-controller="" asp-action="">                              
-                                @foreach (TravelerModel trav in Model.Travelers.OrderBy(j => j.StepNumber))
+                                @if (!Model.WorkingStat)
                                 {
+                                    foreach (TravelerModel trav in Model.Travelers.OrderBy(j => j.StepNumber))
+                                    {
+                                        <tr>
+                                            <td>
+                                                @trav.StepNumber
+                                            </td>
+                                            <td>
+                                                @trav.Instruction
+                                            </td>
+                                            <td>
+                                                @if (trav.ByThree == "t")
+                                                {
+                                                    <div class="d-flex">
+                                                        <input class="form-control border-2 border-dark" />
+                                                        <input class="form-control border-2 border-dark mx-2" />
+                                                        <input class="form-control border-2 border-dark" />
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <input class="form-control w-100 border-2 border-dark" />
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <form id="travform" asp-controller="Work" asp-action="SubmitTraveler">
                                     <tr>
                                         <td>
-                                            @trav.StepNumber
+                                            <input value="@Model.TravProg[0]" name="stepNo" class="form-control border-0" readonly/>
                                         </td>
                                         <td>
-                                            @trav.Instruction
+                                            <input value="@Model.TravProg[1]" name="task" class="form-control border-0" readonly />
                                         </td>
                                         <td>
-                                            @if (trav.ByThree == "t")
+                                            @if (Model.TravProg[2] == "t")
                                             {
                                                 <div class="d-flex">
-                                                    <input class="form-control border-2 border-dark" name="" />
-                                                    <input class="form-control border-2 border-dark mx-2" name="" />
-                                                    <input class="form-control border-2 border-dark" name="" />
+                                                    <input class="form-control border-2 border-dark" name="firstPara"/>
+                                                    <input class="form-control border-2 border-dark mx-2" name="secPara"/>
+                                                    <input class="form-control border-2 border-dark" name="thirdPara"/>
                                                 </div>
                                             }
                                             else
                                             {
-                                                <input class="form-control w-100 border-2 border-dark" name="" />
+                                                <input class="form-control w-100 border-2 border-dark" name="singlePara" />
                                             }
-                                        </td>                                       
+                                        </td>
                                     </tr>
-                                }
-                                </form>
+                                    </form>
+                                }                              
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    Please don't forget to click pause, stop or finish when stopping your work.
+                    @if (!Model.WorkingStat)
+                    {
+                        Write("Please don't forget to click pause, stop or finish when stopping your work.");
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary" onclick="document.getElementById('travform').submit()">Submit</button>
+                    }
                 </div>
             </div>        
         </div>
@@ -251,9 +308,10 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" data-bs-backdrop="static" id="problemlog" data-bs-keyboard="true">
-        <div class="modal-dialog modalcen modal-xl">
-            <form class="modal-content" asp-controller="" asp-action="">
+
+    <form class ="modal fade" data-bs-backdrop="static" id="problemlog" data-bs-keyboard="true" asp-controller="" asp-action="">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
                 <div class="modal-header">
                     <p class="modal-title fs-5">Problem Log</p>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -267,7 +325,7 @@
                                         Log Date
                                     </th>
                                     <th>
-                                        Affected Particular
+                                        Affected Part.
                                     </th>
                                     <th>
                                         Document No.
@@ -289,7 +347,7 @@
                             <tbody>
                                 <tr>
                                     <td>
-                                        <input class="form-control" value="" name="logdate" readonly />
+                                        <input class="form-control " value="@DateTime.Now.ToShortDateString()" name="logdate" readonly />
                                     </td>
                                     <td>
                                         <input class="form-control" value="" placeholder="Required" name="affected" required />
@@ -298,7 +356,7 @@
                                         <input class="form-control" value="" placeholder="Required" name="docno" required />
                                     </td>
                                     <td>
-                                        <input class="form-control" value="" name="partno" readonly />
+                                        <input class="form-control" value="@Model.AssyNo" name="partno" readonly />
                                     </td>
                                     <td>
                                         <input class="form-control" value="" placeholder="Required" name="desc" required />
@@ -307,7 +365,7 @@
                                         <input class="form-control" value="" placeholder="Required" name="probcon" required />
                                     </td>
                                     <td>
-                                        <input class="form-control" value="" name="reportedby" readonly />
+                                        <input class="form-control" value="@EN[0]" name="reportedby" readonly />
                                     </td>
                                 </tr>
                             </tbody>
@@ -317,9 +375,41 @@
                 <div class="modal-footer">
                     <input type="submit" class="btn btn-primary" />
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
+
+    <form asp-controller="Work" asp-action="PauseWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" asp-route-sesID="@Model.SessionID" class="modal fade" id="pausemodal" data-bs-backdrop="false" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title">Pause Work</p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label class="form-label">Pause Reason</label>
+                        <textarea class="w-100" style="max-height:450px; min-height:450px" id="reasontext" name="reason" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="d-flex justify-content-evenly">
+                        <button class="btn" type="button" onclick="SetReason('Timeout')">Uwian</button>
+                        <button class="btn" type="button" onclick="SetReason('Breaktime')">Breaktime</button>
+                        <input type="submit" class="btn btn-primary" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+<script>
+    function SetReason(reason)
+    {
+        document.getElementById('reasontext').value = reason;
+        document.getElementById('pausemodal').submit();
+    }
+</script>
         
 
 <script>

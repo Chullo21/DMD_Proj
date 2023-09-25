@@ -12,10 +12,10 @@ namespace DMD_Prototype.Data
 
         public DbSet<MTIModel> MTIDb { get; set; }
 
-        //public DbSet<InstructionModel> InsDb { get; set; }
-
         public DbSet<AccountModel> AccountDb { get; set; }
 
-        //public DbSet<WSModel> WSDb { get; set; }
+        public DbSet<StartWorkModel> StartWorkDb { get; set; }
+
+        public DbSet<PauseWorkModel> PauseWorkDb { get; set; }
     }
 }

@@ -17,6 +17,7 @@ namespace DMD_Prototype.Controllers
         private readonly AppDbContext _Db;
         private readonly List<MTIModel> _mtiModel;
         private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
+        private readonly string usersDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
         private readonly string travName = "TravelerFileDoNotEdit.xlsx";
 
         private readonly string maindoc = "MainDoc";
@@ -60,7 +61,7 @@ namespace DMD_Prototype.Controllers
                 _Db.SaveChanges();
             }
 
-            return RedirectToAction("MTIView", new {docuNumber = docuno});
+            return RedirectToAction("MTIView", new {docuNumber = docuno, workStat = false});
         }
 
         public IActionResult EditDocumentView(string docuNo)
@@ -80,16 +81,19 @@ namespace DMD_Prototype.Controllers
             return View(res);
         }
 
-        public IActionResult MTIView(string docuNumber)
+        public IActionResult MTIView(string docuNumber, bool workStat, string sesID)
         {
             MTIViewModel mModel = new MTIViewModel();
             {
                 mModel.DocumentNumber = docuNumber;
-                mModel.Travelers = TravelerRetriever(docuNumber);
+                mModel.Travelers = !workStat? TravelerRetriever(docuNumber) : null;
+                mModel.TravProg = workStat ? GetProgressFromTraveler(docuNumber, sesID) : null;
                 mModel.Opl = DeviationDocNames(opl, docuNumber);
                 mModel.Prco = DeviationDocNames(prco, docuNumber);
                 mModel.Derogation = DeviationDocNames(derogation, docuNumber);
                 mModel.Memo = DeviationDocNames(memo, docuNumber);
+                mModel.WorkingStat = workStat;
+                mModel.SessionID = sesID;
             }
 
             return View(mModel);
@@ -107,6 +111,70 @@ namespace DMD_Prototype.Controllers
             }
 
             return listOfDocs;
+        }
+
+        private string[] GetProgressFromTraveler(string docNo, string sessionID)
+        {
+            string[] progress = new string[2];
+            string filePath = Path.Combine(usersDir, sessionID);
+            int rowCount = 1;
+
+            using(ExcelPackage package = new ExcelPackage(Path.Combine(filePath, "Traveler.xlsx")))
+            {
+                package.Workbook.Worksheets.Delete(package.Workbook.Worksheets.FirstOrDefault(j => j.Name == "Traveler"));
+                package.Workbook.Worksheets.Add("Traveler", CopyTravelerToParticular(docNo));
+
+                var worksheet = package.Workbook.Worksheets["Traveler"];
+
+                do
+                {
+                    string? task = worksheet.Cells[rowCount, 2].Value?.ToString();
+                    string? parameter = worksheet.Cells[rowCount, 3].Value?.ToString();
+
+                    if (!string.IsNullOrEmpty(task) && string.IsNullOrEmpty(parameter))
+                    {
+                        progress[0] = worksheet.Cells[rowCount, 1].Value.ToString();
+                        progress[1] = worksheet.Cells[rowCount, 2].Value.ToString();
+
+                        break;
+                    }
+
+                    rowCount++;
+
+                }while (true);
+            }
+
+            return progress;
+        }
+
+        private ExcelWorksheet CopyTravelerToParticular(string docNo)
+        {
+            int rowCount = 1;
+            string filePath = Path.Combine(mainDir, docNo, travName);
+
+            using (ExcelPackage package = new ExcelPackage(filePath))
+            {
+                var worksheet = package.Workbook.Worksheets[0];
+                //var trav = trav.add; //Youre Here
+
+                do
+                {
+                    if (worksheet.Cells[rowCount, 1].Value != null)
+                    {
+                        trav.Cells[rowCount, 1].Value = worksheet.Cells[rowCount, 1].Value;
+                        trav.Cells[rowCount, 2].Value = worksheet.Cells[rowCount, 2].Value;
+                        rowCount++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                } while (true);
+
+                return trav;
+            }
+
         }
 
         private List<TravelerModel> TravelerRetriever(string docuNo)
@@ -328,14 +396,18 @@ namespace DMD_Prototype.Controllers
             List<NameSetter> files = new List<NameSetter>();
             if (mpti != null) files.Add(new NameSetter(mpti, maindoc));
             if (drawing != null) files.Add(new NameSetter(drawing, assydrawing));
-            if (bom != null) files.Add(new NameSetter(bOm, bom));
-            if (schema != null) files.Add(new NameSetter(sChema, schema));
+            if (bOm != null) files.Add(new NameSetter(bOm, bom));
+            if (sChema != null) files.Add(new NameSetter(sChema, schema));
 
-            foreach (NameSetter file in files)
+            if (files != null && files.Count() > 0)
             {
-                using (FileStream fs = new FileStream(mainDir + docuno + "\\" + file.Name + ".pdf", FileMode.Create))
+                foreach (NameSetter file in files)
                 {
-                    file.Doc.CopyTo(fs);
+                    string filePath = Path.Combine(mainDir, docuno, file.Name + ".pdf");
+                    using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                    {
+                        file.Doc.CopyTo(fs);
+                    }
                 }
             }
         }
@@ -369,6 +441,9 @@ namespace DMD_Prototype.Controllers
         public List<string>? Derogation { get; set; }
         public List<string>? Memo { get; set; }
         public List<TravelerModel>? Travelers { get; set; }
+        public string[]? TravProg { get; set; }
+        public bool WorkingStat { get; set; } = false;
+        public string? SessionID { get; set; }
 
     }
 }
