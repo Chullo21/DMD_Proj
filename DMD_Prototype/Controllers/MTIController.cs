@@ -16,6 +16,8 @@ namespace DMD_Prototype.Controllers
     {
         private readonly AppDbContext _Db;
         private readonly List<MTIModel> _mtiModel;
+        private readonly List<AccountModel> _accounts;
+
         private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
         private readonly string usersDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
         private readonly string travName = "TravelerFileDoNotEdit.xlsx";
@@ -33,6 +35,7 @@ namespace DMD_Prototype.Controllers
         {
             _Db = _context;
             _mtiModel = _Db.MTIDb.ToList();
+            _accounts = _Db.AccountDb.ToList();
         }
 
         public IActionResult EditDocument(string docuno, string assyno, string assydesc, string revno,
@@ -77,7 +80,6 @@ namespace DMD_Prototype.Controllers
                 res.Travelers = TravelerRetriever(docuNo);
             }
 
-
             return View(res);
         }
 
@@ -94,6 +96,9 @@ namespace DMD_Prototype.Controllers
                 mModel.Memo = DeviationDocNames(memo, docuNumber);
                 mModel.WorkingStat = workStat;
                 mModel.SessionID = sesID;
+                mModel.AssyNo = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber).AssemblyPN;
+                mModel.AssyDesc = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber).AssemblyDesc;
+                mModel.RevNo = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber).RevNo;
             }
 
             return View(mModel);
@@ -115,66 +120,35 @@ namespace DMD_Prototype.Controllers
 
         private string[] GetProgressFromTraveler(string docNo, string sessionID)
         {
-            string[] progress = new string[2];
-            string filePath = Path.Combine(usersDir, sessionID);
+            string[] progress = new string[3];
+            string filePath = Path.Combine(usersDir, sessionID, "Traveler.xlsx");
             int rowCount = 1;
 
-            using(ExcelPackage package = new ExcelPackage(Path.Combine(filePath, "Traveler.xlsx")))
+            using(ExcelPackage package = new ExcelPackage(filePath))
             {
-                package.Workbook.Worksheets.Delete(package.Workbook.Worksheets.FirstOrDefault(j => j.Name == "Traveler"));
-                package.Workbook.Worksheets.Add("Traveler", CopyTravelerToParticular(docNo));
-
-                var worksheet = package.Workbook.Worksheets["Traveler"];
+                var worksheet = package.Workbook.Worksheets[0];
 
                 do
                 {
-                    string? task = worksheet.Cells[rowCount, 2].Value?.ToString();
-                    string? parameter = worksheet.Cells[rowCount, 3].Value?.ToString();
-
-                    if (!string.IsNullOrEmpty(task) && string.IsNullOrEmpty(parameter))
+                    if (worksheet.Cells[rowCount, 2].Value == null)
+                    {
+                        break;
+                    }
+                    else if (worksheet.Cells[rowCount, 2].Value != null && worksheet.Cells[rowCount, 4].Value == null)
                     {
                         progress[0] = worksheet.Cells[rowCount, 1].Value.ToString();
                         progress[1] = worksheet.Cells[rowCount, 2].Value.ToString();
+                        progress[2] = worksheet.Cells[rowCount, 3].Value.ToString();
 
                         break;
                     }
-
+                    
                     rowCount++;
 
-                }while (true);
+                } while (true);
             }
 
             return progress;
-        }
-
-        private ExcelWorksheet CopyTravelerToParticular(string docNo)
-        {
-            int rowCount = 1;
-            string filePath = Path.Combine(mainDir, docNo, travName);
-
-            using (ExcelPackage package = new ExcelPackage(filePath))
-            {
-                var worksheet = package.Workbook.Worksheets[0];
-                //var trav = trav.add; //Youre Here
-
-                do
-                {
-                    if (worksheet.Cells[rowCount, 1].Value != null)
-                    {
-                        trav.Cells[rowCount, 1].Value = worksheet.Cells[rowCount, 1].Value;
-                        trav.Cells[rowCount, 2].Value = worksheet.Cells[rowCount, 2].Value;
-                        rowCount++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                } while (true);
-
-                return trav;
-            }
-
         }
 
         private List<TravelerModel> TravelerRetriever(string docuNo)
@@ -291,7 +265,8 @@ namespace DMD_Prototype.Controllers
         public IActionResult CreateMTI(string documentnumber, string assynumber, string assydesc, string revnumber, 
             IFormFile assemblydrawing, IFormFile billsofmaterial, IFormFile schematicdiagram, IFormFile mpti,
             IFormFile[]? onepointlesson, IFormFile[]? prco, IFormFile[]? derogation, IFormFile[]? engineeringmemo, 
-            List<string> stepNumber, List<string> instruction, List<string> byThree, string product, string doctype)
+            List<string> stepNumber, List<string> instruction, List<string> byThree, string product, string doctype,
+            string originator)
         {
             var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == documentnumber);
 
@@ -303,6 +278,7 @@ namespace DMD_Prototype.Controllers
                 mti.RevNo = revnumber;
                 mti.Product = product;
                 mti.DocType = doctype;
+                mti.OriginatorName = _accounts.FirstOrDefault(j => j.AccName == originator).UserID;
             }
 
             if (ModelState.IsValid)

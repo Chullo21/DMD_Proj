@@ -2,13 +2,14 @@
     ViewData["Title"] = "Upload Documents";
     string subj = TempData["Subj"] as string;
     string type = TempData["DocType"] as string;
+    string[] EN = TempData["EN"] as string[];
     TempData.Keep();
 }
 @if (!string.IsNullOrEmpty(TempData["Error"] as string) && TempData["Error"] != null)
 {
     <div class="alert alert-danger mt-1 border-3" role="alert">@TempData["Error"].ToString()</div>
 }
-<form asp-controller="MTI" asp-action="CreateMTI" enctype="multipart/form-data" id="uploaddocumentform">
+<form asp-controller="MTI" asp-action="CreateMTI" asp-route-originator="@EN[0]" enctype="multipart/form-data" id="uploaddocumentform">
     <input value="@type" name="doctype" hidden />
     <input value="@subj" name="product" hidden/>
     <input type="submit" id="submituploadform" hidden/>
