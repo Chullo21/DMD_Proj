@@ -158,6 +158,14 @@ namespace DMD_Prototype.Controllers
         }
 
         [HttpPost]
+        public JsonResult SubmitTravelerLog()
+        {
+
+
+            return Json("Something went wrong");
+        }
+
+        [HttpPost]
         public JsonResult SubmitProblemLog()
         {
             
