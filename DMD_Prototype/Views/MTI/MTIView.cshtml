@@ -5,6 +5,15 @@
     string[] EN = TempData["EN"] as string[];
     TempData.Keep();
     int counter;
+
+    string sesID = Model.SessionID;
+
+    if (!Model.TravProg.Any())
+    {
+        Model.TravProg.Add("");
+        Model.TravProg.Add("");
+        Model.TravProg.Add("");
+    }
 }
 
 <!DOCTYPE html>
@@ -226,26 +235,27 @@
         </div>
     </div>
 
+    
     <div class="modal fade" id="travmodal" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="traveler">
         <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
-            <div class="modal-content">
+            <form id="submitTravForm" asp-controller="Work" asp-action="SubmitTravelerLog" class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="traveler">Traveler</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" id="closetravmodal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div>
-                        <table class="table table-hover table-bordered">
+                        <table class="table table-hover table-bordered text-center">
                             <thead class="table-primary">
                                 <tr>
                                     <th class="text-nowrap">
                                         Step No.
                                     </th>
-                                    <th>
+                                    <th class="w-75">
                                         Task
                                     </th>
-                                    <th>
-                                        Input
+                                    <th class="w-25">
+                                        Parameter
                                     </th>
                                 </tr>
                             </thead>
@@ -259,7 +269,7 @@
                                                 @trav.StepNumber
                                             </td>
                                             <td>
-                                                @trav.Instruction
+                                                <textarea class="w-100" style="max-height:200px; min-height:50px">@trav.Instruction</textarea>
                                             </td>
                                             <td>
                                                 @if (trav.ByThree == "t")
@@ -280,31 +290,45 @@
                                 }
                                 else
                                 {
-                                    <form id="travform" asp-controller="Work" asp-action="SubmitTraveler">
+
                                     <tr>
                                         <td>
-                                            <input value="@Model.TravProg[0]" name="stepNo" class="form-control border-0" readonly/>
-                                        </td>
-                                        <td>
-                                            <input value="@Model.TravProg[1]" name="task" class="form-control border-0" readonly />
-                                        </td>
-                                        <td>
-                                            @if (Model.TravProg[2] == "t")
-                                            {
-                                                <div class="d-flex">
-                                                    <input class="form-control border-2 border-dark" name="firstPara"/>
-                                                    <input class="form-control border-2 border-dark mx-2" name="secPara"/>
-                                                    <input class="form-control border-2 border-dark" name="thirdPara"/>
-                                                </div>
+                                            @{
+                                                string res = Model.TravProg.Count() <= 0 ? "" : Model.TravProg[0];
+
+                                                <input value="@res" id="stepnoid" name="stepNo" class="form-control border-0 text-nowrap" readonly />
                                             }
-                                            else
-                                            {
-                                                <input class="form-control w-100 border-2 border-dark" name="singlePara" />
+                                            
+                                        </td>
+                                        <td>
+                                            @{
+                                                string task = Model.TravProg.Count() <= 0 ? "" : Model.TravProg[1];
+
+                                                //<input value="@task" id="taskid" name="task" class="form-control border-0" readonly />
+                                                <textarea class="w-100" id="taskid" style="max-height:200px; min-height:50px" name="task" readonly>@task</textarea>
+                                            }
+                                        </td>
+                                        <td>
+                                            @{
+                                                if (Model.TravProg[2] == "t")
+                                                {
+                                                    <div class="d-flex">
+                                                        <input class="form-control border-2 border-dark" id="firstParaid" name="firstPara" required />
+                                                        <input class="form-control border-2 border-dark mx-2" id="secParaid" name="secPara" required />
+                                                        <input class="form-control border-2 border-dark" id="thirdParaid" name="thirdPara" required />
+                                                    </div>
+                                                }
+                                                else if (Model.TravProg[2] == "s")
+                                                {
+                                                    <input class="form-control w-100 border-2 border-dark" id="singleParaid" name="singlePara" required />
+                                                }
                                             }
                                         </td>
                                     </tr>
-                                    </form>
-                                }                              
+                                    
+
+                                }
+                                
                             </tbody>
                         </table>
                     </div>
@@ -314,14 +338,86 @@
                     {
                         Write("You are currently viewing the document, click start to start working. Thank you!");
                     }
+                    else if (Model.WorkingStat && Model.TravProg[1] != "")
+                    {
+                        <input type="submit" class="btn btn-primary" id="submittravbtn"/>
+                    }
                     else
                     {
-                        <button class="btn btn-primary" onclick="document.getElementById('travform').submit()">Submit</button>
+                        Write("You have reached the end of traveler, please click finish to end your session.");
                     }
                 </div>
-            </div>        
+            </form>
         </div>
     </div>
+
+    <div class="modal fade" id="endsession" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    Finished Work
+                </div>
+                <div class="modal-body">
+                    You have reached the end of your traveler chuchu
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-primary" asp-controller="Work" asp-action="FinishWork" asp-route-sessionId="@sesID">Finish</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $('#submitTravForm').submit(function (event) {
+                event.preventDefault();
+
+                var stepNumber = document.getElementById('stepnoid').value;
+                        var Task = document.getElementById('taskid').value;
+        
+                var Single = null;
+                var Div = [];
+
+                if ('@Model.TravProg[2]' === 't') {
+                    Div.push(document.getElementById('firstParaid').value);
+                    Div.push(document.getElementById('secParaid').value);
+                    Div.push(document.getElementById('thirdParaid').value);
+                }
+                else if ('@Model.TravProg[2]' === 's'){
+                    Single = document.getElementById('singleParaid').value;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: $(this).attr('action'),
+                    data: { stepNo: stepNumber, tAsk: Task, byThree: Div, singlePara: Single, sessionID: '@sesID', tech: '@EN[0]', date: '@DateTime.Now.ToShortDateString()' },
+                    success: function (response) {
+
+                        document.getElementById('closetravmodal').click();
+
+                        if (response.Task === "" || response.Task === null)
+                        {
+                            $('#endsession').modal('show');
+                        }
+                        else
+                        {                
+                            $('#stepnoid').val(response.StepNo);
+                            $('#taskid').val(response.Task);
+                            $('#firstParaid').val('');
+                            $('#secParaid').val('');
+                            $('#thirdParaid').val('');
+                            $('#singleParaid').val('');
+                            Single.value = "";
+                        }
+                        
+                    },
+                    error: function (error) {
+                        console.error('An error occurred: ' + error.statusText);
+                    }
+                });
+            });
+        });
+    </script>
 
     <div class="modal fade" id="docuFrame" data-bs-backdrop="true" data-bs-keyboard="false">
         <div class="modal-dialog modal-xl">
@@ -337,7 +433,7 @@
         </div>
     </div>
 
-    <form class="modal fade" data-bs-backdrop="static" id="problemlogForm" data-bs-keyboard="true" asp-route-asd="" asp-controller="Work" asp-action="SubmitProblemLog">
+    <form class="modal fade" data-bs-backdrop="static" id="problemlogForm" data-bs-keyboard="true" asp-controller="Work" asp-action="SubmitProblemLog">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -375,7 +471,7 @@
                             <tbody>
                                 <tr>
                                     <td>
-                                        <input class="form-control" value="@DateTime.Now.ToShortDateString()" name="logdate" readonly />
+                                        <input class="form-control" id="logdate" value="@DateTime.Now.ToShortDateString()" name="logdate" readonly />
                                     </td>
                                     <td>
                                         <input class="form-control" id="affectedpn" value="" placeholder="Required" name="affected" required />
@@ -384,7 +480,7 @@
                                         <input class="form-control" id="docno" value="" placeholder="Required" name="docno" required />
                                     </td>
                                     <td>
-                                        <input class="form-control" value="@Model.AssyNo" name="partno" readonly />
+                                        <input class="form-control" id="partno" value="@Model.AssyNo" name="partno" readonly />
                                     </td>
                                     <td>
                                         <input class="form-control" id="desc" value="" placeholder="Required" name="desc" required />
@@ -393,7 +489,7 @@
                                         <input class="form-control" id="probcon" value="" placeholder="Required" name="probcon" required />
                                     </td>
                                     <td>
-                                        <input class="form-control" value="@EN[0]" name="reportedby" readonly />
+                                        <input class="form-control" id="reportedby" value="@EN[0]" name="reportedby" readonly />
                                     </td>
                                 </tr>
                             </tbody>
@@ -443,7 +539,7 @@
         });
     </script>
 
-    <form asp-controller="Work" asp-action="PauseWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" asp-route-sesID="@Model.SessionID" class="modal fade" id="pausemodal" data-bs-backdrop="false" data-bs-keyboard="false">
+    <form asp-controller="Work" asp-action="PauseWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" asp-route-sessID="@Model.SessionID" class="modal fade" id="pausemodal" data-bs-backdrop="false" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">

@@ -1,7 +1,9 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using OfficeOpenXml;
+using System.Threading.Tasks;
 
 namespace DMD_Prototype.Controllers
 {
@@ -26,6 +28,11 @@ namespace DMD_Prototype.Controllers
             _swmodel = _Db.StartWorkDb.ToList();
         }
 
+        private string SessionIDGetter(string userID)
+        {
+            return _Db.PauseWorkDb.FirstOrDefault(j => j.Technician == userID && j.RestartDT == null).SessionID;
+        }
+
         private string UserIDGetter(string name)
         {
             string userid = _accounts.FirstOrDefault(j => j.AccName == name).UserID;
@@ -35,7 +42,7 @@ namespace DMD_Prototype.Controllers
 
         private void SessionSaver(string docNo, string user)
         {
-            StartWorkModel swModel = new StartWorkModel(docNo, UserIDGetter(user));
+            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, UserIDGetter(user));
             sesID = swModel.SessionID;
 
             if (ModelState.IsValid)
@@ -135,12 +142,13 @@ namespace DMD_Prototype.Controllers
             CreateNewFolder(sesID);
             CopyTravelerToSessionFolder(docNo);           
 
-            return RedirectToAction("MTIView", "MTI", new {docuNumber = docNo, workStat = true, sesID = sesID});
+            return RedirectToAction("MTIView", "MTI", new {docuNumber = docNo, workStat = true,
+                sesID = sesID, travelerProgress = GetProgressFromTraveler(sesID)});
         }
 
-        public IActionResult PauseWork(string docNo, string EN, string reason, string sesID)
+        public IActionResult PauseWork(string docNo, string EN, string reason, string sessID)
         {
-            PauseSession(sesID, reason, EN);
+            PauseSession(sessID, reason, EN);
 
             return RedirectToAction("LoginPage", "Login");
         }
@@ -150,27 +158,156 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction();
         }
 
-        public IActionResult ContinueWork(string userID)
+        public IActionResult ContinueWork(string userID, bool noPW)
         {
             StartWorkModel swmodel = _swmodel.FirstOrDefault(j => j.UserID == userID && j.FinishDate == null);
 
-            return RedirectToAction("MTIView", "MTI", new {docuNumber = swmodel.DocNo, workStat = true, sesID = swmodel.SessionID});
+            if (noPW)
+            {
+                CreatePWForNoPW(swmodel.SessionID, userID);
+            }
+
+            ContinuePausedWork(swmodel.SessionID);
+
+            return RedirectToAction("MTIView", "MTI", new {docuNumber = swmodel.DocNo, workStat = true, sesID = swmodel.SessionID
+            , travelerProgress = GetProgressFromTraveler(swmodel.SessionID)
+            });
+        }
+
+        public IActionResult FinishWork(string sessionId)
+        {
+            CompleteWork(sessionId);
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        private void ContinuePausedWork(string sessionId)
+        {
+            PauseWorkModel? model = _Db.PauseWorkDb.FirstOrDefault(j => j.SessionID == sessionId && j.RestartDT == null).ContinuePausedSession();
+
+            if (ModelState.IsValid)
+            {
+                _Db.PauseWorkDb.Update(model);
+                _Db.SaveChanges();
+            }
+        }
+
+        private void CompleteWork(string sessionId)
+        {
+            StartWorkModel swModel = _swmodel.FirstOrDefault(j => j.SessionID == sessionId);
+            swModel.FinishDate = DateTime.Now;
+
+            if (ModelState.IsValid)
+            {
+                _Db.StartWorkDb.Update(swModel);
+                _Db.SaveChanges();
+            }
+        }
+
+        private void CreatePWForNoPW(string sessionId, string userId)
+        {
+            PauseWorkModel pauseWorkModel = new PauseWorkModel().SetPause(sessionId, "Technician did not paused.", userId);
+
+            if (ModelState.IsValid)
+            {
+                _Db.PauseWorkDb.Add(pauseWorkModel);
+                _Db.SaveChanges();
+            }
+        }
+
+        private string[] GetProgressFromTraveler(string sessionID)
+        {
+            string[] progress = new string[3];
+            string filePath = Path.Combine(userDir, sessionID, "Traveler.xlsx");
+            int rowCount = 1;
+
+            using (ExcelPackage package = new ExcelPackage(filePath))
+            {
+                var worksheet = package.Workbook.Worksheets[0];
+
+                do
+                {
+                    if (worksheet.Cells[rowCount, 2].Value == null)
+                    {
+                        break;
+                    }
+
+                    if (worksheet.Cells[rowCount, 2].Value != null && (worksheet.Cells[rowCount, 4].Value == null && worksheet.Cells[rowCount, 7].Value == null))
+                    {
+                        progress[0] = worksheet.Cells[rowCount, 1].Value.ToString();
+                        progress[1] = worksheet.Cells[rowCount, 2].Value.ToString();
+                        progress[2] = worksheet.Cells[rowCount, 3].Value.ToString();
+
+                        break;
+                    }
+
+                    rowCount++;
+
+                } while (true);
+            }
+
+            return progress;
+        }
+
+        private void SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date)
+        {
+            string filePath = Path.Combine(userDir, sessionID, userTravName);
+            int rowCount = 1;
+
+            using(ExcelPackage package = new ExcelPackage(filePath))
+            {
+                var worksheet = package.Workbook.Worksheets[0];
+
+                do
+                {
+                    if (worksheet.Cells[rowCount, 1].Value.ToString() == stepNo && worksheet.Cells[rowCount, 2].Value.ToString() == tAsk)
+                    {
+                        if (byThree.Count() > 0 && byThree != null)
+                        {
+                            worksheet.Cells[rowCount, 4].Value = byThree[0];
+                            worksheet.Cells[rowCount, 5].Value = byThree[1];
+                            worksheet.Cells[rowCount, 6].Value = byThree[2];
+                        }
+                        else
+                        {
+                            worksheet.Cells[rowCount, 7].Value = singlePara;
+                        }
+
+                        worksheet.Cells[rowCount, 8].Value = tech;
+                        worksheet.Cells[rowCount, 9].Value = date;
+
+                        break;
+                    }
+
+                    rowCount++;
+                } while (true);
+
+                package.SaveAs(filePath);
+            }
         }
 
         [HttpPost]
-        public JsonResult SubmitTravelerLog()
-        {
+        public ContentResult SubmitTravelerLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date)
+        {           
+            SaveTravLog(stepNo, tAsk, byThree, singlePara, sessionID, tech, date);
 
+            string[] res = GetProgressFromTraveler(sessionID);
+            string jsonData = JsonConvert.SerializeObject(new { StepNo = res[0], Task = res[1], Div = res[2] });
+            return Content(jsonData, "application/json");
 
-            return Json("Something went wrong");
         }
 
         [HttpPost]
-        public JsonResult SubmitProblemLog()
+        public JsonResult SubmitProblemLog(string logdate, string affected, string docno, string partno, string desc, string probcon, string reportedby)
         {
-            
+            ProblemLogModel pl = new ProblemLogModel().CreatePL();
 
-            return Json("Something went wrong");
+            return Json("");
+        }
+
+        private string SetPLSeries()
+        {
+            return "";
         }
     }
 

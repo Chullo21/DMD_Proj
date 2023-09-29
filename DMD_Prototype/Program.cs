@@ -1,4 +1,4 @@
-using DMD_Prototype.Data;
+﻿using DMD_Prototype.Data;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 
@@ -11,7 +11,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddBootstrapBlazor();
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 

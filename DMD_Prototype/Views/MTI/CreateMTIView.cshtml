@@ -139,7 +139,7 @@
                     <div class="card-body" style="max-height:400px; overflow-y:auto">
                     <div class="w-100 d-flex justify-content-end">
                         <input class="form-control w-25 mx-2" type="number" id="range" value="1"/>
-                        <button class="btn btn-primary my-auto" type="button" onclick="addRows()">+</button>
+                        <button class="btn btn-primary my-auto" type="button" onclick="addRow()">+</button>
                     </div>
                     <div class="" >
                         <table id="instable" class="table table-bordered border-2 border-dark">
@@ -151,12 +151,12 @@
                                     <th class="w-75">
                                         Task
                                     </th>
-                                    <th>
+                                    <th class="text-nowrap">
                                         Cell Division
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="travmakerbody">
 
                             </tbody>
                         </table>
@@ -185,20 +185,18 @@
     </div>
 </div>
 <script>
-    function addRows()
+    function addRow()
     {
-        var tab = document.getElementById('instable');
+        var tab = document.getElementById('travmakerbody');
         var range = document.getElementById('range').value;
 
-        for (var i = 1; i <= range; i++) {
-            var row = tab.insertRow(-1); // Append row to the end of the table
-            var cell1 = row.insertCell(0); // Insert cell for Step No.
-            var cell2 = row.insertCell(1); // Insert cell for Instruction
-            var cell3 = row.insertCell(2); // Insert an empty cell
-
-            cell1.innerHTML = '<input class="form-control w-100" type="number" name="stepNumber"/>'; // Set Step No.
-            cell2.innerHTML = '<input class="form-control w-100" type="text" name="instruction"/>'; // Set Instruction (you can add content here if needed)
-            cell3.innerHTML = '<div class="d-flex justify-content-around"><select class="form-select" name="byThree"><option value="s">Single</option><option value="t">Three</option></select></div>';
+        for (var i = 1; i <= range; i++)
+        {
+            tab.innerHTML += '<tr>' +
+                '<td><input class="form-control w-100" type="text" name="stepNumber"/></td>' +
+                '<td><textarea class="w-100" name="instruction" style="min-height:20px; max-height:100px"></textarea></td>' +
+                '<td><select class="form-select" name="byThree"><option value="s">Single</option><option value="t">Three</option></select></td>' +
+            '</tr>'
         }
     }
 </script>

@@ -12,11 +12,13 @@ namespace DMD_Prototype.Models
         public DateTime? FinishDate { get; set; }
         public string UserID { get; set; }
 
-        public StartWorkModel(string docNo, string userID)
+        public StartWorkModel CreateSW(string docNo, string userID)
         {
             SessionID = SessionIDGenerator();
             DocNo = docNo;
             UserID = userID;
+
+            return this;
         }
 
         private string SessionIDGenerator()

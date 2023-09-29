@@ -17,5 +17,7 @@ namespace DMD_Prototype.Data
         public DbSet<StartWorkModel> StartWorkDb { get; set; }
 
         public DbSet<PauseWorkModel> PauseWorkDb { get; set; }
+
+        public DbSet<ProblemLogModel> PLDb { get; set; }
     }
 }

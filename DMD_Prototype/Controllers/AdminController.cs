@@ -1,6 +1,8 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using NuGet.Protocol;
 
 namespace DMD_Prototype.Controllers
 {
@@ -8,10 +10,18 @@ namespace DMD_Prototype.Controllers
     {
         private readonly AppDbContext _Db;
         private readonly List<AccountModel> _accounts = new List<AccountModel>();
+        private readonly List<StartWorkModel> _swModel;
         public AdminController(AppDbContext dataBase)
         {
             _Db = dataBase;
             _accounts = _Db.AccountDb.ToList();
+            _swModel = _Db.StartWorkDb.ToList();
+        }
+
+        public ContentResult ShowTravelers()
+        {
+            string res = JsonConvert.SerializeObject(_swModel);
+            return Content(res, "application/json");
         }
 
         public IActionResult AdminView()

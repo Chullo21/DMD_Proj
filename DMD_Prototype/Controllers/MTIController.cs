@@ -83,13 +83,13 @@ namespace DMD_Prototype.Controllers
             return View(res);
         }
 
-        public IActionResult MTIView(string docuNumber, bool workStat, string sesID)
+        public IActionResult MTIView(string docuNumber, bool workStat, string sesID, List<string> travelerProgress)
         {
             MTIViewModel mModel = new MTIViewModel();
             {
                 mModel.DocumentNumber = docuNumber;
                 mModel.Travelers = !workStat? TravelerRetriever(docuNumber) : null;
-                mModel.TravProg = workStat ? GetProgressFromTraveler(docuNumber, sesID) : null;
+                mModel.TravProg = travelerProgress;
                 mModel.Opl = DeviationDocNames(opl, docuNumber);
                 mModel.Prco = DeviationDocNames(prco, docuNumber);
                 mModel.Derogation = DeviationDocNames(derogation, docuNumber);
@@ -116,39 +116,6 @@ namespace DMD_Prototype.Controllers
             }
 
             return listOfDocs;
-        }
-
-        private string[] GetProgressFromTraveler(string docNo, string sessionID)
-        {
-            string[] progress = new string[3];
-            string filePath = Path.Combine(usersDir, sessionID, "Traveler.xlsx");
-            int rowCount = 1;
-
-            using(ExcelPackage package = new ExcelPackage(filePath))
-            {
-                var worksheet = package.Workbook.Worksheets[0];
-
-                do
-                {
-                    if (worksheet.Cells[rowCount, 2].Value == null)
-                    {
-                        break;
-                    }
-                    else if (worksheet.Cells[rowCount, 2].Value != null && worksheet.Cells[rowCount, 4].Value == null)
-                    {
-                        progress[0] = worksheet.Cells[rowCount, 1].Value.ToString();
-                        progress[1] = worksheet.Cells[rowCount, 2].Value.ToString();
-                        progress[2] = worksheet.Cells[rowCount, 3].Value.ToString();
-
-                        break;
-                    }
-                    
-                    rowCount++;
-
-                } while (true);
-            }
-
-            return progress;
         }
 
         private List<TravelerModel> TravelerRetriever(string docuNo)
@@ -417,7 +384,7 @@ namespace DMD_Prototype.Controllers
         public List<string>? Derogation { get; set; }
         public List<string>? Memo { get; set; }
         public List<TravelerModel>? Travelers { get; set; }
-        public string[]? TravProg { get; set; }
+        public List<string>? TravProg { get; set; }
         public bool WorkingStat { get; set; } = false;
         public string? SessionID { get; set; }
 

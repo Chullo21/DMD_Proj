@@ -1,0 +1,92 @@
+﻿@model IEnumerable<DMD_Prototype.Models.StartWorkModel>
+
+@{
+    ViewData["Title"] = "Travelers";
+    string[] EN = TempData["EN"] as string[];
+    TempData.Keep();
+}
+
+@section scripts {
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
+    <script>
+        $(document).ready(function () {
+            $('#travtable').DataTable({
+                searching: true,
+                lengthChange: false,
+                pageLength: 7,
+                order: [],
+                ordering: false
+            });
+        });
+    </script>
+}
+
+<div class="container">
+    <div class="table-responsive">
+        <table class="table table-hover text-center" id="travtable">
+            <thead class="table-primary">
+                <tr>
+                    <th>
+                        Document Number
+                    </th>
+                    <th>
+                        Start Date
+                    </th>
+                    <th>
+                        Finished Date
+                    </th>
+                    <th>
+                        Technician
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    string finishedDate = "Not Finished yet";
+
+                    if (item.FinishDate != null)
+                    {
+                        finishedDate = item.FinishDate.Value.ToShortDateString();
+                    }
+
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DocNo)
+                        </td>
+                        <td>
+                            @item.StartDate.ToShortDateString()
+                        </td>
+                        <td>
+                            @{
+                                Write(finishedDate);
+                            }
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.UserID)
+                        </td>
+                        <td>
+                            <div class="d-flex">
+                                <button class="btn btn-success mx-1">View</button>
+
+                                @if (item.FinishDate != null && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR"))
+                                {
+                                    <a asp-controller="DocGenerator" asp-action="InitiateTravelerGeneration" asp-route-sessionId="@item.SessionID" class="btn btn-primary">Download</a>
+                                }
+
+                                @if (EN[1] == "ADMIN")
+                                {
+                                    <button class="btn btn-secondary text-nowrap mx-1">Edit</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

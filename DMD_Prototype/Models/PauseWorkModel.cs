@@ -27,5 +27,11 @@ namespace DMD_Prototype.Models
 
             return pWM;
         }
+
+        public PauseWorkModel ContinuePausedSession()
+        {
+            this.RestartDT = DateTime.Now;
+            return this;
+        }
     }
 }

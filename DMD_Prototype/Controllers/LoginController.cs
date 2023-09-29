@@ -9,12 +9,14 @@ namespace DMD_Prototype.Controllers
         private readonly AppDbContext _Db;
         private readonly List<AccountModel> _accounts;
         private readonly List<PauseWorkModel> _pauseWork;
+        private readonly List<StartWorkModel> _swWork;
 
         public LoginController(AppDbContext _context)
         {
             _Db = _context;
             _accounts = _Db.AccountDb.ToList();
             _pauseWork = _Db.PauseWorkDb.ToList();
+            _swWork = _Db.StartWorkDb.ToList();
         }
 
         public IActionResult LoginPage()
@@ -51,7 +53,11 @@ namespace DMD_Prototype.Controllers
 
                     if (CheckForActiveSession(acc.UserID))
                     {
-                        return RedirectToAction("ContinueWork", "Work", new { userID = acc.UserID});
+                        return RedirectToAction("ContinueWork", "Work", new { userID = acc.UserID, noPW = false});
+                    }
+                    else if (CheckForActionSessionInSW(acc.UserID))
+                    {
+                        return RedirectToAction("ContinueWork", "Work", new { userID = acc.UserID, noPW = true});
                     }
                     else
                     {
@@ -73,6 +79,11 @@ namespace DMD_Prototype.Controllers
         private bool CheckForActiveSession(string tech)
         {
             return _pauseWork.Any(j => j.Technician == tech && j.RestartDT == null);
+        }
+
+        private bool CheckForActionSessionInSW(string tech)
+        {
+            return _swWork.Any(j => j.UserID == tech && j.FinishDate == null);
         }
 
     }
