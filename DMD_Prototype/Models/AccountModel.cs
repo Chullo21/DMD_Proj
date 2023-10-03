@@ -35,6 +35,10 @@ namespace DMD_Prototype.Models
         [Required]
         public DateTime DateCreated { get; set; } = DateTime.Now;
 
+        //Conditionals
+
+        //public string? ProductHandled { get; set; }
+
     }
 
     public enum Roles

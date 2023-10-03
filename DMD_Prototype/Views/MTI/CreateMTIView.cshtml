@@ -36,7 +36,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-4">
+        <div class="col-8">
             <div class="card w-100 h-auto mt-2">
                 <div>
                     <p class="card-header text-center">Documents</p>
@@ -131,18 +131,20 @@
                     </div>
             </div>
         </div>
-        <div class="col-8">
+        <div class="col-4 flex-column">
             <div class="card w-100 h-auto mt-2">
                 <div class="text-center">
-                    <p class="card-header">Create Traveler</p>
+                    <p class="card-header">Traveler</p>
                 </div>
                     <div class="card-body" style="max-height:400px; overflow-y:auto">
-                    <div class="w-100 d-flex justify-content-end">
-                        <input class="form-control w-25 mx-2" type="number" id="range" value="1"/>
-                        <button class="btn btn-primary my-auto" type="button" onclick="addRow()">+</button>
-                    </div>
-                    <div class="" >
-                        <table id="instable" class="table table-bordered border-2 border-dark">
+                        <div class="flex-column">
+                            <label class="form-label">Traveler</label>
+                            <input class="form-control" type="file" accept=".xlsx" name="TravelerFile"/>
+                           @* <input class="form-control w-25 mx-2" type="number" id="range" value="1" />
+                            <button class="btn btn-primary my-auto" type="button" onclick="addRow()">+</button>*@
+                        </div>
+                    <div class="">
+                        @*<table id="instable" class="table table-bordered border-2 border-dark">
                             <thead>
                                 <tr>
                                     <th>
@@ -159,7 +161,22 @@
                             <tbody id="travmakerbody">
 
                             </tbody>
-                        </table>
+                        </table>*@
+                    </div>
+                </div>
+            </div>
+            <div class="card w-100 h-auto mt-2">
+                <div class="text-center">
+                    <p class="card-header">More</p>
+                </div>
+                <div class="card-body">
+                    <div class="flex-column">
+                        <label class="form-label">Action After Traveler</label>
+                        <select class="form-select" required>
+                            <option>None</option>
+                            <option>Configuration Log</option>
+                            <option>Test Equipment Log</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -176,9 +193,8 @@
             </div>
             <div class="modal-body">
                 <div class="d-flex justify-content-evenly">
-                    <button class="btn btn-danger" type="button" data-bs-dismiss="modal" aria-label="Close" @*onclick="document.getElementById('submitdocuments').style.display = 'none'"*@>Cancel</button>
-
-                    <button class="btn btn-primary" onclick="document.getElementById('submituploadform').click()">Submit</button>
+                    <button class="btn btn-danger" type="button" data-bs-dismiss="modal" aria-label="Close" id="closemodal" @*onclick="document.getElementById('submitdocuments').style.display = 'none'"*@>Cancel</button>
+                    <button class="btn btn-primary" onclick="document.getElementById('closemodal').click(); document.getElementById('submituploadform').click()">Submit</button>
                 </div>
             </div>
         </div>

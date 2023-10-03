@@ -75,7 +75,7 @@
 
                                 @if (item.FinishDate != null && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR"))
                                 {
-                                    <a asp-controller="DocGenerator" asp-action="InitiateTravelerGeneration" asp-route-sessionId="@item.SessionID" class="btn btn-primary">Download</a>
+                                    <a asp-controller="DocGenerator" asp-action="DownloadTraveler" asp-route-sessionId="@item.SessionID" class="btn btn-primary">Download</a>
                                 }
 
                                 @if (EN[1] == "ADMIN")

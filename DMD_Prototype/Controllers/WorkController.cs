@@ -1,5 +1,6 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
+using Humanizer.Localisation.TimeToClockNotation;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OfficeOpenXml;
@@ -13,6 +14,7 @@ namespace DMD_Prototype.Controllers
         private readonly List<AccountModel> _accounts;
         private readonly List<PauseWorkModel> _pwmodel;
         private readonly List<StartWorkModel> _swmodel;
+        private readonly List<ProblemLogModel> _plModel;
 
         private string sesID;
         private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
@@ -26,12 +28,13 @@ namespace DMD_Prototype.Controllers
             _accounts = _Db.AccountDb.ToList();
             _pwmodel = _Db.PauseWorkDb.ToList();
             _swmodel = _Db.StartWorkDb.ToList();
+            _plModel = _Db.PLDb.ToList();
         }
 
-        private string SessionIDGetter(string userID)
-        {
-            return _Db.PauseWorkDb.FirstOrDefault(j => j.Technician == userID && j.RestartDT == null).SessionID;
-        }
+        //private string SessionIDGetter(string userID)
+        //{
+        //    return _Db.PauseWorkDb.FirstOrDefault(j => j.Technician == userID && j.RestartDT == null).SessionID;
+        //}
 
         private string UserIDGetter(string name)
         {
@@ -67,80 +70,31 @@ namespace DMD_Prototype.Controllers
         {
             string filePath = Path.Combine(userDir, sesID);
             Directory.CreateDirectory(filePath);
-
-            using(ExcelPackage package = new ExcelPackage())
-            {
-                package.Workbook.Worksheets.Add("P1");
-
-                package.SaveAs(Path.Combine(filePath, userTravName));
-            }
         }
 
-        private List<string[]> CopyTravelerToParticular(string docNo)
+        private void CopyTravToSession(string docNo, string wOrder, string serialNo)
         {
-            List<string[]> res = new List<string[]>();
-            int rowCount = 1;
             string filePath = Path.Combine(mainDir, docNo, travName);
 
-            using (ExcelPackage package = new ExcelPackage(filePath))
+            ExcelPackage package = new ExcelPackage(filePath);
+
+            for (int i = 0; i < package.Workbook.Worksheets.Count(); i++)
             {
-                var worksheet = package.Workbook.Worksheets.First();
-
-                do
-                {
-                    if (worksheet.Cells[rowCount, 1].Value != null)
-                    {
-                        string[] addThis = new string[3];
-                        addThis[0] = worksheet.Cells[rowCount, 1].Value.ToString();
-                        addThis[1] = worksheet.Cells[rowCount, 2].Value.ToString();
-                        addThis[2] = worksheet.Cells[rowCount, 3].Value.ToString();
-
-                        res.Add(addThis);
-                        rowCount++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                } while (true);
-
-                return res;
+                var ws = package.Workbook.Worksheets[i];
+                ws.Cells[8, 3].Value = DateTime.Now.ToShortDateString();
+                ws.Cells[6, 9].Value = wOrder;
+                ws.Cells[7, 9].Value = serialNo;
+                ws.Cells[1, 10].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count()}";
             }
+
+            package.SaveAs(Path.Combine(userDir, sesID, userTravName));
         }
 
-        private void CopyTravelerToSessionFolder(string docNo)
-        {
-            string[] progress = new string[2];
-            string filePath = Path.Combine(userDir, sesID, userTravName);
-            int rowCount = 1;
-
-            using (ExcelPackage package = new ExcelPackage(filePath))
-            {
-                package.Workbook.Worksheets.Add("Traveler");
-                package.Workbook.Worksheets.Delete(package.Workbook.Worksheets.FirstOrDefault(j => j.Name == "P1"));
-                
-
-                var worksheet = package.Workbook.Worksheets[0];
-
-                foreach (string[] item in CopyTravelerToParticular(docNo))
-                {
-                    worksheet.Cells[rowCount, 1].Value = item[0];
-                    worksheet.Cells[rowCount, 2].Value = item[1];
-                    worksheet.Cells[rowCount, 3].Value = item[2];
-
-                    rowCount++;
-                }
-
-                package.SaveAs(filePath);
-            }
-        }
-
-        public IActionResult StartWork(string docNo, string EN)
+        public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo)
         {
             SessionSaver(docNo, EN);
             CreateNewFolder(sesID);
-            CopyTravelerToSessionFolder(docNo);           
+            CopyTravToSession(docNo, wOrder, serialNo);       
 
             return RedirectToAction("MTIView", "MTI", new {docuNumber = docNo, workStat = true,
                 sesID = sesID, travelerProgress = GetProgressFromTraveler(sesID)});
@@ -177,6 +131,7 @@ namespace DMD_Prototype.Controllers
         public IActionResult FinishWork(string sessionId)
         {
             CompleteWork(sessionId);
+            SubmitDateFinished(sessionId);
 
             return RedirectToAction("Index", "Home");
         }
@@ -189,6 +144,22 @@ namespace DMD_Prototype.Controllers
             {
                 _Db.PauseWorkDb.Update(model);
                 _Db.SaveChanges();
+            }
+        }
+
+        private void SubmitDateFinished(string sessionId)
+        {
+            string filePath = Path.Combine(userDir, sessionId, userTravName);
+            string dateNow = DateTime.Now.ToShortDateString();
+            using (ExcelPackage package = new ExcelPackage(filePath))
+            {
+                for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
+                {
+                    var ws = package.Workbook.Worksheets[i];
+                    ws.Cells[8, 9].Value = dateNow;
+                }
+
+                package.Save();
             }
         }
 
@@ -219,24 +190,38 @@ namespace DMD_Prototype.Controllers
         {
             string[] progress = new string[3];
             string filePath = Path.Combine(userDir, sessionID, "Traveler.xlsx");
-            int rowCount = 1;
+            int rowCount = 11;
 
             using (ExcelPackage package = new ExcelPackage(filePath))
             {
-                var worksheet = package.Workbook.Worksheets[0];
-
+                var worksheet = package.Workbook;
+                int pageCount = package.Workbook.Worksheets.Count();
+                int sheetCounter = 0;
                 do
                 {
-                    if (worksheet.Cells[rowCount, 2].Value == null)
+                    string getTask = worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value == null ? "" : worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString();
+
+                    if (string.IsNullOrEmpty(getTask))
                     {
-                        break;
+                        if (pageCount <= (sheetCounter + 1))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            sheetCounter++;
+                            rowCount = 10;
+                        }
+                        
                     }
 
-                    if (worksheet.Cells[rowCount, 2].Value != null && (worksheet.Cells[rowCount, 4].Value == null && worksheet.Cells[rowCount, 7].Value == null))
+                    if (!string.IsNullOrEmpty(getTask) &&
+                        (worksheet.Worksheets[sheetCounter].Cells[rowCount, 4].Value == null &&
+                        worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value == null))
                     {
-                        progress[0] = worksheet.Cells[rowCount, 1].Value.ToString();
-                        progress[1] = worksheet.Cells[rowCount, 2].Value.ToString();
-                        progress[2] = worksheet.Cells[rowCount, 3].Value.ToString();
+                        progress[0] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value.ToString();
+                        progress[1] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString();
+                        progress[2] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 12].Value.ToString();
 
                         break;
                     }
@@ -252,29 +237,35 @@ namespace DMD_Prototype.Controllers
         private void SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date)
         {
             string filePath = Path.Combine(userDir, sessionID, userTravName);
-            int rowCount = 1;
+            int rowCount = 11;
+            int sheetCounter = 0;
 
             using(ExcelPackage package = new ExcelPackage(filePath))
             {
-                var worksheet = package.Workbook.Worksheets[0];
+                var worksheet = package.Workbook;
 
                 do
                 {
-                    if (worksheet.Cells[rowCount, 1].Value.ToString() == stepNo && worksheet.Cells[rowCount, 2].Value.ToString() == tAsk)
+                    if (worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value == null && worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value == null)
+                    {
+                        sheetCounter++;
+                        rowCount = 11;
+                    }
+
+                    if (worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value.ToString() == stepNo && worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString() == tAsk)
                     {
                         if (byThree.Count() > 0 && byThree != null)
                         {
-                            worksheet.Cells[rowCount, 4].Value = byThree[0];
-                            worksheet.Cells[rowCount, 5].Value = byThree[1];
-                            worksheet.Cells[rowCount, 6].Value = byThree[2];
+                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Value = byThree[0];
+                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 10].Value = byThree[1];
+                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 11].Value = byThree[2];
                         }
                         else
                         {
-                            worksheet.Cells[rowCount, 7].Value = singlePara;
+                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Value = singlePara;
                         }
 
-                        worksheet.Cells[rowCount, 8].Value = tech;
-                        worksheet.Cells[rowCount, 9].Value = date;
+                        worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value = $"{tech}||{date}";
 
                         break;
                     }
@@ -287,27 +278,58 @@ namespace DMD_Prototype.Controllers
         }
 
         [HttpPost]
-        public ContentResult SubmitTravelerLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date)
+        public ContentResult SubmitTravelerLog(string stepNo, string tAsk, string[]? byThree,
+            string? singlePara, string sessionID, string tech, string date)
         {           
             SaveTravLog(stepNo, tAsk, byThree, singlePara, sessionID, tech, date);
 
             string[] res = GetProgressFromTraveler(sessionID);
             string jsonData = JsonConvert.SerializeObject(new { StepNo = res[0], Task = res[1], Div = res[2] });
             return Content(jsonData, "application/json");
-
         }
 
         [HttpPost]
-        public JsonResult SubmitProblemLog(string logdate, string affected, string docno, string partno, string desc, string probcon, string reportedby)
+        public ContentResult SubmitProblemLog(string wweek, string affected, string docno,
+            string desc, string probcon, string reportedby, string product)
         {
-            ProblemLogModel pl = new ProblemLogModel().CreatePL();
 
-            return Json("");
+            if (ModelState.IsValid )
+            {
+                _Db.PLDb.Add(new ProblemLogModel().CreatePL(SetSeries("PL"), DateTime.Now, wweek, affected, product,
+                    docno, desc, probcon, reportedby));
+                _Db.SaveChanges();
+            }
+
+            string jsonData = JsonConvert.SerializeObject("Success");
+            return Content(jsonData, "application/json"); // notify originator about the pl
         }
 
-        private string SetPLSeries()
+        private string SetSeries(string seriesPrimary)
         {
-            return "";
+            string yearNow = DateTime.Now.Year.ToString()[2..];
+
+            List<ProblemLogModel> series = _plModel.Where(j => j.LogDate.Year == DateTime.Now.Year).ToList();
+
+            if (series.Count <= 0)
+            {
+                return $"PL-{yearNow}-001";
+            }
+            else
+            {
+                string lastSeries = series.Last().PLNo.ToString();
+
+                string[] splitSeries = lastSeries.Split('-');
+
+                if (!int.TryParse(splitSeries[2], out int resSeries))
+                {
+                    throw new ArgumentException("Invalid variable part");
+                }
+
+                resSeries++;
+
+                return $"{seriesPrimary}-{yearNow}-{resSeries:000}";
+            }
+
         }
     }
 

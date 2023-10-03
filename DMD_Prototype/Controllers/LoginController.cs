@@ -45,7 +45,7 @@ namespace DMD_Prototype.Controllers
 
                 if (acc != null)
                 {
-                    string[] accData = { acc.AccName, acc.Role};
+                    string[] accData = { acc.AccName, acc.Role, acc.UserID};
 
                     TempData["EN"] = null;
 

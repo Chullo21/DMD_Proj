@@ -1,21 +1,13 @@
-﻿@{
+﻿@model DMD_Prototype.Controllers.IndexModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-@*<form asp-controller="MTI" asp-action="ShowTraveler" enctype="multipart/form-data">
-    <input class="form-control w-25" type="file" name="file" />
-    <input type="submit" class="btn btn-primary" />
-</form>*@
-
-@*<a class="btn btn-primary" asp-controller="MTI" asp-action="MTIView">Button</a>*@
-
 <style>
     body {
-        font-family: 'Franklin Gothic', sans-serif; /* Apply the desired font to the entire body */
+        font-family: 'Franklin Gothic', sans-serif;
         font-weight: 500;
     }
-
-    /* Rest of your styles */
 
     .btn,
     .card,
@@ -23,7 +15,7 @@
     .text-center,
     .card-title,
     .card-header {
-        font-family: 'Franklin Gothic', sans-serif; /* Apply the desired font to specific elements */
+        font-family: 'Franklin Gothic', sans-serif;
     }
 </style>
 
@@ -81,18 +73,18 @@
                     <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
                         <div class="card w-75 border-2 border-dark">
                             <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">
-                                <p class="card-title text-center">Controlled Documents</p>
+                                <p class="card-title text-center">Uploaded Documents</p>
                             </div>
                             <div class="card-body">
-                                <p class="text-center" style="font-size:30px">100</p>
+                                <p class="text-center" style="font-size:30px">@Model.ControlledVal</p>
                             </div>
                         </div>
                         <div class="card w-75 border-2 border-dark">
                             <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">
-                                <p class="card-title text-center">Uncontrolled Documents</p>
+                                <p class="card-title text-center">Interim Documents</p>
                             </div>
                             <div class="card-body">
-                                <p class="text-center" style="font-size:30px">5</p>
+                                <p class="text-center" style="font-size:30px">@Model.InterimVal</p>
                             </div>
                         </div>
                         <div class="card w-75 border-2 border-dark mb-sm-2">
@@ -100,7 +92,7 @@
                                 <p class="card-title text-center">Obsolete Documents</p>
                             </div>
                             <div class="card-body">
-                                <p class="text-center" style="font-size:30px">3</p>
+                                <p class="text-center" style="font-size:30px">@Model.ObsoleteVal</p>
                             </div>
                         </div>
                     </div>
@@ -142,7 +134,7 @@
                 datasets: [
                     {
                         label: 'Problem Log Count',
-                        data: [3, 6, 1, 2],
+                        data: [@Model.JLPVal, @Model.JTPVal, @Model.PNPVal, @Model.OLBVal],
                         backgroundColor: bgv,
                         borderColor: 'black',
                         borderWidth: 0,

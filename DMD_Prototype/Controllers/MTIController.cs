@@ -3,12 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using DMD_Prototype.Models;
 using OfficeOpenXml;
 using Microsoft.CodeAnalysis;
-using NuGet.Packaging.Signing;
-using NuGet.Packaging;
-using System.Reflection;
-using Humanizer;
-using System.Net;
-using Microsoft.EntityFrameworkCore.Migrations.Internal;
 
 namespace DMD_Prototype.Controllers
 {
@@ -20,16 +14,18 @@ namespace DMD_Prototype.Controllers
 
         private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
         private readonly string usersDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
-        private readonly string travName = "TravelerFileDoNotEdit.xlsx";
 
-        private readonly string maindoc = "MainDoc";
-        private readonly string assydrawing = "AssyDrawing";
-        private readonly string bom = "BOM";
-        private readonly string schema = "SchematicDiag";
-        private readonly string opl = "OPL";
-        private readonly string prco = "PRCO";
-        private readonly string derogation = "Derogation";
-        private readonly string memo = "EngineeringMemo";
+        private string DocumentNumberVar;
+
+        private readonly string travName = "TravelerFileDoNotEdit.xlsx";
+        private readonly string maindocName = "MainDoc.pdf";
+        private readonly string assydrawingName = "AssyDrawing.pdf";
+        private readonly string bomName = "BOM.pdf";
+        private readonly string schemaName = "SchematicDiag.pdf";
+        private readonly string oplName = "OPL.pdf";
+        private readonly string prcoName = "PRCO.pdf";
+        private readonly string derogationName = "Derogation.pdf";
+        private readonly string memoName = "EngineeringMemo.pdf";
 
         public MTIController(AppDbContext _context)
         {
@@ -39,9 +35,8 @@ namespace DMD_Prototype.Controllers
         }
 
         public IActionResult EditDocument(string docuno, string assyno, string assydesc, string revno,
-            IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, IFormFile[]? opl,
-            IFormFile[]? derogation, IFormFile[]? prco, IFormFile[]? memo, List<string> stepno,
-            List<string> task, List<string> division)
+            IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
+            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile travelerFile)
         {
 
             var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuno);
@@ -56,9 +51,9 @@ namespace DMD_Prototype.Controllers
 
             if (ModelState.IsValid)
             {
-                CreateNewFolderandSaveDocuments(docuno, DictMaker(opl, prco, derogation, memo, null, null, null, null));
-                ReplaceDocsInFolder(mpti, drawing, bom, schema, docuno);
-                GenerateExcelForTraveler(stepno, task, division, docuno);
+                DocumentNumberVar = docuno;
+                CopyNoneMultipleDocs(mpti, drawing, bom, schema, travelerFile);
+                CopyMultipleDocs(opl, prco, derogation, memo);
 
                 _Db.MTIDb.Update(mod);
                 _Db.SaveChanges();
@@ -90,10 +85,10 @@ namespace DMD_Prototype.Controllers
                 mModel.DocumentNumber = docuNumber;
                 mModel.Travelers = !workStat? TravelerRetriever(docuNumber) : null;
                 mModel.TravProg = travelerProgress;
-                mModel.Opl = DeviationDocNames(opl, docuNumber);
-                mModel.Prco = DeviationDocNames(prco, docuNumber);
-                mModel.Derogation = DeviationDocNames(derogation, docuNumber);
-                mModel.Memo = DeviationDocNames(memo, docuNumber);
+                mModel.Opl = DeviationDocNames(oplName, docuNumber);
+                mModel.Prco = DeviationDocNames(prcoName, docuNumber);
+                mModel.Derogation = DeviationDocNames(derogationName, docuNumber);
+                mModel.Memo = DeviationDocNames(memoName, docuNumber);
                 mModel.WorkingStat = workStat;
                 mModel.SessionID = sesID;
                 mModel.AssyNo = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber).AssemblyPN;
@@ -120,7 +115,7 @@ namespace DMD_Prototype.Controllers
 
         private List<TravelerModel> TravelerRetriever(string docuNo)
         {
-            int rowCount = 1;
+            int rowCount = 11;
             List<TravelerModel> travelers = new List<TravelerModel>();
 
             using (ExcelPackage package = new ExcelPackage(new FileInfo(Path.Combine(mainDir, docuNo, travName))))
@@ -129,7 +124,7 @@ namespace DMD_Prototype.Controllers
                 {
                     do
                     {
-                        if (package.Workbook.Worksheets[0].Cells[rowCount, 1]?.Value == null)
+                        if (package.Workbook.Worksheets[0].Cells[rowCount, 2]?.Value == null)
                         {
                             break;
                         }
@@ -138,11 +133,7 @@ namespace DMD_Prototype.Controllers
                         {
                             trav.StepNumber = package.Workbook.Worksheets[0].Cells[rowCount, 1].Value?.ToString() ?? "";
                             trav.Instruction = package.Workbook.Worksheets[0].Cells[rowCount, 2].Value?.ToString() ?? "";
-
-                            string bythree = package.Workbook.Worksheets[0].Cells[rowCount, 3].Value.ToString();
-                            bythree = bythree.Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim();
-
-                            trav.ByThree = bythree;
+                            trav.ByThree = package.Workbook.Worksheets[0].Cells[rowCount, 12].Value?.ToString();
                         }
 
                         travelers.Add(trav);
@@ -175,65 +166,10 @@ namespace DMD_Prototype.Controllers
             return View();
         }
 
-        IFormFile ExtensionChecker(IFormFile? file) // neex fixing, still accepts non pdf files
-        {
-            if (file != null)
-            {
-                string extension = Path.GetExtension(file.FileName) ?? "";
-
-                if (extension != ".pdf")
-                {
-                    file = null;
-                }
-            }
-
-            return file;
-        }
-
-        IFormFile[] GroupedExtensionChecker(IFormFile[]? files) // neex fixing, still accepts non pdf files
-        {
-            List<IFormFile> formFiles = files.ToList();
-
-            foreach(IFormFile file in files)
-            {
-                if (file != null)
-                {
-                    string extension = Path.GetExtension(file.FileName) ?? "";
-
-                    if (extension == ".pdf")
-                    {
-                        formFiles.Add(file);
-                    }
-                }
-
-            }
-
-            return formFiles.ToArray();
-        }
-
-        Dictionary<string, IFormFile[]> DictMaker(IFormFile[]? onepointlesson, IFormFile[]? pRco, IFormFile[]? deRogation, IFormFile[]? engineeringmemo,
-            IFormFile? assemblydrawing, IFormFile? billsofmaterial, IFormFile? schematicdiagram, IFormFile? mpti)
-        {
-            Dictionary<string, IFormFile[]?> files = new Dictionary<string, IFormFile[]?>
-                {
-                    { maindoc, new[] { mpti } },
-                    { assydrawing, new[] { assemblydrawing } },
-                    { bom, new[] { billsofmaterial } },
-                    { schema, new[] { schematicdiagram } },
-                    { opl, onepointlesson },
-                    { prco, pRco},
-                    { derogation, deRogation },
-                    { memo, engineeringmemo }
-                };
-
-            return files;
-        }
-
         public IActionResult CreateMTI(string documentnumber, string assynumber, string assydesc, string revnumber, 
             IFormFile assemblydrawing, IFormFile billsofmaterial, IFormFile schematicdiagram, IFormFile mpti,
-            IFormFile[]? onepointlesson, IFormFile[]? prco, IFormFile[]? derogation, IFormFile[]? engineeringmemo, 
-            List<string> stepNumber, List<string> instruction, List<string> byThree, string product, string doctype,
-            string originator)
+            List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo, 
+            string product, string doctype, string originator, IFormFile TravelerFile)
         {
             var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == documentnumber);
 
@@ -250,8 +186,11 @@ namespace DMD_Prototype.Controllers
 
             if (ModelState.IsValid)
             {
-                CreateNewFolderandSaveDocuments(documentnumber, DictMaker(onepointlesson, prco, derogation, engineeringmemo, assemblydrawing, billsofmaterial, schematicdiagram, mpti));
-                GenerateExcelForTraveler(stepNumber, instruction, byThree, documentnumber);
+                DocumentNumberVar = documentnumber;
+                CreateNewFolder(documentnumber);
+                CopyNoneMultipleDocs(mpti, assemblydrawing, billsofmaterial, schematicdiagram, TravelerFile);
+                CopyMultipleDocs(onepointlesson, prco, derogation, engineeringmemo);
+
                 _Db.MTIDb.Add(mti);
                 _Db.SaveChanges();
 
@@ -264,92 +203,54 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private void GenerateExcelForTraveler(List<string> stepNumber, List<string> ins, List<string> byThree, string docNo)
+        private void CreateNewFolder(string docNumber)
         {
-            //string folderPath = Path.Combine(mainDir, docNo);
-            string filePath = Path.Combine(mainDir, docNo, travName);
-
-            ExcelPackage package = new ExcelPackage();
-            {
-                var worksheet = package.Workbook.Worksheets.Add(travName);
-
-                int row = 1;
-                for (int i = 0; i < stepNumber.Count; i++)
-                {
-                    worksheet.Cells[row, 1].Value = stepNumber[i];
-                    worksheet.Cells[row, 2].Value = ins[i];
-                    worksheet.Cells[row, 3].Value = byThree[i];
-                    row++;
-                }
-
-                package.SaveAs(filePath);
-            }
-
+            Directory.CreateDirectory(Path.Combine(mainDir, docNumber));
         }
 
-        private void CreateNewFolderandSaveDocuments(string folderName, Dictionary<string, IFormFile[]> files)
+        private void CopyNoneMultipleDocs(IFormFile? mainDoc, IFormFile? AssyDrawing, IFormFile? BOM, IFormFile? Schematic, IFormFile? Traveler)
         {
-            string folderPath = mainDir + folderName;
+            Dictionary<string, IFormFile> files = new Dictionary<string, IFormFile>();
 
-            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+            if (mainDoc != null) files.Add(maindocName, mainDoc);
+            if (AssyDrawing != null) files.Add(assydrawingName, AssyDrawing);
+            if (BOM  != null) files.Add(bomName, BOM);
+            if (Schematic != null) files.Add(schemaName, Schematic);
+            if (Traveler != null) files.Add(travName, Traveler);
 
-            foreach (var kvp in files)
+            foreach (var file in files)
             {
-                foreach (var file in kvp.Value)
+                using (FileStream fs = new FileStream(Path.Combine(mainDir, DocumentNumberVar, file.Key), FileMode.Create))
                 {
-                    if (file != null)
-                    {
-                        string fileName = $"{kvp.Key}.pdf";
-                        SaveFileInFolder(file, folderPath, fileName);
-                    }
+                    file.Value.CopyTo(fs);
                 }
             }
         }
 
-        private void SaveFileInFolder(IFormFile file, string folderPath, string name)
-        {
-            if (file != null && file.Length > 0)
+        private void CopyMultipleDocs(List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo)
+        {         
+            Dictionary<string, List<IFormFile>> files = new Dictionary<string, List<IFormFile>>();
+            
+            if (onepointlesson.Count() > 0) files.Add(oplName, onepointlesson);
+            if (prco.Count() > 0) files.Add(prcoName, prco);
+            if (derogation.Count() > 0) files.Add(derogationName, derogation);
+            if (engineeringmemo.Count() > 0) files.Add(memoName, engineeringmemo);
+
+            foreach (var file in files)
             {
-                string filePath = Path.Combine(folderPath, name);
-
-                if (Directory.Exists(folderPath))
+                foreach (var item in file.Value)
                 {
-                    int counter = 1;
-                    string fileNameOnly = Path.GetFileNameWithoutExtension(name);
-                    string extension = Path.GetExtension(name);
+                    int counter = 0;
+                    string filePath = Path.Combine(mainDir, DocumentNumberVar);
 
-                    while (Directory.GetFiles(folderPath).Contains(filePath))
+                    while (Directory.GetFiles(filePath).Contains(file.Key + counter.ToString()))
                     {
-                        name = $"{fileNameOnly}_{counter}{extension}";
-                        filePath = Path.Combine(folderPath, name);
                         counter++;
-                    }                   
-                }
+                    }
 
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    file.CopyTo(fileStream);
-                }
-            }
-        }
-
-
-        private void ReplaceDocsInFolder(IFormFile? mpti, IFormFile? drawing, IFormFile? bOm, IFormFile? sChema, string docuno)
-        {
-            List<NameSetter> files = new List<NameSetter>();
-            if (mpti != null) files.Add(new NameSetter(mpti, maindoc));
-            if (drawing != null) files.Add(new NameSetter(drawing, assydrawing));
-            if (bOm != null) files.Add(new NameSetter(bOm, bom));
-            if (sChema != null) files.Add(new NameSetter(sChema, schema));
-
-            if (files != null && files.Count() > 0)
-            {
-                foreach (NameSetter file in files)
-                {
-                    string filePath = Path.Combine(mainDir, docuno, file.Name + ".pdf");
-                    using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                    using (FileStream fs = new FileStream(Path.Combine(filePath, file.Key + counter.ToString()), FileMode.Create))
                     {
-                        file.Doc.CopyTo(fs);
+                        item.CopyTo(fs);
                     }
                 }
             }
