@@ -14,8 +14,14 @@ namespace DMD_Prototype.Models
         public string RevNo { get; set; } = string.Empty;
         public DateTime DateCreated { get; set; } = DateTime.Now;
 
+        // Special columns
+
+        public string? LogsheetDocNo { get; set; }
+        public string? LogsheetRevNo { get; set; }
+
         // Conditionals
 
+        public string AfterTravLog { get; set; }
         public bool ObsoleteStat { get; set; } = false;
         public string Product { get; set; } = string.Empty;
     }

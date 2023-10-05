@@ -13,13 +13,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\Common\Templates\CL.xlsx" />
     <Content Remove="wwwroot\Common\Templates\ProblemLog.xlsx" />
+    <Content Remove="wwwroot\Common\Templates\TEL.xlsx" />
     <Content Remove="wwwroot\Common\Templates\TravelerP1.xlsx" />
     <Content Remove="wwwroot\Common\Templates\TravelerP2.xlsx" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="wwwroot\Common\Templates\CL.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="wwwroot\Common\Templates\ProblemLog.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="wwwroot\Common\Templates\TEL.xlsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="wwwroot\Common\Templates\TravelerP1.xlsx">

@@ -1,9 +1,13 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Humanizer.Localisation.TimeToClockNotation;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using NuGet.Packaging;
 using OfficeOpenXml;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Finance.Implementations;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DMD_Prototype.Controllers
@@ -15,12 +19,14 @@ namespace DMD_Prototype.Controllers
         private readonly List<PauseWorkModel> _pwmodel;
         private readonly List<StartWorkModel> _swmodel;
         private readonly List<ProblemLogModel> _plModel;
+        private readonly List<MTIModel> _mtimodel;
 
         private string sesID;
         private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
         private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere";
         private readonly string travName = "TravelerFileDoNotEdit.xlsx";
         private readonly string userTravName = "Traveler.xlsx";
+        private readonly string logName = "Logsheet.xlsx";
 
         public WorkController(AppDbContext _context)
         {
@@ -29,12 +35,8 @@ namespace DMD_Prototype.Controllers
             _pwmodel = _Db.PauseWorkDb.ToList();
             _swmodel = _Db.StartWorkDb.ToList();
             _plModel = _Db.PLDb.ToList();
+            _mtimodel = _Db.MTIDb.ToList();
         }
-
-        //private string SessionIDGetter(string userID)
-        //{
-        //    return _Db.PauseWorkDb.FirstOrDefault(j => j.Technician == userID && j.RestartDT == null).SessionID;
-        //}
 
         private string UserIDGetter(string name)
         {
@@ -84,17 +86,42 @@ namespace DMD_Prototype.Controllers
                 ws.Cells[8, 3].Value = DateTime.Now.ToShortDateString();
                 ws.Cells[6, 9].Value = wOrder;
                 ws.Cells[7, 9].Value = serialNo;
-                ws.Cells[1, 10].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count()}";
+                ws.Cells[1, 10].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
             }
 
             package.SaveAs(Path.Combine(userDir, sesID, userTravName));
+        }
+
+        public void CreateLogsheet(string logType, string sessionId)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            string filePath;
+
+            if (logType == "T")
+            {
+                filePath = "DMD_Prototype.wwwroot.Common.Templates.TEL.xlsx";
+            }
+            else
+            {
+                filePath = "DMD_Prototype.wwwroot.Common.Templates.CL.xlsx";
+            }
+
+            Stream stream = assembly.GetManifestResourceStream(filePath);
+
+            using (ExcelPackage package = new ExcelPackage(stream))
+            {
+                package.Workbook.Worksheets[0].Cells[5, 3].Value = DateTime.Now.ToShortDateString();
+
+                package.SaveAs(Path.Combine(userDir, sessionId, logName));
+            }
         }
 
         public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo)
         {
             SessionSaver(docNo, EN);
             CreateNewFolder(sesID);
-            CopyTravToSession(docNo, wOrder, serialNo);       
+            CopyTravToSession(docNo, wOrder, serialNo);
 
             return RedirectToAction("MTIView", "MTI", new {docuNumber = docNo, workStat = true,
                 sesID = sesID, travelerProgress = GetProgressFromTraveler(sesID)});
@@ -128,12 +155,73 @@ namespace DMD_Prototype.Controllers
             });
         }
 
-        public IActionResult FinishWork(string sessionId)
+        public IActionResult FinishWork(string sessionId, string logType, string docNo)
         {
             CompleteWork(sessionId);
-            SubmitDateFinished(sessionId);
+            SubmitDateFinished(sessionId, logType, docNo);
 
             return RedirectToAction("Index", "Home");
+        }
+
+        public ContentResult SubmitLog(string logcellone, string logcelltwo, string logcellthree, string sessionId, string logType)
+        {
+            string filePath = Path.Combine(userDir, sessionId, logName);
+
+            int rowCount = 10;
+
+            using(ExcelPackage package = new ExcelPackage(filePath))
+            {
+                int pageCount = package.Workbook.Worksheets.Count <= 1 ? 0 : package.Workbook.Worksheets.Count - 1;
+
+                do
+                {
+                    var ws = package.Workbook.Worksheets[pageCount];
+
+                    if (rowCount >= 46 && ws.Cells[rowCount, 1].Value != null)
+                    {
+                        rowCount = 7;
+                        pageCount++;
+                        package.Workbook.Worksheets.Add($"P{pageCount + 1}", GetLogsheetTemplate(logType));
+                    }
+                   
+                    if (ws.Cells[rowCount, 1].Value == null)
+                    {
+                        ws.Cells[rowCount, 1].Value = logcellone;
+                        ws.Cells[rowCount, 3].Value = logcelltwo;
+                        ws.Cells[rowCount, 7].Value = logcellthree;
+
+                        break;
+                    }
+
+                    rowCount += 3;
+
+                } while (true);
+
+                package.Save();
+            }
+
+            return Content(JsonConvert.SerializeObject(null), "application/json");
+        }
+
+        private ExcelWorksheet GetLogsheetTemplate(string logType)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string filePath;
+
+            if (logType == "T")
+            {
+                filePath = "DMD_Prototype.wwwroot.Common.Templates.TEL.xlsx";
+            }
+            else
+            {
+                filePath = "DMD_Prototype.wwwroot.Common.Templates.CL.xlsx";
+            }
+
+            Stream stream = assembly.GetManifestResourceStream(filePath);
+
+            ExcelPackage package = new ExcelPackage(stream);
+
+            return package.Workbook.Worksheets[0];
         }
 
         private void ContinuePausedWork(string sessionId)
@@ -147,19 +235,45 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private void SubmitDateFinished(string sessionId)
+        private void SubmitDateFinished(string sessionId, string logType, string docNo)
         {
+            MTIModel mTIModel = _mtimodel.FirstOrDefault(j => j.DocumentNumber == docNo);
+
             string filePath = Path.Combine(userDir, sessionId, userTravName);
             string dateNow = DateTime.Now.ToShortDateString();
+
             using (ExcelPackage package = new ExcelPackage(filePath))
             {
                 for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
                 {
                     var ws = package.Workbook.Worksheets[i];
-                    ws.Cells[8, 9].Value = dateNow;
+                    ws.Cells[8, 9].Value = dateNow;                   
                 }
 
                 package.Save();
+            }
+
+            if (logType != "N")
+            {
+                using (ExcelPackage package = new ExcelPackage(Path.Combine(userDir, sessionId, logName)))
+                {
+                    string startDate = package.Workbook.Worksheets.First().Cells[5, 3].Value.ToString();
+
+                    for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
+                    {
+                        var ws = package.Workbook.Worksheets[i];
+                        ws.Cells[6, 3].Value = dateNow;
+                        ws.Cells[5, 3].Value = startDate;
+                        ws.Cells[3, 3].Value = mTIModel.AssemblyPN;
+                        ws.Cells[4, 3].Value = mTIModel.AssemblyDesc;
+                        ws.Cells[2, 5].Value = mTIModel.LogsheetDocNo;
+                        ws.Cells[2, 8].Value = mTIModel.DocumentNumber;
+                        ws.Cells[3, 6].Value = mTIModel.LogsheetRevNo;
+                        ws.Cells[3, 9].Value = $"{i + 1} of {package.Workbook.Worksheets.Count}";
+                    }
+
+                    package.Save();
+                }
             }
         }
 
@@ -186,10 +300,22 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private string[] GetProgressFromTraveler(string sessionID)
+        public ContentResult UserRefreshed(string sessionId)
+        {
+            string[] res = GetProgressFromTraveler(sessionId);
+            return Content(JsonConvert.SerializeObject(new { StepNo = res[0], Task = res[1], Div = res[2] }), "application/json");
+        }
+
+        private string[] GetProgressFromTraveler(string? sessionID)
         {
             string[] progress = new string[3];
-            string filePath = Path.Combine(userDir, sessionID, "Traveler.xlsx");
+
+            if (string.IsNullOrEmpty(sessionID))
+            {
+                return progress;
+            }
+
+            string filePath = Path.Combine(userDir, sessionID, userTravName);
             int rowCount = 11;
 
             using (ExcelPackage package = new ExcelPackage(filePath))
@@ -197,6 +323,12 @@ namespace DMD_Prototype.Controllers
                 var worksheet = package.Workbook;
                 int pageCount = package.Workbook.Worksheets.Count();
                 int sheetCounter = 0;
+
+                if (package.Workbook.Worksheets.Count == null || package.Workbook.Worksheets.Count <= 0)
+                {
+                    return progress;
+                }
+
                 do
                 {
                     string getTask = worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value == null ? "" : worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString();

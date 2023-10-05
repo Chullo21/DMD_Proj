@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using DMD_Prototype.Models;
 using OfficeOpenXml;
 using Microsoft.CodeAnalysis;
+using System.Linq;
 
 namespace DMD_Prototype.Controllers
 {
@@ -36,7 +37,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult EditDocument(string docuno, string assyno, string assydesc, string revno,
             IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
-            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile travelerFile)
+            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travelerFile)
         {
 
             var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuno);
@@ -72,7 +73,6 @@ namespace DMD_Prototype.Controllers
                 res.AssyNo = model.AssemblyPN;
                 res.AssyDesc = model.AssemblyDesc;
                 res.RevNo = model.RevNo;
-                res.Travelers = TravelerRetriever(docuNo);
             }
 
             return View(res);
@@ -80,20 +80,21 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult MTIView(string docuNumber, bool workStat, string sesID, List<string> travelerProgress)
         {
+            MTIModel mti = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber);
+
             MTIViewModel mModel = new MTIViewModel();
             {
                 mModel.DocumentNumber = docuNumber;
-                mModel.Travelers = !workStat? TravelerRetriever(docuNumber) : null;
-                mModel.TravProg = travelerProgress;
                 mModel.Opl = DeviationDocNames(oplName, docuNumber);
                 mModel.Prco = DeviationDocNames(prcoName, docuNumber);
                 mModel.Derogation = DeviationDocNames(derogationName, docuNumber);
                 mModel.Memo = DeviationDocNames(memoName, docuNumber);
                 mModel.WorkingStat = workStat;
                 mModel.SessionID = sesID;
-                mModel.AssyNo = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber).AssemblyPN;
-                mModel.AssyDesc = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber).AssemblyDesc;
-                mModel.RevNo = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber).RevNo;
+                mModel.AssyNo = mti.AssemblyPN;
+                mModel.AssyDesc = mti.AssemblyDesc;
+                mModel.RevNo = mti.RevNo;
+                mModel.AfterTravlog = mti.AfterTravLog;
             }
 
             return View(mModel);
@@ -107,44 +108,44 @@ namespace DMD_Prototype.Controllers
             foreach (string docs in Directory.GetFiles(folderPath))
             {
                 string FileNameOnly = Path.GetFileNameWithoutExtension(docs); ;                
-                if (docs.Contains(DocName)) listOfDocs.Add(FileNameOnly);
+                if (docs.Contains(Path.GetFileNameWithoutExtension(DocName))) listOfDocs.Add(FileNameOnly);
             }
 
             return listOfDocs;
         }
 
-        private List<TravelerModel> TravelerRetriever(string docuNo)
-        {
-            int rowCount = 11;
-            List<TravelerModel> travelers = new List<TravelerModel>();
+        //private List<TravelerModel> TravelerRetriever(string docuNo)
+        //{
+        //    int rowCount = 11;
+        //    List<TravelerModel> travelers = new List<TravelerModel>();
 
-            using (ExcelPackage package = new ExcelPackage(new FileInfo(Path.Combine(mainDir, docuNo, travName))))
-            {
-                if (package.Workbook.Worksheets.Count > 0)
-                {
-                    do
-                    {
-                        if (package.Workbook.Worksheets[0].Cells[rowCount, 2]?.Value == null)
-                        {
-                            break;
-                        }
+        //    using (ExcelPackage package = new ExcelPackage(new FileInfo(Path.Combine(mainDir, docuNo, travName))))
+        //    {
+        //        if (package.Workbook.Worksheets.Count > 0)
+        //        {
+        //            do
+        //            {
+        //                if (package.Workbook.Worksheets[0].Cells[rowCount, 2]?.Value == null)
+        //                {
+        //                    break;
+        //                }
 
-                        TravelerModel trav = new TravelerModel();
-                        {
-                            trav.StepNumber = package.Workbook.Worksheets[0].Cells[rowCount, 1].Value?.ToString() ?? "";
-                            trav.Instruction = package.Workbook.Worksheets[0].Cells[rowCount, 2].Value?.ToString() ?? "";
-                            trav.ByThree = package.Workbook.Worksheets[0].Cells[rowCount, 12].Value?.ToString();
-                        }
+        //                TravelerModel trav = new TravelerModel();
+        //                {
+        //                    trav.StepNumber = package.Workbook.Worksheets[0].Cells[rowCount, 1].Value?.ToString() ?? "";
+        //                    trav.Instruction = package.Workbook.Worksheets[0].Cells[rowCount, 2].Value?.ToString() ?? "";
+        //                    trav.ByThree = package.Workbook.Worksheets[0].Cells[rowCount, 12].Value?.ToString();
+        //                }
 
-                        travelers.Add(trav);
+        //                travelers.Add(trav);
 
-                        rowCount++;
-                    } while (true);
-                }
-            }
+        //                rowCount++;
+        //            } while (true);
+        //        }
+        //    }
 
-            return travelers;
-        }
+        //    return travelers;
+        //}
 
         private byte[] getDocumentsFromDb(string docuNumber, string whichDoc, string extension)
         {
@@ -169,7 +170,7 @@ namespace DMD_Prototype.Controllers
         public IActionResult CreateMTI(string documentnumber, string assynumber, string assydesc, string revnumber, 
             IFormFile assemblydrawing, IFormFile billsofmaterial, IFormFile schematicdiagram, IFormFile mpti,
             List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo, 
-            string product, string doctype, string originator, IFormFile TravelerFile)
+            string product, string doctype, string originator, IFormFile TravelerFile, string afterTrav, string docctrlno, string revnono)
         {
             var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == documentnumber);
 
@@ -182,6 +183,9 @@ namespace DMD_Prototype.Controllers
                 mti.Product = product;
                 mti.DocType = doctype;
                 mti.OriginatorName = _accounts.FirstOrDefault(j => j.AccName == originator).UserID;
+                mti.AfterTravLog = afterTrav;
+                mti.LogsheetDocNo = docctrlno;
+                mti.LogsheetRevNo = revnono;
             }
 
             if (ModelState.IsValid)
@@ -231,24 +235,22 @@ namespace DMD_Prototype.Controllers
         {         
             Dictionary<string, List<IFormFile>> files = new Dictionary<string, List<IFormFile>>();
             
-            if (onepointlesson.Count() > 0) files.Add(oplName, onepointlesson);
-            if (prco.Count() > 0) files.Add(prcoName, prco);
-            if (derogation.Count() > 0) files.Add(derogationName, derogation);
-            if (engineeringmemo.Count() > 0) files.Add(memoName, engineeringmemo);
+            if (onepointlesson?.Count() > 0) files.Add(oplName, onepointlesson);
+            if (prco?.Count() > 0) files.Add(prcoName, prco);
+            if (derogation?.Count() > 0) files.Add(derogationName, derogation);
+            if (engineeringmemo?.Count() > 0) files.Add(memoName, engineeringmemo);
 
             foreach (var file in files)
             {
                 foreach (var item in file.Value)
                 {
-                    int counter = 0;
                     string filePath = Path.Combine(mainDir, DocumentNumberVar);
 
-                    while (Directory.GetFiles(filePath).Contains(file.Key + counter.ToString()))
-                    {
-                        counter++;
-                    }
+                    string fileNameOnly = Path.GetFileNameWithoutExtension(file.Key);
+                    
+                    List<string> getFiles = Directory.GetFiles(filePath).Where(j => j.Contains(fileNameOnly)).ToList();
 
-                    using (FileStream fs = new FileStream(Path.Combine(filePath, file.Key + counter.ToString()), FileMode.Create))
+                    using (FileStream fs = new FileStream(Path.Combine(filePath, fileNameOnly + "_" + (getFiles.Count + 1).ToString() + ".pdf"), FileMode.Create))
                     {
                         item.CopyTo(fs);
                     }
@@ -284,10 +286,9 @@ namespace DMD_Prototype.Controllers
         public List<string>? Prco { get; set; }
         public List<string>? Derogation { get; set; }
         public List<string>? Memo { get; set; }
-        public List<TravelerModel>? Travelers { get; set; }
-        public List<string>? TravProg { get; set; }
         public bool WorkingStat { get; set; } = false;
         public string? SessionID { get; set; }
+        public string AfterTravlog { get; set; }
 
     }
 }

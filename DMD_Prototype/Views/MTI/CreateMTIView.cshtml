@@ -32,7 +32,7 @@
                 <label class="form-label my-auto mx-1">Rev. #:</label>
                 <input class="form-control" type="text" name="revnumber" required/>
             </div>
-            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#submitdocuments" @*onclick="document.getElementById('submitdocuments').style.display = 'block'"*@>Submit</button>
+            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#submitdocuments">Submit</button>
         </div>
     </div>
     <div class="row">
@@ -140,28 +140,8 @@
                         <div class="flex-column">
                             <label class="form-label">Traveler</label>
                             <input class="form-control" type="file" accept=".xlsx" name="TravelerFile"/>
-                           @* <input class="form-control w-25 mx-2" type="number" id="range" value="1" />
-                            <button class="btn btn-primary my-auto" type="button" onclick="addRow()">+</button>*@
                         </div>
                     <div class="">
-                        @*<table id="instable" class="table table-bordered border-2 border-dark">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        Step No.
-                                    </th>
-                                    <th class="w-75">
-                                        Task
-                                    </th>
-                                    <th class="text-nowrap">
-                                        Cell Division
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="travmakerbody">
-
-                            </tbody>
-                        </table>*@
                     </div>
                 </div>
             </div>
@@ -172,18 +152,38 @@
                 <div class="card-body">
                     <div class="flex-column">
                         <label class="form-label">Action After Traveler</label>
-                        <select class="form-select" required>
-                            <option>None</option>
-                            <option>Configuration Log</option>
-                            <option>Test Equipment Log</option>
+                        <select class="form-select" name="afterTrav" onchange="CheckAfterTrav(this.value)" required>
+                            <option value="N">None</option>
+                            <option value="C">Configuration Logsheet</option>
+                            <option value="T">Test Equipment Log</option>
                         </select>
                     </div>
-                </div>
+                    <div id="moreDet">
+                    </div>
+                </div>            
             </div>
         </div>
     </div>
 </div>
 </form>
+
+<script>
+    function CheckAfterTrav(str)
+    {
+        var det = document.getElementById('moreDet');
+        console.log(str);
+
+        if (str !== 'N')
+        {
+            det.innerHTML = '<div><label class="form-label">Document Control No.</label><input class="form-control w-100" name="docctrlno" required/>';
+            det.innerHTML += '<label class="form-label">Rev No.</label><input class="form-control w-100" name="revnono" required/></div>';
+        }
+        else
+        {
+            det.innerHTML = ' ';
+        }
+    }
+</script>
 
 <div class="modal fade" id="submitdocuments" data-bs-backdrop="static" >
     <div class="modal-dialog modal-sm modal-dialog-centered">
