@@ -1,14 +1,9 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Humanizer.Localisation.TimeToClockNotation;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using NuGet.Packaging;
 using OfficeOpenXml;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Finance.Implementations;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace DMD_Prototype.Controllers
 {
@@ -280,13 +275,11 @@ namespace DMD_Prototype.Controllers
         private void CompleteWork(string sessionId)
         {
             StartWorkModel swModel = _swmodel.FirstOrDefault(j => j.SessionID == sessionId);
+
             swModel.FinishDate = DateTime.Now;
 
-            if (ModelState.IsValid)
-            {
-                _Db.StartWorkDb.Update(swModel);
-                _Db.SaveChanges();
-            }
+            _Db.StartWorkDb.Update(swModel);
+            _Db.SaveChanges();
         }
 
         private void CreatePWForNoPW(string sessionId, string userId)
@@ -422,13 +415,13 @@ namespace DMD_Prototype.Controllers
 
         [HttpPost]
         public ContentResult SubmitProblemLog(string wweek, string affected, string docno,
-            string desc, string probcon, string reportedby, string product)
+            string desc, string probcon, string reportedby, string product, string rDocNumber)
         {
 
             if (ModelState.IsValid )
             {
                 _Db.PLDb.Add(new ProblemLogModel().CreatePL(SetSeries("PL"), DateTime.Now, wweek, affected, product,
-                    docno, desc, probcon, reportedby));
+                    docno, desc, probcon, reportedby, _mtimodel.FirstOrDefault(j => j.DocumentNumber == rDocNumber).OriginatorName));
                 _Db.SaveChanges();
             }
 

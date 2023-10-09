@@ -4,11 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ATS QA</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/DMD_Prototype.styles.css" asp-append-version="true" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </head>
+@{
+    string[] EN = TempData["EN"] as string[];
+    TempData.Keep();
+}
 <body style="background-color:lightgray">
     <header class="header-nav" style="font-family:'Franklin Gothic'; z-index:2001">
         <nav class="navbar navbar-expand-lg navbar-light" style="background-color:blue; height:125px">
@@ -35,9 +39,12 @@
                             <li>
                                 <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="ShowTravelers">Travelers</a>
                             </li>
-                            <li>
-                                <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="AdminHome">About</a>
-                            </li>
+                            @if (EN[1] != "User")
+                            {
+                                <li>
+                                    <a class="nav-link active text-white" aria-current="page" asp-controller="ProblemLog" asp-action="ProblemLogView">Problem Log</a>
+                                </li>
+                            }
                             <li>
                                 <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="AdminHome">More</a>
                             </li>
@@ -94,9 +101,6 @@
             &copy; 2023 - DIGITALIZATION OF MANUFACTURING DOCUMENTS
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

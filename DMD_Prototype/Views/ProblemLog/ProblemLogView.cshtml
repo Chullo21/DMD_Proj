@@ -1,0 +1,524 @@
+﻿@model IEnumerable<DMD_Prototype.Models.ProblemLogModel>
+
+@{
+    ViewData["Title"] = "Problem Logs";
+}
+
+@section scripts {
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
+    <script>
+        $(document).ready(function () {
+            $('#plTable').DataTable({
+                searching: true,
+                lengthChange: false,
+                pageLength: 10,
+                order: [],
+                ordering: false
+            });
+        });
+    </script>
+}
+<div>
+    <div class="table-responsive">
+        <table class="table table-hover text-nowrap text-center" id="plTable">
+            <thead class="table-primary">
+                <tr>
+                    <th class="border-1 border-dark bg-danger">
+                        PL No.
+                    </th>
+                    <th>
+                        Log Date
+                    </th>
+                    <th>
+                        Affected Doc.
+                    </th>
+                    <th>
+                        Category
+                    </th>
+                    <th class="bg-secondary">
+                        Interim Doc.
+                    </th>
+                    <th class="bg-secondary">
+                        TCD
+                    </th>
+                    <th class="bg-secondary">
+                        Status
+                    </th>
+                    <th class="bg-warning">
+                        Standardized Doc.
+                    </th>
+                    <th class="bg-warning">
+                        TCD
+                    </th>
+                    <th class="bg-warning">
+                        Status
+                    </th>
+                    <th>
+                        Status (I)
+                    </th>
+                    <th>
+                        Status (S)
+                    </th>
+                    <th>
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="border-1 border-dark">
+                            @Html.DisplayFor(modelItem => item.PLNo)
+                        </td>
+                        <td>
+                            @item.LogDate.ToShortDateString()
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.AffectedDoc)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Category)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.InterimDoc)
+                        </td>
+                        <td>
+                            @if (item.IDTCD != null)
+                            {
+                                Write(item.IDTCD.Value.ToShortDateString());
+                            }
+                            else
+                            {
+                                Write("");
+                            }
+                        <td>
+                            @switch (item.IDStatus)
+                            {
+                                case "o":
+                                    {
+                                        Write("Open");
+                                        break;
+                                    }
+                                case "c":
+                                    {
+                                        Write("Closed");
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        Write("");
+                                        break;
+                                    }
+                            }
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StandardizedDoc)
+                        </td>
+                        <td>
+                            @if (item.SDTCD != null)
+                            {
+                                Write(item.SDTCD.Value.ToShortDateString());
+                            }
+                            else
+                            {
+                                Write("");
+                            }
+                        </td>
+                        <td>
+                            @switch (item.SDStatus)
+                            {
+                                case "o":
+                                    {
+                                        Write("Open");
+                                        break;
+                                    }
+                                case "c":
+                                    {
+                                        Write("Closed");
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        Write("");
+                                        break;
+                                    }
+                            }
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.PLIDStatus)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.PLSDStatus)
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-secondary" data-bs-target="#plDetails" data-bs-toggle="modal" onclick="SetDets('@item.PLNo', '@item.LogDate', '@item.WorkWeek', '@item.AffectedDoc', '@item.PNDN',
+'@item.Desc', '@item.Problem', '@item.Reporter', '@item.Category', '@item.RC', '@item.CA', '@item.InterimDoc', '@item.IDTCD', '@item.IDStatus', '@item.StandardizedDoc', '@item.SDTCD', '@item.SDStatus',
+'@item.Validator', '@item.PLIDStatus', '@item.PLSDStatus', '@item.PLRemarks')">
+                                    More
+                                </button>
+                                    @if (string.IsNullOrEmpty(item.Validation))
+                                    {
+                                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#validatemodal" onclick="document.getElementById('plidVal').value = '@item.PLID'">Validate</button>
+                                    }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function PLConc(val)
+    {
+        if (val === 'Valid')
+        {
+            document.getElementById('plisValid').style.display = 'block';
+            document.getElementById('selectCat').setAttribute('required', 'true');
+            document.getElementById('remSetReq').removeAttribute('required');
+
+            document.getElementById('selectCat').setAttribute('required', 'true');
+            document.getElementById('rcVal').setAttribute('required', 'true');
+            document.getElementById('caVal').setAttribute('required', 'true');
+            document.getElementById('idVal').setAttribute('required', 'true');
+            document.getElementById('idtcdVal').setAttribute('required', 'true');
+            document.getElementById('idstatVal').setAttribute('required', 'true');
+            document.getElementById('sdVal').setAttribute('required', 'true');
+            document.getElementById('sdtcdVal').setAttribute('required', 'true');
+            document.getElementById('sdstatVal').setAttribute('required', 'true');
+        }
+        else if (val === 'Invalid') {
+            document.getElementById('plisValid').style.display = 'none';
+            document.getElementById('selectCat').removeAttribute('required');
+            document.getElementById('remSetReq').setAttribute('required', 'true');
+
+            document.getElementById('selectCat').removeAttribute('required');
+            document.getElementById('rcVal').removeAttribute('required');
+            document.getElementById('caVal').removeAttribute('required');
+            document.getElementById('idVal').removeAttribute('required');
+            document.getElementById('idtcdVal').removeAttribute('required');
+            document.getElementById('idstatVal').removeAttribute('required');
+            document.getElementById('sdVal').removeAttribute('required');
+            document.getElementById('sdtcdVal').removeAttribute('required');
+            document.getElementById('sdstatVal').removeAttribute('required');
+        }
+        else
+        {
+            document.getElementById('valSelect').value = '';
+            document.getElementById('plisValid').style.display = 'none';
+            document.getElementById('selectCat').removeAttribute('required');
+
+            document.getElementById('selectCat').removeAttribute('required');
+            document.getElementById('rcVal').removeAttribute('required');
+            document.getElementById('caVal').removeAttribute('required');
+            document.getElementById('idVal').removeAttribute('required');
+            document.getElementById('idtcdVal').removeAttribute('required');
+            document.getElementById('idstatVal').removeAttribute('required');
+            document.getElementById('sdVal').removeAttribute('required');
+            document.getElementById('sdtcdVal').removeAttribute('required');
+            document.getElementById('sdstatVal').removeAttribute('required');
+        }
+    }
+
+    function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rc, ca, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem)
+    {
+        if (idstat === 'o')
+        {
+            idstat = 'Open';
+        }
+        else if (idstat === 'c')
+        {
+            idstat = 'Closed';
+        }
+        else
+        {
+            idstat = '';
+        }
+
+        if (sdstat === 'o') {
+            sdstat = 'Open';
+        }
+        else if (sdstat === 'c') {
+            sdstat = 'Closed';
+        }
+        else {
+            sdstat = '';
+        }
+
+        document.getElementById('plno').innerHTML = pl;
+        document.getElementById('logdate').innerHTML = log;
+        document.getElementById('ww').innerHTML = wweek;
+        document.getElementById('affected').innerHTML = aff;
+        document.getElementById('pndn').innerHTML = pn;
+        document.getElementById('desc').innerHTML = des;
+        document.getElementById('prob').innerHTML = pro;
+        document.getElementById('reporter').innerHTML = rep;
+
+        document.getElementById('cat').innerHTML = cat;
+        document.getElementById('rc').innerHTML = rc;
+        document.getElementById('ca').innerHTML = ca;
+        document.getElementById('id').innerHTML = id;
+        document.getElementById('idtcd').innerHTML = idtcd;
+        document.getElementById('idstatus').innerHTML = idstat;
+        document.getElementById('sd').innerHTML = sd;
+        document.getElementById('sdtcd').innerHTML = sdtcd;
+        document.getElementById('sdstatus').innerHTML = sdstat;
+
+        document.getElementById('validatedby').innerHTML = val;
+        document.getElementById('plidStat').innerHTML = plidstat;
+        document.getElementById('plsdStat').innerHTML = plsdstat;
+        document.getElementById('plRem').innerHTML = plrem;
+    }
+</script>
+
+<div class="modal fade" data-bs-backdrop="static" id="validatemodal" style="z-index:2001">
+    <div class="modal-dialog modal-lg" style="max-height:600px">
+        <div class="modal-content">
+            <form asp-controller="ProblemLog" asp-action="SubmitPLValidation">
+                <input value="" id="plidVal" name="PLID" hidden/>
+                <div class="modal-header">
+                    <p class="modal-title text-center w-100 fs-5 fw-bold">Validate Problem Log</p>
+                    <button class="btn-close" data-bs-dismiss="modal" onclick="PLConc()"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div class="d-flex w-100">
+                            <div class="flex-column w-50">
+                                <label class="form-label">Validation</label>
+                                <select class="form-select" name="validation" onchange="PLConc(this.value)" id="valSelect" required>
+                                    <option hidden selected value="">Please Select</option>
+                                    <option>Valid</option>
+                                    <option>Invalid</option>
+                                </select>
+                            </div>
+                            <div class="flex-column w-50">
+                                <label class="form-label">Remarks</label>
+                                <textarea class="form-control w-100" name="OwnerRemarks" style="max-height:100px; min-height:40px; height: 40px" id="remSetReq"></textarea>
+                            </div>
+                        </div>
+                        <div id="plisValid" style="display:none">
+                            <div>
+                                <label class="form-label">Category</label>
+                                <select class="form-select" id="selectCat" name="Category">
+                                    <option hidden selected value="">Select Category</option>
+                                    <option>A</option>
+                                    <option>B</option>
+                                    <option>C</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Root Cause</label>
+                                <textarea class="form-control" name="RC" style="max-height:100px; min-height:40px; height: 40px" id="rcVal"></textarea>
+                            </div>
+                            <div>
+                                <label class="form-label">Correction Action</label>
+                                <textarea class="form-control" name="CA" style="max-height:100px; min-height:40px; height: 40px" id="caVal"></textarea>
+                            </div>
+                            <div>
+                                <div class="d-flex w-100 justify-content-evenly">
+                                    <div>
+                                        <label class="form-label">Interim Doc.</label>
+                                        <input class="form-control" placeholder="Interim Document" id="idVal" name="InterimDoc"/>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">TCD</label>
+                                        <input class="form-control" type="date" id="idtcdVal" name="IDTCD"/>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" id="idstatVal" name="IDStatus">
+                                            <option hidden selected value="">Select Category</option>
+                                            <option value="o">Open</option>
+                                            <option value="c">Close</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="d-flex w-100 justify-content-evenly">
+                                    <div>
+                                        <label class="form-label">Standardized Doc.</label>
+                                        <input class="form-control" placeholder="Standardized Document" id="sdVal" name="StandardizedDoc"/>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">TCD</label>
+                                        <input class="form-control" type="date" id="sdtcdVal" name="SDTCD"/>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" id="sdstatVal" name="SDStatus">
+                                            <option hidden selected value="">Select Category</option>
+                                            <option value="o">Open</option>
+                                            <option value="c">Close</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" id="plDetails" style="z-index:2001">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title text-center w-100 fs-5 fw-bold">More Details</p>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div>
+                        <table class="table table-bordered">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>
+                                        PL#
+                                    </th>
+                                    <th>
+                                        Log Date
+                                    </th>
+                                    <th>
+                                        Workweek
+                                    </th>
+                                    <th>
+                                        Affected Doc.
+                                    </th>
+                                    <th>
+                                        PN/D.C.N
+                                    </th>
+                                    <th>
+                                        Desc.
+                                    </th>
+                                    <th>
+                                        Problem
+                                    </th>
+                                    <th>
+                                        Reported By
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="plno">
+                                    </td>
+                                    <td id="logdate">
+                                    </td>
+                                    <td id="ww">
+                                    </td>
+                                    <td id="affected">
+                                    </td>
+                                    <td id="pndn">
+                                    </td>
+                                    <td id="desc">
+                                    </td>
+                                    <td id="prob">
+                                    </td>
+                                    <td id="reporter">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <table class="table table-bordered">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>
+                                        Category
+                                    </th>
+                                    <th>
+                                        RC
+                                    </th>
+                                    <th>
+                                        CA
+                                    </th>
+                                    <th>
+                                        Interim Doc.
+                                    </th>
+                                    <th>
+                                        TCD
+                                    </th>
+                                    <th>
+                                        Status
+                                    </th>
+                                    <th>
+                                        Standardized Doc.
+                                    </th>
+                                    <th>
+                                        TCD
+                                    </th>
+                                    <th>
+                                        Status
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="cat">
+                                    </td>
+                                    <td id="rc">
+                                    </td>
+                                    <td id="ca">
+                                    </td>
+                                    <td id="id">
+                                    </td>
+                                    <td id="idtcd">
+                                    </td>
+                                    <td id="idstatus">
+                                    </td>
+                                    <td id="sd">
+                                    </td>
+                                    <td id="sdtcd">
+                                    </td>
+                                    <td id="sdstatus">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <table class="table table-bordered">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>
+                                        Validated by
+                                    </th>
+                                    <th>
+                                        Status (I)
+                                    </th>
+                                    <th>
+                                        Status (S)
+                                    </th>
+                                    <th>
+                                        Remarks
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="validatedby">
+                                    </td>
+                                    <td id="plidStat">
+                                    </td>
+                                    <td id="plsdStat">
+                                    </td>
+                                    <td id="plRem">
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>           
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,135 +1,171 @@
-﻿@model DMD_Prototype.Controllers.MTIViewModel
+﻿@model MTIModel
 @{
-    ViewData["Title"] = "EditDocumentView";
+    ViewData["Title"] = "Edit Engineering Documents";
 }
+<br />
 <form asp-controller="MTI" asp-action="EditDocument" enctype="multipart/form-data">
-<div class="card w-100">
-    <div>
-        <p class="card-header text-center">Upload edited documents or simply add deviation documents.</p>
-    </div>
-    <div class="card-body w-100 row ">
-        <div class="col-md-12 col-lg-6">
-            <div class="d-flex justify-content-evenly my-3">
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">Doc#: </label>
-                    <input class="form-control" value="@Model.DocumentNumber" name="docuno" readonly />
+    <div class="row">
+        <div class="col-md-12 col-lg-8">
+            <div class="card">
+                <div class="card-header w-100 fw-bold text-center">
+                    Engineering Documents
                 </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">Assy#: </label>
-                    <input class="form-control" value="@Model.AssyNo" name="assyno" required/>
-                </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">Assy Desc: </label>
-                    <input class="form-control" value="@Model.AssyDesc" name="assydesc" required/>
-                </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">Rev#: </label>
-                    <input class="form-control" value="@Model.RevNo" name="revno" required/>
-                </div>
-            </div>
-            <div class="d-flex justify-content-evenly my-3">
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">MPI/MTI: </label>
-                    <input class="form-control w-100" type="file" name="mpti" accept=".pdf"/>
-                </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">BOM: </label>
-                        <input class="form-control" type="file" name="bom" accept=".pdf" />
-                </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">Assy Draw.: </label>
-                        <input class="form-control" type="file" name="drawing" accept=".pdf" />
-                </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">Schem Diag: </label>
-                        <input class="form-control" type="file" name="schema" accept=".pdf" />
-                </div>
-            </div>
-            <div class="d-flex justify-content-evenly my-3">
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">O.P.L: </label>
-                        <input class="form-control w-100" type="file" name="opl" accept=".pdf" multiple />
-                </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">Derogation: </label>
-                        <input class="form-control" type="file" name="derogation" accept=".pdf" multiple />
-                </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">P.R.C.O: </label>
-                        <input class="form-control" type="file" name="prco" accept=".pdf" multiple />
-                </div>
-                <div class="flex-column">
-                    <label class="w-100 text-center text-nowrap">Engineering Memo: </label>
-                        <input class="form-control" type="file" name="memo" accept=".pdf" multiple />
-                </div>
-            </div>
-            <div class="d-flex justify-content-evenly my-3">
-                <div class="align-self-end w-100 d-flex justify-content-center">
-                    <input class="btn btn-primary" type="submit"/>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-12 col-lg-6">
-            <div class="card h-100" style="min-height:450px; max-height:470px">
-                <div class="card-header text-center">
-                    <p class="">Traveler</p>
-                </div>
-                <div class="overflow-scroll">
-                    @*<div class="w-100 d-flex justify-content-end">
-                        <input class="form-control w-25 mx-2" type="number" id="range" value="1" />
-                        <button class="btn btn-primary my-auto" type="button" onclick="addRows()">+</button>
+                <div class="card-body w-100 row ">
+                    <div class="">
+                        <div class="d-flex justify-content-evenly my-3">
+                            <div>
+                                <table class="table text-center">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Document No.
+                                            </th>
+                                            <th>
+                                                Assembly No.
+                                            </th>
+                                            <th>
+                                                Assembly Desc.
+                                            </th>
+                                            <th>
+                                                Revision No.
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <input class="form-control" value="@Model.DocumentNumber" name="docuno" readonly />
+                                            </td>
+                                            <td>
+                                                <input class="form-control" value="@Model.AssemblyPN" name="assyno" required />
+                                            </td>
+                                            <td>
+                                                <input class="form-control" value="@Model.AssemblyDesc" name="assydesc" required />
+                                            </td>
+                                            <td>
+                                                <input class="form-control" value="@Model.RevNo" name="revno" required />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-evenly my-3">
+                            <div class="flex-column">
+                                <label class="w-100 text-center text-nowrap">MPI/MTI: </label>
+                                <input class="form-control w-100" type="file" name="mpti" accept=".pdf" />
+                            </div>
+                            <div class="flex-column">
+                                <label class="w-100 text-center text-nowrap">BOM: </label>
+                                <input class="form-control" type="file" name="bom" accept=".pdf" />
+                            </div>
+                            <div class="flex-column">
+                                <label class="w-100 text-center text-nowrap">Assy Draw.: </label>
+                                <input class="form-control" type="file" name="drawing" accept=".pdf" />
+                            </div>
+                            <div class="flex-column">
+                                <label class="w-100 text-center text-nowrap">Schem Diag: </label>
+                                <input class="form-control" type="file" name="schema" accept=".pdf" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-evenly my-3">
+                            <div class="flex-column">
+                                <label class="w-100 text-center text-nowrap">O.P.L: </label>
+                                <input class="form-control w-100" type="file" name="opl" accept=".pdf" multiple />
+                            </div>
+                            <div class="flex-column">
+                                <label class="w-100 text-center text-nowrap">Derogation: </label>
+                                <input class="form-control" type="file" name="derogation" accept=".pdf" multiple />
+                            </div>
+                            <div class="flex-column">
+                                <label class="w-100 text-center text-nowrap">P.R.C.O: </label>
+                                <input class="form-control" type="file" name="prco" accept=".pdf" multiple />
+                            </div>
+                            <div class="flex-column">
+                                <label class="w-100 text-center text-nowrap">Engineering Memo: </label>
+                                <input class="form-control" type="file" name="memo" accept=".pdf" multiple />
+                            </div>
+                        </div>                        
                     </div>
-                    <table id="instable" class="table table-bordered table-hover text-center">
-                        <thead class="thead position-sticky top-0">
-                            <tr class="">
-                                <th>
-                                    Step No
-                                </th>
-                                <th>
-                                    Task
-                                </th>
-                                <th>
-                                    Cell Division
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach(var item in Model.Travelers.OrderBy(j => j.StepNumber))
-                            {
-                                <tr>
-                                    <td>
-                                        <input class="form-control" value="@item.StepNumber" name="stepno" required/>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" value="@item.Instruction" name="task" required/>
-                                    </td>
-                                    <td>
-                                       <select class="form-select" name="division">
-                                           <option selected hidden value="@item.ByThree">
-                                               @if(item.ByThree == "t")
-                                                {
-                                                    Write("Three");
-                                                }
-                                                else
-                                                {
-                                                    Write("Single");
-                                                }
-                                            </option>
-                                           <option value="s">Single</option>
-                                           <option value="t">Three</option>
-                                       </select>
-                                    </td>
-                                </tr>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-lg-4">
+            <div class="card h-100">
+                <div class="card-header w-100 fw-bold text-center">
+                    More
+                </div>
+                <div class="card-body">
+                    <div>
+                        <label class="form-label">Traveler</label>
+                        <input class="form-control" type="file" name="travFile"/>
+                    </div>
+                    <div>
+                        <label class="form-label">Logsheet</label>
+                        <select class="form-select" name="logType" onchange="ChangeLogType(this.value)">
+                            @{
+                                string currentAL;
+
+                                switch (Model.AfterTravLog)
+                                {
+                                    case "T":
+                                        {
+                                            currentAL = "TEST EQUIPMENT LOG";
+                                            break;
+                                        }
+                                    case "C":
+                                        {
+                                            currentAL = "CONFIGURATION LOG";
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            currentAL = "NONE";
+                                            break;
+                                        }
+                                }
                             }
-                        </tbody>
-                    </table>*@
+                            <option value="@Model.AfterTravLog" selected hidden>@currentAL</option>
+                            <option value="N">None</option>
+                            <option value="T">TEST EQUIPMENT LOG</option>
+                            <option value="C">CONFIGURATION LOG</option>
+                        </select>
+                    </div>
+                    <div id="logsheetstuff" class="flex-column">
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <div class="card my-3">
+        <div class="card-body d-flex justify-content-evenly">
+            <input class="w-auto btn btn-primary" type="submit" />
+        </div>
+    </div>
 </form>
+
 <script>
+    window.onload = function ()
+    {
+        ChangeLogType('@Model.AfterTravLog');
+    };
+
+    function ChangeLogType(str)
+    {
+        var lgstuff = document.getElementById('logsheetstuff');
+
+        if (str !== "N")
+        {
+            lgstuff.innerHTML = '<div class="flex-column"><label class="form-label">Document Control Number</label><input class="form-control" name="docctrlno" value="@Model.LogsheetDocNo" required/></div>';
+            lgstuff.innerHTML += '<div class="flex-column"><label class="form-label">Revision Number</label><input class="form-control" name="revnono" value="@Model.LogsheetRevNo" required/></div>';
+        }
+        else
+        {
+            lgstuff.innerHTML = ' ';
+        }
+    }
+
     function addRows() {
         var tab = document.getElementById('instable');
         var range = document.getElementById('range').value;

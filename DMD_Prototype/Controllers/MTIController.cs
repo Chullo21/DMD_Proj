@@ -37,10 +37,13 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult EditDocument(string docuno, string assyno, string assydesc, string revno,
             IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
-            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travelerFile)
+            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile,
+            string logType, string? docctrlno, string? revnono)
         {
 
             var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuno);
+
+            bool changeLogType = fromDb.AfterTravLog != logType || (fromDb.LogsheetDocNo != docctrlno || fromDb.LogsheetRevNo != revnono);
 
             MTIModel mod = new MTIModel();
             {
@@ -48,12 +51,15 @@ namespace DMD_Prototype.Controllers
                 mod.AssemblyPN = assyno;
                 mod.AssemblyDesc = assydesc;
                 mod.RevNo = revno;
+                mod.AfterTravLog = logType;
+                mod.LogsheetDocNo = changeLogType ? docctrlno : mod.LogsheetDocNo;
+                mod.LogsheetRevNo = changeLogType ? revnono : mod.LogsheetRevNo;
             }
 
             if (ModelState.IsValid)
             {
                 DocumentNumberVar = docuno;
-                CopyNoneMultipleDocs(mpti, drawing, bom, schema, travelerFile);
+                CopyNoneMultipleDocs(mpti, drawing, bom, schema, travFile);
                 CopyMultipleDocs(opl, prco, derogation, memo);
 
                 _Db.MTIDb.Update(mod);
@@ -67,15 +73,7 @@ namespace DMD_Prototype.Controllers
         {
             MTIModel model = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNo)!;
 
-            MTIViewModel res = new MTIViewModel();
-            {
-                res.DocumentNumber = docuNo;
-                res.AssyNo = model.AssemblyPN;
-                res.AssyDesc = model.AssemblyDesc;
-                res.RevNo = model.RevNo;
-            }
-
-            return View(res);
+            return View(model);
         }
 
         public IActionResult MTIView(string docuNumber, bool workStat, string sesID, List<string> travelerProgress)
@@ -95,6 +93,7 @@ namespace DMD_Prototype.Controllers
                 mModel.AssyDesc = mti.AssemblyDesc;
                 mModel.RevNo = mti.RevNo;
                 mModel.AfterTravlog = mti.AfterTravLog;
+                mModel.Product = mti.Product;
             }
 
             return View(mModel);
@@ -107,49 +106,16 @@ namespace DMD_Prototype.Controllers
 
             foreach (string docs in Directory.GetFiles(folderPath))
             {
-                string FileNameOnly = Path.GetFileNameWithoutExtension(docs); ;                
+                string FileNameOnly = Path.GetFileNameWithoutExtension(docs);
+                
                 if (docs.Contains(Path.GetFileNameWithoutExtension(DocName))) listOfDocs.Add(FileNameOnly);
             }
 
             return listOfDocs;
         }
 
-        //private List<TravelerModel> TravelerRetriever(string docuNo)
-        //{
-        //    int rowCount = 11;
-        //    List<TravelerModel> travelers = new List<TravelerModel>();
-
-        //    using (ExcelPackage package = new ExcelPackage(new FileInfo(Path.Combine(mainDir, docuNo, travName))))
-        //    {
-        //        if (package.Workbook.Worksheets.Count > 0)
-        //        {
-        //            do
-        //            {
-        //                if (package.Workbook.Worksheets[0].Cells[rowCount, 2]?.Value == null)
-        //                {
-        //                    break;
-        //                }
-
-        //                TravelerModel trav = new TravelerModel();
-        //                {
-        //                    trav.StepNumber = package.Workbook.Worksheets[0].Cells[rowCount, 1].Value?.ToString() ?? "";
-        //                    trav.Instruction = package.Workbook.Worksheets[0].Cells[rowCount, 2].Value?.ToString() ?? "";
-        //                    trav.ByThree = package.Workbook.Worksheets[0].Cells[rowCount, 12].Value?.ToString();
-        //                }
-
-        //                travelers.Add(trav);
-
-        //                rowCount++;
-        //            } while (true);
-        //        }
-        //    }
-
-        //    return travelers;
-        //}
-
         private byte[] getDocumentsFromDb(string docuNumber, string whichDoc, string extension)
         {
-
             string folderPath = Path.Combine(mainDir, docuNumber, whichDoc + extension);
 
             using (FileStream fileStream = new FileStream(folderPath, FileMode.Open))
@@ -168,9 +134,9 @@ namespace DMD_Prototype.Controllers
         }
 
         public IActionResult CreateMTI(string documentnumber, string assynumber, string assydesc, string revnumber, 
-            IFormFile assemblydrawing, IFormFile billsofmaterial, IFormFile schematicdiagram, IFormFile mpti,
+            IFormFile? assemblydrawing, IFormFile? billsofmaterial, IFormFile? schematicdiagram, IFormFile mpti,
             List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo, 
-            string product, string doctype, string originator, IFormFile TravelerFile, string afterTrav, string docctrlno, string revnono)
+            string product, string doctype, string originator, IFormFile TravelerFile, string afterTrav, string? docctrlno, string? revnono)
         {
             var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == documentnumber);
 
@@ -260,7 +226,30 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult ShowDoc(string docunumber, string whichDoc)
         {
-            return File(getDocumentsFromDb(docunumber, whichDoc, ".pdf"), "application/pdf");
+            if (whichDoc == "WS")
+            {
+                MemoryStream ms = new MemoryStream();
+                FileStream fs = new FileStream(Path.Combine(mainDir, "1_WORKMANSHIP_STANDARD_FOLDER", "WS.pdf"), FileMode.Open);
+                fs.CopyTo(ms);
+
+                return File(ms.ToArray(), "application/pdf"); ;
+            }
+
+            byte[] res = null;
+
+            List<string> files = Directory.GetFiles(Path.Combine(mainDir, docunumber)).ToList();
+
+            if (Directory.GetFiles(Path.Combine(mainDir, docunumber)).Any(j => Path.GetFileName(j) == whichDoc + ".pdf"))
+            {
+                res = getDocumentsFromDb(docunumber, whichDoc, ".pdf");
+
+                return File(res, "application/pdf");
+            }
+            else
+            {
+                return NoContent();
+            }
+           
         }
     }
 
@@ -289,6 +278,7 @@ namespace DMD_Prototype.Controllers
         public bool WorkingStat { get; set; } = false;
         public string? SessionID { get; set; }
         public string AfterTravlog { get; set; }
+        public string Product { get; set; }
 
     }
 }

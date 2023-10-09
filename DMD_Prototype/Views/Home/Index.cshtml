@@ -1,23 +1,10 @@
 ﻿@model DMD_Prototype.Controllers.IndexModel
 @{
     ViewData["Title"] = "Home Page";
+
+    string[] EN = TempData["EN"] as string[];
+    TempData.Keep();
 }
-
-<style>
-    body {
-        font-family: 'Franklin Gothic', sans-serif;
-        font-weight: 500;
-    }
-
-    .btn,
-    .card,
-    .button,
-    .text-center,
-    .card-title,
-    .card-header {
-        font-family: 'Franklin Gothic', sans-serif;
-    }
-</style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -42,7 +29,7 @@
             </div>
         </form>
         <div class="row">
-            <div class="col-sm-12 col-md-6">
+            <div class="col-sm-12 col-md-6" style="height: 500px">
                 <div class="card border-2 border-dark h-100 mt-2" style="background-color:#E9E4E9">
                     <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A;font-size:30px; font-family:'Franklin Gothic'">Documents Lists</h4>
                     <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-evenly">
@@ -68,35 +55,70 @@
                 </div>
             </div>
             <div class="col-sm-12 col-md-6">
-                <div class="card border-2 border-dark h-100 mt-2" style="background-color:#E9E4E9">
-                    <h4 class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A;font-size:30px">Documents Statuses</h4>
-                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
-                        <div class="card w-75 border-2 border-dark">
-                            <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">
-                                <p class="card-title text-center">Uploaded Documents</p>
+                @if (EN[1] != "USER")
+                {
+                    <div class="card border-2 border-dark h-100 mt-2" style="background-color:#E9E4E9">
+                        <h4 class="card-header border-2 border-dark" style="background-color:#B5AD9A;font-size:30px">Documents Statuses</h4>
+                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
+                            <div class="card w-75 border-2 border-dark">
+                                <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                                    Uploaded Documents
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-center fw-bold" style="font-size:30px">@Model.ControlledVal</p>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <p class="text-center" style="font-size:30px">@Model.ControlledVal</p>
+                            <div class="card w-75 border-2 border-dark">
+                                <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                                    Interim Documents
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-center fw-bold" style="font-size:30px">@Model.InterimVal</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card w-75 border-2 border-dark">
-                            <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">
-                                <p class="card-title text-center">Interim Documents</p>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-center" style="font-size:30px">@Model.InterimVal</p>
-                            </div>
-                        </div>
-                        <div class="card w-75 border-2 border-dark mb-sm-2">
-                            <div class="card-header text-white border-2 border-dark" style="background-color:darkslateblue">
-                                <p class="card-title text-center">Obsolete Documents</p>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-center" style="font-size:30px">@Model.ObsoleteVal</p>
+                            <div class="card w-75 border-2 border-dark mb-sm-2">
+                                <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                                    Obsolete Documents
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-center fw-bold" style="font-size:30px">@Model.ObsoleteVal</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="card border-2 border-dark h-100 mt-2" style="background-color:#E9E4E9">
+                        <h4 class="card-header border-2 border-dark" style="background-color:#B5AD9A;font-size:30px">Documents Statuses</h4>
+                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
+                            <div class="card w-75 border-2 border-dark">
+                                <div class="card-header border-2 border-dark fw-bolder" style="background-color:darkslateblue">
+                                    Uploaded Documents
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-center fw-bold" style="font-size:30px">@Model.ControlledVal</p>
+                                </div>
+                            </div>
+                            <div class="card w-75 border-2 border-dark">
+                                <div class="card-header border-2 border-dark fw-bolder" style="background-color:darkslateblue">
+                                    Interim Documents
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-center fw-bold" style="font-size:30px">@Model.InterimVal</p>
+                                </div>
+                            </div>
+                            <div class="card w-75 border-2 border-dark mb-sm-2">
+                                <div class="card-header border-2 border-dark fw-bolder" style="background-color:darkslateblue">
+                                    Obsolete Documents
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-center fw-bold" style="font-size:30px">@Model.ObsoleteVal</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -175,7 +197,6 @@
             }
         });
     });
-
 </script>
 
 <script>

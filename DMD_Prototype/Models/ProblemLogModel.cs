@@ -15,22 +15,27 @@ namespace DMD_Prototype.Models
         public string Desc { get; set; } = string.Empty;
         public string Problem { get; set; } = string.Empty;
         public string Reporter { get; set; } = string.Empty;
+
         public string Category { get; set; } = string.Empty;
         public string RC { get; set; } = string.Empty;
         public string CA { get; set; } = string.Empty;
         public string InterimDoc { get; set; } = string.Empty;
         public DateTime? IDTCD { get; set; }
-        public string IDStatus { get; set; } = "For Validation";
+        public string IDStatus { get; set; } = string.Empty;
         public string StandardizedDoc { get; set; } = string.Empty;
         public DateTime? SDTCD { get; set; }
-        public string SDStatus { get; set; } = "OPEN";
+        public string SDStatus { get; set; } = string.Empty;
         public string Validator { get; set; } = string.Empty;
-        public string PLIDStatus { get; set; } = "OPEN";
-        public string PLSDStatus { get; set; } = "OPEN";
+        public string PLIDStatus { get; set; } = string.Empty;
+        public string PLSDStatus { get; set; } = string.Empty;
         public string PLRemarks { get; set; } = string.Empty;
 
+        public string Validation { get; set; } = string.Empty;
+        public string OwnerRemarks { get; set; } = string.Empty; 
+        public string Owner { get; set; } = string.Empty;
+
         public ProblemLogModel CreatePL(string plNo, DateTime logDate, string workWeek, string affectedDoc,
-            string product, string pnDn, string desc, string problem, string reporter)
+            string product, string pnDn, string desc, string problem, string reporter, string owner)
         {
             PLNo = plNo;
             LogDate = logDate;
@@ -41,6 +46,7 @@ namespace DMD_Prototype.Models
             Desc = desc;
             Problem = problem;
             Reporter = reporter;
+            Owner = owner;
 
             return this;
         }

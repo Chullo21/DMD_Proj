@@ -13,13 +13,6 @@
     string afterTrav3 = "Calibration Due Date";
     string afterTravTitle = "TEST EQUIPMENT LOG";
 
-    //if (!Model.TravProg.Any())
-    //{
-    //    Model.TravProg.Add("");
-    //    Model.TravProg.Add("");
-    //    Model.TravProg.Add("");
-    //}
-
     if (Model.AfterTravlog == "C")
     {
         afterTrav1 = "Part Number";
@@ -41,35 +34,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </head>
 <body>
-
-    @if (Model.WorkingStat)
-    {
-        <script>
-            window.onload = function () {
-                $.ajax({
-                    url: '@Url.Action("UserRefreshed", "Work")',
-                    data: { sessionId: '@Model.SessionID' },
-                    success: function (response) {
-                        $('#stepnoid').val(response.StepNo);
-                        $('#taskid').val(response.Task);
-
-                        var Sing = document.getElementById('single');
-                        var Thr = document.getElementById('three');
-
-                        if (response.Div === 't') {
-                            Sing.style.display = 'none';
-                            Thr.style.display = 'block';
-                        }
-                        else {
-                            Sing.style.display = 'block';
-                            Thr.style.display = 'none';
-                        }
-                    }
-                });
-            }
-        </script>
-    }
-
     <div class="container-fluid">
         <div class="w-100">
             <div class="row bg-primary" style="height:60px">
@@ -89,7 +53,7 @@
                     }
                 </div>
                 <div class="col-7 d-flex justify-content-center align-self-center border-3 border-dark bg-dark ">
-                    <marquee class="border-3 border-dark bg-dark text-white">Please follow the steps of your MPI alongside your traveler, have a great day! Avoid refreshing the page.</marquee>
+                    <marquee class="border-3 border-dark bg-dark text-white">Please follow the steps of your MPI/MTI alongside your traveler, have a great day!.</marquee>
                 </div>
                 <div class="col-4 d-flex justify-content-around">
                     <div class="align-self-center">
@@ -219,10 +183,10 @@
                         <h4 class="card-title text-center">Primary Docs</h4>
                     </div>
                     <div class="card-body row">
-                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('AssyDrawing')" data-bs-toggle="modal" data-bs-target="#docuFrame">Assembly Drawing</button>
-                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('BOM')" data-bs-toggle="modal" data-bs-target="#docuFrame">Bills of Materials</button>
-                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('SchematicDiag')" data-bs-toggle="modal" data-bs-target="#docuFrame">Schematic Diagram</button>
-                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="" data-bs-toggle="modal" data-bs-target="#docuFrame">Workmanship Standard (MPI)</button>
+                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('AssyDrawing', 'Assembly Drawing')" data-bs-toggle="modal" data-bs-target="#docuFrame">Assembly Drawing</button>
+                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('BOM', 'BOM')" data-bs-toggle="modal" data-bs-target="#docuFrame">Bills of Materials</button>
+                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('SchematicDiag', 'Schematic Diagram')" data-bs-toggle="modal" data-bs-target="#docuFrame">Schematic Diagram</button>
+                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('WS', 'Workmanship Standard')" data-bs-toggle="modal" data-bs-target="#docuFrame">Workmanship Standard (MPI)</button>
                     </div>
                 </div>
                 <div class="card mt-1 border-3 border-dark">
@@ -234,7 +198,7 @@
                             counter = 0;
                             foreach (string opl in Model.Opl)
                             {
-                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@opl')" data-bs-toggle="modal" data-bs-target="#docuFrame">One Point Lesson @counter</button>
+                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@opl', 'One Point Lesson')" data-bs-toggle="modal" data-bs-target="#docuFrame">One Point Lesson @counter</button>
                                 counter++;
                             }
                         }                     
@@ -249,7 +213,7 @@
                             counter = 0;
                             foreach (string prco in Model.Prco)
                             {
-                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@prco')" data-bs-toggle="modal" data-bs-target="#docuFrame">PRCO @counter</button>
+                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@prco', 'PRCO')" data-bs-toggle="modal" data-bs-target="#docuFrame">PRCO @counter</button>
                                 counter++;
                             }
                         }                    
@@ -264,7 +228,7 @@
                             counter = 0;
                             foreach (string dero in Model.Derogation)
                             {
-                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@dero')" data-bs-toggle="modal" data-bs-target="#docuFrame">Derogation @counter</button>
+                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@dero', 'Derogation')" data-bs-toggle="modal" data-bs-target="#docuFrame">Derogation @counter</button>
                                 counter++;
                             }
                         }
@@ -279,7 +243,7 @@
                             counter = 0;
                             foreach (string memo in Model.Memo)
                             {
-                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@memo')" data-bs-toggle="modal" data-bs-target="#docuFrame">Engineering Memo @counter</button>
+                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@memo', 'Engineering Memo')" data-bs-toggle="modal" data-bs-target="#docuFrame">Engineering Memo @counter</button>
                                 counter++;
                             }
                         }
@@ -317,26 +281,26 @@
                                 <tr>
                                     <td>
                                         @{
-                                            <input value="For viewing only" id="stepnoid" name="stepNo" class="form-control border-0 text-nowrap" readonly />
+                                            <input value="" id="stepnoid" name="stepNo" class="form-control border-0 text-nowrap" readonly />
                                         }
 
                                     </td>
                                     <td>
                                         @{
-                                            <textarea class="w-100" id="taskid" style="max-height:200px; min-height:120px" name="task" readonly>For viewing only</textarea>
+                                            <textarea class="w-100" id="taskid" style="max-height:200px; min-height:120px" name="task" readonly></textarea>
                                         }
                                     </td>
                                     <td>
                                         <div>
                                             <div style="display:none" id="three" class="w-100">
                                                 <div class="d-flex">
-                                                    <input class="form-control w-100" id="firstParaid" placeholder="box 1" />
-                                                    <input class="form-control w-100" id="secParaid" placeholder="box 2" />
-                                                    <input class="form-control w-100" id="thirdParaid" placeholder="box 3" />
+                                                    <input class="form-control w-100" id="firstParaid" placeholder="box 1" autocomplete="off"/>
+                                                    <input class="form-control w-100" id="secParaid" placeholder="box 2" autocomplete="off" />
+                                                    <input class="form-control w-100" id="thirdParaid" placeholder="box 3" autocomplete="off" />
                                                 </div>
                                             </div>
                                             <div style="display:none" id="single" class="w-100">
-                                                <input class="form-control w-100" id="singleParaid" />
+                                                <input class="form-control w-100" id="singleParaid" autocomplete="off" />
                                             </div>
                                         </div>
                                     </td>
@@ -386,13 +350,13 @@
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <input class="form-control w-100" id="one" name="logcellone"/>
+                                            <input class="form-control w-100" id="one" name="logcellone" autocomplete="off"/>
                                         </td>
                                         <td>
-                                            <input class="form-control w-100" id="two" name="logcelltwo"/>
+                                            <input class="form-control w-100" id="two" name="logcelltwo" autocomplete="off" />
                                         </td>
                                         <td>
-                                            <input class="form-control w-100" id="threetrav" name="logcellthree" />
+                                            <input class="form-control w-100" id="threetrav" name="logcellthree" autocomplete="off" />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -437,10 +401,10 @@
                         Information
                     </div>
                     <div class="modal-body text-wrap">
-                        You still have @afterTravTitle.ToLower(), click continue to proceed. During this you cannot pause or exit. Please, do not exit the browser, thank you.
+                        You still have @afterTravTitle.ToLower(), click continue to proceed. During this, you cannot pause or exit. Please, do not exit the browser. Thank you.
                     </div>
                     <div class="modal-footer">
-                        <input class="btn btn-primary" type="submit"/>
+                        <input class="btn btn-primary" type="submit" value="Proceed"/>
                     </div>
                 </form>
             </div>
@@ -567,8 +531,8 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 fw-bold">Document</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h1 class="modal-title fs-5 fw-bold" id="docTitle"></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="document.getElementById('docFrame').src = ''"></button>
                 </div>
                 <div class="modal-body">
                     <iframe class="border-3 border-dark" style="min-height:600px; max-height:600px; width:100%" id="docFrame" src=""></iframe>
@@ -584,7 +548,7 @@
                     <p class="modal-title fs-5 fw-bold">Problem Log</p>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeproblog"></button>
                 </div>
-                <form asp-controller="Work" asp-action="SubmitProblemLog" id="probForm">
+                <form asp-controller="Work" asp-action="SubmitProblemLog" asp-route-rDocNumber="@Model.DocumentNumber" id="probForm">
                     <div class="modal-body">
                         <div class="d-flex mb-2">
                             <div class="w-25 d-flex justify-content-between mx-2">
@@ -622,7 +586,7 @@
                                         <input class="form-control" id="ww" value="" placeholder="Required" name="wweek" required />
                                     </td>
                                     <td>
-                                        <input class="form-control" id="pro" value="" placeholder="Required" name="product" required />
+                                        <input class="form-control" value="@Model.Product" name="product" readonly/>
                                     </td>
                                     <td>
                                         <input class="form-control" id="aff" value="" placeholder="Required" name="affected" required />
@@ -731,52 +695,67 @@
         </div>
     </form>
 
-    <form class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="configtest" asp-controller="" asp-action="">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <p class="modal-title fs-5 fw-bold">Config</p>
-                </div>
-                <div class="modal-body">
-
-                </div>
-                <div class="modal-footer">
-                    <input class="btn btn-primary" type="submit"/>
-                </div>
-            </div>
-        </div>
-    </form>
-
 <script>
-    function SetReason(reason) {
-        document.getElementById('reasontext').value = reason;
-        document.getElementById('pausemodal').submit();
-    }
-</script>
+    var dTitle = document.getElementById('docTitle');
 
-<script>
-    function WhichDev(docName)
-    {
+        document.querySelectorAll('input').forEach(function (input) {
+            input.setAttribute("autocomplete", "off");
+        });
+
+        $(function () {
+            $.ajax({
+                url: '@Url.Action("UserRefreshed", "Work")',
+                data: { sessionId: '@Model.SessionID' },
+                success: function (response) {
+                    $('#stepnoid').val(response.StepNo);
+                    $('#taskid').val(response.Task);
+
+                    var Sing = document.getElementById('single');
+                    var Thr = document.getElementById('three');
+
+                    if (response.Div === 't') {
+                        Sing.style.display = 'none';
+                        Thr.style.display = 'block';
+                    }
+                    else {
+                        Sing.style.display = 'block';
+                        Thr.style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        if ('@Model.WorkingStat' === 'True' && document.getElementById('stepnoid').value === '' && document.getElementById('taskid').value === '' && '@Model.AfterTravlog' !== 'N') {
+            $(function () {
+                $('#logsheet').modal('show');
+            });
+        }
+
+    function WhichDev(docNamem, doctit) {
         document.getElementById('closeoffcanvas').click();
         var Frame = document.getElementById('docFrame');
 
         var baseUrl = '@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber})';
         Frame.src = baseUrl + '&whichDoc=' + docName;
+        dTitle.innerText = doctit;
     }
-</script>
 
-<script>
-    function SetDoc(doc) {
+    function SetDoc(doc, doctit) {
         document.getElementById('closeoffcanvas').click();
         var Frame = document.getElementById('docFrame');
 
         var baseUrl = '@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber})';
         Frame.src = baseUrl + '&whichDoc=' + doc;
+        dTitle.innerText = doctit;
     }
+
+    function SetReason(reason) {
+        document.getElementById('reasontext').value = reason;
+        document.getElementById('pausemodal').submit();
+    }
+    
 </script>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    
 </body>
 
 </html>

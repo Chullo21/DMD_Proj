@@ -98,7 +98,7 @@ body {
     text-align: center;
 }*/
 
-.card {
+/*.card {
     border: 3px solid;
     border-color: black;
 }
@@ -109,7 +109,7 @@ body {
     font-weight:bold;
     background-color: darkslateblue;
     color: white;
-}
+}*/
 
 /*.input-group {
     display: flex;
@@ -145,4 +145,10 @@ body {
     100% {
         background-position: left
     }
+}
+
+.card-header {
+    background-color: darkslateblue;
+    color: white;
+    text-align: center;
 }
