@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Problem Logs";
+    string[] EN = TempData["EN"] as string[];
+    TempData.Keep();
 }
 
 @section scripts {
@@ -20,6 +22,7 @@
     </script>
 }
 <div>
+    <i>NOTE: Click a row to view more details.</i>
     <div class="table-responsive">
         <table class="table table-hover text-nowrap text-center" id="plTable">
             <thead class="table-primary">
@@ -60,7 +63,7 @@
                     <th>
                         Status (S)
                     </th>
-                    <th>
+                    <th class="bg-dark text-white">
                         Actions
                     </th>
                 </tr>
@@ -68,11 +71,14 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr>
-                        <td class="border-1 border-dark">
+
+                    <tr class="border-1 border-dark" data-bs-target="#plDetails" data-bs-toggle="modal" onclick="SetDets('@item.PLNo', '@item.LogDate', '@item.WorkWeek', '@item.AffectedDoc', '@item.PNDN',
+'@item.Desc', '@item.Problem', '@item.Reporter', '@item.Category', '@item.RC', '@item.CA', '@item.InterimDoc', '@item.IDTCD.Value.ToShortDateString()', '@item.IDStatus', '@item.StandardizedDoc', '@item.SDTCD.Value.ToShortDateString()', '@item.SDStatus',
+'@item.Validator', '@item.PLIDStatus', '@item.PLSDStatus', '@item.PLRemarks', '@item.OwnerRemarks')">
+                        <td class="border-1 border-dark" >
                             @Html.DisplayFor(modelItem => item.PLNo)
                         </td>
-                        <td>
+                        <td >
                             @item.LogDate.ToShortDateString()
                         </td>
                         <td>
@@ -94,24 +100,7 @@
                                 Write("");
                             }
                         <td>
-                            @switch (item.IDStatus)
-                            {
-                                case "o":
-                                    {
-                                        Write("Open");
-                                        break;
-                                    }
-                                case "c":
-                                    {
-                                        Write("Closed");
-                                        break;
-                                    }
-                                default:
-                                    {
-                                        Write("");
-                                        break;
-                                    }
-                            }
+                            @item.IDStatus
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.StandardizedDoc)
@@ -127,24 +116,7 @@
                             }
                         </td>
                         <td>
-                            @switch (item.SDStatus)
-                            {
-                                case "o":
-                                    {
-                                        Write("Open");
-                                        break;
-                                    }
-                                case "c":
-                                    {
-                                        Write("Closed");
-                                        break;
-                                    }
-                                default:
-                                    {
-                                        Write("");
-                                        break;
-                                    }
-                            }
+                            @item.SDStatus
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.PLIDStatus)
@@ -154,14 +126,13 @@
                         </td>
                         <td>
                             <div class="d-flex justify-content-between">
-                                <button class="btn btn-secondary" data-bs-target="#plDetails" data-bs-toggle="modal" onclick="SetDets('@item.PLNo', '@item.LogDate', '@item.WorkWeek', '@item.AffectedDoc', '@item.PNDN',
-'@item.Desc', '@item.Problem', '@item.Reporter', '@item.Category', '@item.RC', '@item.CA', '@item.InterimDoc', '@item.IDTCD', '@item.IDStatus', '@item.StandardizedDoc', '@item.SDTCD', '@item.SDStatus',
-'@item.Validator', '@item.PLIDStatus', '@item.PLSDStatus', '@item.PLRemarks')">
-                                    More
-                                </button>
-                                    @if (string.IsNullOrEmpty(item.Validation))
+                                    @if (string.IsNullOrEmpty(item.Validation) && item.Owner == EN[0])
                                     {
                                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#validatemodal" onclick="document.getElementById('plidVal').value = '@item.PLID'">Validate</button>
+                                    }
+                                    else if (!string.IsNullOrEmpty(item.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN"))
+                                    {
+                                        <button class="btn btn-success">Validate</button>
                                     }
                             </div>
                         </td>
@@ -175,8 +146,7 @@
 <script>
     function PLConc(val)
     {
-        if (val === 'Valid')
-        {
+        if (val === 'Valid'){
             document.getElementById('plisValid').style.display = 'block';
             document.getElementById('selectCat').setAttribute('required', 'true');
             document.getElementById('remSetReq').removeAttribute('required');
@@ -187,7 +157,7 @@
             document.getElementById('idVal').setAttribute('required', 'true');
             document.getElementById('idtcdVal').setAttribute('required', 'true');
             document.getElementById('idstatVal').setAttribute('required', 'true');
-            document.getElementById('sdVal').setAttribute('required', 'true');
+            @*document.getElementById('sdVal').setAttribute('required', 'true');*@
             document.getElementById('sdtcdVal').setAttribute('required', 'true');
             document.getElementById('sdstatVal').setAttribute('required', 'true');
         }
@@ -202,7 +172,7 @@
             document.getElementById('idVal').removeAttribute('required');
             document.getElementById('idtcdVal').removeAttribute('required');
             document.getElementById('idstatVal').removeAttribute('required');
-            document.getElementById('sdVal').removeAttribute('required');
+            @*document.getElementById('sdVal').removeAttribute('required');*@
             document.getElementById('sdtcdVal').removeAttribute('required');
             document.getElementById('sdstatVal').removeAttribute('required');
         }
@@ -218,37 +188,14 @@
             document.getElementById('idVal').removeAttribute('required');
             document.getElementById('idtcdVal').removeAttribute('required');
             document.getElementById('idstatVal').removeAttribute('required');
-            document.getElementById('sdVal').removeAttribute('required');
+            @*document.getElementById('sdVal').removeAttribute('required');*@
             document.getElementById('sdtcdVal').removeAttribute('required');
             document.getElementById('sdstatVal').removeAttribute('required');
         }
     }
 
-    function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rc, ca, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem)
+    function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rc, ca, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem, orem)
     {
-        if (idstat === 'o')
-        {
-            idstat = 'Open';
-        }
-        else if (idstat === 'c')
-        {
-            idstat = 'Closed';
-        }
-        else
-        {
-            idstat = '';
-        }
-
-        if (sdstat === 'o') {
-            sdstat = 'Open';
-        }
-        else if (sdstat === 'c') {
-            sdstat = 'Closed';
-        }
-        else {
-            sdstat = '';
-        }
-
         document.getElementById('plno').innerHTML = pl;
         document.getElementById('logdate').innerHTML = log;
         document.getElementById('ww').innerHTML = wweek;
@@ -272,7 +219,69 @@
         document.getElementById('plidStat').innerHTML = plidstat;
         document.getElementById('plsdStat').innerHTML = plsdstat;
         document.getElementById('plRem').innerHTML = plrem;
+
+        document.getElementById('oRem').innerHTML = orem;
     }
+</script>
+
+<div class="modal fade" data-bs-backdrop="static" id="plmodal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <p>Acknowledgement</p>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div>
+                        <label class="form-label">Validated By</label>
+                        <input class="form-control" name="plName" value="@EN[0]" readonly/>
+                    </div>
+                    <div>
+                        <label class="form-label">Interim Status</label>
+                        <select class="form-select">
+                            <option>Open</option>
+                            <option>Open</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Standardized Status</label>
+                        <select class="form-select">
+                            <option>Open</option>
+                            <option>Open</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Remarks</label>
+                        <textarea class="form-control" style="max-height:150px; min-height:40px"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#selectCat').change(function () {
+            var selectedValue = $(this).val();
+
+            $.ajax({
+                url: '@Url.Action("GetPLTCDDates", "ProblemLog")',
+                data: { val: selectedValue },
+                success: function (response) {
+   
+                    document.getElementById('idtcdVal').value = response.ID;
+                    document.getElementById('sdtcdVal').value = response.SD;
+                },
+                error: function (error) {
+
+                    console.error(error);
+                }
+            });
+
+        });
+    });
 </script>
 
 <div class="modal fade" data-bs-backdrop="static" id="validatemodal" style="z-index:2001">
@@ -303,7 +312,7 @@
                         <div id="plisValid" style="display:none">
                             <div>
                                 <label class="form-label">Category</label>
-                                <select class="form-select" id="selectCat" name="Category">
+                                <select class="form-select" id="selectCat" name="Category" onchange="">
                                     <option hidden selected value="">Select Category</option>
                                     <option>A</option>
                                     <option>B</option>
@@ -326,15 +335,11 @@
                                     </div>
                                     <div>
                                         <label class="form-label">TCD</label>
-                                        <input class="form-control" type="date" id="idtcdVal" name="IDTCD"/>
+                                        <input class="form-control" type="date" id="idtcdVal" name="IDTCD" readonly/>
                                     </div>
                                     <div>
                                         <label class="form-label">Status</label>
-                                        <select class="form-select" id="idstatVal" name="IDStatus">
-                                            <option hidden selected value="">Select Category</option>
-                                            <option value="o">Open</option>
-                                            <option value="c">Close</option>
-                                        </select>
+                                        <input class="form-control" id="idstatVal" name="IDStatus" value="For Verification" readonly/>
                                     </div>
                                 </div>
                                 <div class="d-flex w-100 justify-content-evenly">
@@ -344,15 +349,11 @@
                                     </div>
                                     <div>
                                         <label class="form-label">TCD</label>
-                                        <input class="form-control" type="date" id="sdtcdVal" name="SDTCD"/>
+                                        <input class="form-control" type="date" id="sdtcdVal" name="SDTCD" readonly/>
                                     </div>
                                     <div>
                                         <label class="form-label">Status</label>
-                                        <select class="form-select" id="sdstatVal" name="SDStatus">
-                                            <option hidden selected value="">Select Category</option>
-                                            <option value="o">Open</option>
-                                            <option value="c">Close</option>
-                                        </select>
+                                        <input class="form-control" id="sdstatVal" name="SDStatus" value="OPEN" readonly/>
                                     </div>
                                 </div>
                             </div>
@@ -367,8 +368,8 @@
     </div>
 </div>
 
-<div class="modal fade" data-bs-backdrop="static" id="plDetails" style="z-index:2001">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+<div class="modal fade text-center" data-bs-backdrop="true" id="plDetails" style="z-index:2001">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <p class="modal-title text-center w-100 fs-5 fw-bold">More Details</p>
@@ -378,7 +379,7 @@
                 <div>
                     <div>
                         <table class="table table-bordered">
-                            <thead class="table-primary">
+                            <thead class="table-success">
                                 <tr>
                                     <th>
                                         PL#
@@ -399,9 +400,6 @@
                                         Desc.
                                     </th>
                                     <th>
-                                        Problem
-                                    </th>
-                                    <th>
                                         Reported By
                                     </th>
                                 </tr>
@@ -420,8 +418,6 @@
                                     </td>
                                     <td id="desc">
                                     </td>
-                                    <td id="prob">
-                                    </td>
                                     <td id="reporter">
                                     </td>
                                 </tr>
@@ -430,7 +426,7 @@
                     </div>
                     <div>
                         <table class="table table-bordered">
-                            <thead class="table-primary">
+                            <thead class="table-warning">
                                 <tr>
                                     <th>
                                         Category
@@ -451,7 +447,7 @@
                                         Status
                                     </th>
                                     <th>
-                                        Standardized Doc.
+                                        SD.
                                     </th>
                                     <th>
                                         TCD
@@ -487,7 +483,7 @@
                     </div>
                     <div>
                         <table class="table table-bordered">
-                            <thead class="table-primary">
+                            <thead class="table-secondary">
                                 <tr>
                                     <th>
                                         Validated by
@@ -512,10 +508,17 @@
                                     <td id="plsdStat">
                                     </td>
                                     <td id="plRem">
-
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div>
+                        <label class="form-label">Problem</label>
+                        <textarea id="prob" class="form-control" style="max-height:100px; min-height:50px" readonly></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label">Originator's Remarks</label>
+                        <textarea id="oRem" class="form-control" style="max-height:100px; min-height:50px" readonly></textarea>
                     </div>
                 </div>           
             </div>

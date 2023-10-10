@@ -557,7 +557,7 @@
                                         Reported By:
                                     </label>
                                 </div>
-                                <input class="form-control text-center" id="reporter" value="@EN[0]" name="reportedby" readonly />
+                                <input class="form-control text-center w-auto" id="reporter" value="@EN[0]" name="reportedby" readonly/>
                             </div>
                         </div>
                         <table class="table table-bordered">
@@ -702,36 +702,39 @@
             input.setAttribute("autocomplete", "off");
         });
 
-        $(function () {
-            $.ajax({
-                url: '@Url.Action("UserRefreshed", "Work")',
-                data: { sessionId: '@Model.SessionID' },
-                success: function (response) {
-                    $('#stepnoid').val(response.StepNo);
-                    $('#taskid').val(response.Task);
-
-                    var Sing = document.getElementById('single');
-                    var Thr = document.getElementById('three');
-
-                    if (response.Div === 't') {
-                        Sing.style.display = 'none';
-                        Thr.style.display = 'block';
-                    }
-                    else {
-                        Sing.style.display = 'block';
-                        Thr.style.display = 'none';
-                    }
-                }
-            });
-        });
-
-        if ('@Model.WorkingStat' === 'True' && document.getElementById('stepnoid').value === '' && document.getElementById('taskid').value === '' && '@Model.AfterTravlog' !== 'N') {
+        window.onload = function ()
+        {
             $(function () {
-                $('#logsheet').modal('show');
-            });
-        }
+                $.ajax({
+                    url: '@Url.Action("UserRefreshed", "Work")',
+                    data: { sessionId: '@Model.SessionID' },
+                    success: function (response) {
+                        $('#stepnoid').val(response.StepNo);
+                        $('#taskid').val(response.Task);
 
-    function WhichDev(docNamem, doctit) {
+                        var Sing = document.getElementById('single');
+                        var Thr = document.getElementById('three');
+
+                        if (response.Div === 't') {
+                            Sing.style.display = 'none';
+                            Thr.style.display = 'block';
+                        }
+                        else {
+                            Sing.style.display = 'block';
+                            Thr.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        };
+
+        //if ('@Model.WorkingStat' === 'True' && document.getElementById('stepnoid').value === '' && document.getElementById('taskid').value === '' && '@Model.AfterTravlog' !== 'N') {
+        //    $(function () {
+        //        $('#logsheet').modal('show');
+        //    });
+        //}
+
+    function WhichDev(docName, doctit) {
         document.getElementById('closeoffcanvas').click();
         var Frame = document.getElementById('docFrame');
 

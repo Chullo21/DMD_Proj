@@ -1,4 +1,5 @@
-﻿using DMD_Prototype.Data;
+﻿using DMD_Prototype.Controllers;
+using DMD_Prototype.Data;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 
@@ -8,7 +9,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-// Add services to the container.
+
+builder.Services.AddScoped<ISharedFunct, UniversalFunctions>();
+
 builder.Services.AddControllersWithViews();
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;

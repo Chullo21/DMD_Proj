@@ -426,7 +426,7 @@ namespace DMD_Prototype.Controllers
             }
 
             string jsonData = JsonConvert.SerializeObject("Success");
-            return Content(jsonData, "application/json"); // notify originator about the pl
+            return Content(jsonData, "application/json");
         }
 
         private string SetSeries(string seriesPrimary)
