@@ -11,7 +11,6 @@ namespace DMD_Prototype.Controllers
         private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
         private readonly string autoDir = "D:\\jtoledo\\Desktop\\SystemAutomations";
         private readonly string userTravName = "Traveler.xlsx";
-        private readonly string userPdfName = "CTraveler.pdf";
 
         private readonly AppDbContext _Db;
         private readonly List<MTIModel> _mtiModel;

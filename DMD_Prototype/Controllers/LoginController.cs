@@ -1,6 +1,8 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Net.Http.Json;
 
 namespace DMD_Prototype.Controllers
 {
@@ -31,49 +33,42 @@ namespace DMD_Prototype.Controllers
             return View("Loginpage");
         }
 
-        public IActionResult TryLogin(string? user, string? pass)
+        public ContentResult TryLogin(string user, string pass)
         {
-            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass) || (string.IsNullOrEmpty(user) && string.IsNullOrEmpty(pass)))
-            {
-                TempData["LoginTemp"] = "Please fill both username and password";
+            AccountModel? acc = _accounts.FirstOrDefault(j => j.Username == user && j.Password == pass);
 
-                return RedirectToAction("FailedLogin");
-            }
-            else if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(pass))
-            {
-                AccountModel? acc = _accounts.FirstOrDefault(j => j.Username == user && j.Password == pass);
+            string jsonContent = string.Empty;
+            string val = string.Empty;
+            char type = 'c';
 
-                if (acc != null)
+            if (acc != null)
+            {
+                string[] accData = { acc.AccName, acc.Role, acc.UserID };
+
+                TempData["EN"] = null;
+
+                TempData["EN"] = accData;
+
+                if (CheckForActiveSession(acc.UserID))
                 {
-                    string[] accData = { acc.AccName, acc.Role, acc.UserID};
-
-                    TempData["EN"] = null;
-
-                    TempData["EN"] = accData;
-
-                    if (CheckForActiveSession(acc.UserID))
-                    {
-                        return RedirectToAction("ContinueWork", "Work", new { userID = acc.UserID, noPW = false});
-                    }
-                    else if (CheckForActionSessionInSW(acc.UserID))
-                    {
-                        return RedirectToAction("ContinueWork", "Work", new { userID = acc.UserID, noPW = true});
-                    }
-                    else
-                    {
-                        return RedirectToAction("Index", "Home");
-                    }
-                    
+                    val = Path.Combine("Work", "ContinueWork") + $"?userID={acc.UserID}" + $"&noPW={false}";
+                    type = 'a';
+                }
+                else if (CheckForActionSessionInSW(acc.UserID))
+                {
+                    val = Path.Combine("Work", "ContinueWork") + $"?userID={acc.UserID}" + $"&noPW={true}";
+                    type = 'a';
                 }
                 else
                 {
-                    TempData["LoginTemp"] = "Invalid username or password";
-
-                    return RedirectToAction("FailedLogin");
+                    val = Path.Combine("Home", "Index");
+                    type = 'a';
                 }
             }
 
-            return RedirectToAction("Index", "Home");
+            jsonContent = JsonConvert.SerializeObject(new { Type = type, nLink = val });
+
+            return Content(jsonContent, "application/json");
         }
 
         private bool CheckForActiveSession(string tech)

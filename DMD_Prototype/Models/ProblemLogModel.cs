@@ -16,19 +16,20 @@ namespace DMD_Prototype.Models
         public string Problem { get; set; } = string.Empty;
         public string Reporter { get; set; } = string.Empty;
 
-        public string Category { get; set; } = string.Empty;
-        public string RC { get; set; } = string.Empty;
-        public string CA { get; set; } = string.Empty;
-        public string InterimDoc { get; set; } = string.Empty;
+        public string? Category { get; set; } = string.Empty;
+        public string? RC { get; set; } = string.Empty;
+        public string? CA { get; set; } = string.Empty;
+        public string? InterimDoc { get; set; } = string.Empty;
         public DateTime? IDTCD { get; set; }
-        public string IDStatus { get; set; } = string.Empty;
+        public string? IDStatus { get; set; } = string.Empty;
         public string? StandardizedDoc { get; set; } = string.Empty;
         public DateTime? SDTCD { get; set; }
-        public string SDStatus { get; set; } = string.Empty;
-        public string Validator { get; set; } = string.Empty;
-        public string PLIDStatus { get; set; } = "OPEN";
-        public string PLSDStatus { get; set; } = "OPEN";
-        public string PLRemarks { get; set; } = string.Empty;
+        public string? SDStatus { get; set; } = string.Empty;
+
+        public string? Validator { get; set; } = string.Empty;
+        public string? PLIDStatus { get; set; }
+        public string? PLSDStatus { get; set; }
+        public string? PLRemarks { get; set; } = string.Empty;
 
         public string Validation { get; set; } = string.Empty;
         public string? OwnerRemarks { get; set; } = string.Empty; 

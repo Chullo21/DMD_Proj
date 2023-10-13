@@ -9,100 +9,76 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - ATS ENGINEERING</title>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/DMD_Prototype.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        .blur-overlay {
-            backdrop-filter: blur(1px);
-            border: 3px solid;
-        }
-    </style>
+    <link href="~/css/site.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
 </head>
-<body class="overflow-hidden loginbg">
-    <header class="header-nav mb-5">
-        <div class="d-flex justify-content-between w-100" style="border-bottom:2px solid; height:55px; background-color:#2706F0">
-            <div class="align-self-center">
-                <img style="height:30px; margin-inline:25px" src="~/photos/pimeslogo.png" />
-            </div>
-            <div class="align-self-center">
-                <a class="text-white billsfont text-decoration-none text-wrap" href="https://pimes.com.ph/">P. IMES Corp. ATS - ENGINEERING</a>
-            </div>
-            <div class="align-self-center">
-                <img style="height:30px" src="~/photos/ats wbg.png" />
-                <button class="btn btn-secondary mx-3 text-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
-                    &#8592;
-                </button>
-            </div>
-        </div>
-    </header>
+<body class="loginbg">   
+    <div class="container-fluid" style="background-color:#2706F0">
+        <header class="py-1 h-100">
+            <img class="float-start" height="30" src="~/pimeslogo.png" />            
+            <img class="float-end" height="30" src="~/ats wbg.png" />
+            <h2 class="text-white fs-5 fw-bold text-decoration-none text-wrap text-center my-auto py-1" href="https://pimes.com.ph/">ATS ENGINEERING - DMD PORTAL</h2>            
+        </header>
+    </div>
 
     <div class="container-fluid">
-        <div id="loading-icon" class="loading-icon"></div>
-        <div class="row vh-100 justify-content-around">
-            <div class="col-sm-12 col-lg-4 h-100 d-flex justify-content-center" style="backdrop-filter: blur(3px); border: 3px solid; border-color:blue">
-                <div class="card bg-white w-75 h-auto my-auto border-4 border-dark">
-                    <form asp-controller="Login" asp-action="TryLogin" method="post" onsubmit="ShowLoading()" class="d-flex flex-column align-items-center">
-                        <div class="w-100 d-flex justify-content-center border-3 border-dark">
-                            <h3 class="text-center card-header text-white w-100" style="background-color:blue; border-radius:5px">Welcome to DMD Portal</h3>
-                        </div>
-                        @{
-                            string? catchFailedLogin = TempData["LoginTemp"] as string;
-
-                            if (!string.IsNullOrEmpty(catchFailedLogin))
-                            {
-                                //<div class="border-3 border-danger w-100 text-center" style="background-color:indianred" >
-                                //    @catchFailedLogin
-                                //</div>
-                                <div class="alert alert-danger mt-1 border-3" role="alert">@catchFailedLogin</div>
-                            }
-                        }
-                        <div class="input-group my-2 mx-auto w-75">
-                            <span class="input-group-text fw-bolder" id="basic-addon1">&#64;</span>
-                            <input class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" name="user">
-                        </div>
-                        <div class="input-group my-1 mx-auto w-75">
-                            <span class="input-group-text" id="basic-addon1"><i style="font-size:24px" class="fa">&#xf023;</i></span>
-                            <input class="form-control" placeholder="Password" type="password" name="pass" />
-                        </div>
-                        <div class="text-center my-3 w-75">
-                            <input type="submit" class="btn btn-primary w-100" value="Login" />
-                        </div>
-                    </form>
+        <div class="row justify-content-center" style="min-height:80vh">
+            <div class="col-sm-8 col-md-6 col-lg-3 my-auto">
+                <div class="alert alert-danger mt-2 text-center" id="loginfailed" style="display:none">
+                    
                 </div>
-            </div>
-            <div class="col-sm-12 col-lg-6 mt-5" style="backdrop-filter: blur(5px); border: 3px solid; border-color:blue">
-                <div class="h-100 card bg-transparent m-3 border-0">
-                    <div class="d-flex align-items-center h-25">
-                        <div class="text-center">
-                            <p class="text-nowrap loginfont text-decoration-underline my-auto" style="color: white; backdrop-filter: blur(10px)">DMD Portal</p>
-                        </div>
-                        <div class="mx-4">
-                            <img class="w-100" src="~/photos/csatlogo.png" />
-                        </div>
-
-                    </div>
-                    <div class="m-4 fw-bold" style="height:380px;overflow-y:auto">
-                        <p class="text-wrap text-white">
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer Satisfaction (CSat) is the process of evaluating and addressing customer feedback and claims regarding issues related to products, services, or overall customer experience.
-                        </p>
-                        <dl class="text-wrap text-white">
-                            <dd>
-                                1. Refers to the level of contentment or happiness that customers experience with a company's offerings. It is an important metric for businesses to gauge their performance and identify areas for improvement.
-                            </dd>
-                            <dd>
-                                2. When customers have complaints or issues with products or services, the company should take these claims seriously and work to resolve them in a satisfactory manner. This may involve investigating the problem, providing solutions, and ensuring customer concerns are resolved.
-                            </dd>
-                            <dd>
-                                3. CSat covers a broad range of aspects related to products and services, such as quality, functionality, customer support, delivery, and more. It involves identifying pain points and areas of improvement to enhance the overall customer experience.
-                            </dd>
-                        </dl>
+                <div class="card border-3 border-dark">
+                    <div class="card-header text-center fs-5 fw-bold bg-primary">
+                        Welcome to DMD Portal
+                    </div>                   
+                    <div class="card-body">
+                        <form id="loginFormID">
+                            <div>
+                                <input class="form-control" placeholder="Username" id="username" name="user" required />
+                            </div>
+                            <div>
+                                <input class="form-control my-2" placeholder="Password" id="password" type="password" name="pass" required />
+                            </div>
+                            <div class="my-2">
+                                <input class="btn btn-primary w-100" type="submit" value="Login"/>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        $(function (){
+            $('#loginFormID').submit(function (e){
+                e.preventDefault();
+
+                $.ajax({
+                    type:'Post',
+                    url: '@Url.Action("TryLogin", "Login")',
+                    data: $(this).serialize(),
+                    success: function (response)
+                    {
+                        if (response.Type === 'a'){
+                            window.location.href = response.nLink;
+                        }
+                        else{
+                            var f = document.getElementById('loginfailed');
+                            $('#username').val('');
+                            $('#password').val('');
+                            f.style.display = 'block';
+                            f.innerHTML = 'Incorrect username or password';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    
     <div class="offcanvas offcanvas-end border-3 shadow" style="z-index:2001; background-color:#B5AD9A" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header bg-primary border-5 border-dark">
             <div class="d-flex justify-content-center w-100">
@@ -117,21 +93,14 @@
             </a>
         </div>
     </div>
-    <footer class="loginfooter">
-        <div class="w-100 h-100">
-            <p class="text-white mt-1 mx-3">
+    <footer class="footerLayout">
+        <div class="my-auto">
+            <p class="text-white mx-3">
                 &copy; 2023 - P. IMES - ATS QUALITY ASSURANCE
             </p>
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function showLoadingIcon() {
-            $('#loading-icon').addClass('loading');
-            $('#loading-icon').show();
-        }
-    </script>
-
 </body>
 
 </html>

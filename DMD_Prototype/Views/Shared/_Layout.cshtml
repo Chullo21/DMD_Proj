@@ -14,44 +14,40 @@
     TempData.Keep();
 }
 <body style="background-color:lightgray">
-    <header class="header-nav" style="font-family:'Franklin Gothic'; z-index:2001">
-        <nav class="navbar navbar-expand-lg navbar-light" style="background-color:blue; height:125px">
-            <div class="container-fluid h-100 flex-md-column flex-sm-row">
-                <div class="w-100 d-flex justify-content-between align-self-start">
-                    <div>
+    <header class="header-nav" style="font-family:'Franklin Gothic'; z-index:1056">
+        <nav class="navbar navbar-expand-lg navbar-light" style="background-color:blue">
+            <div class="container-fluid flex-column">
+                <div class="w-100 d-flex justify-content-between align-self-start mb-2">
+                    <div class="my-auto">
                         <img style="width:60px; height: 30px" src="~/pimeslogo.png" />
                     </div>
-                    <div>
+                    <div class="">
+                        <h3 class="text-white fs-3 my-auto">ATS ENGINEERING - DMD PORTAL</h3>
+                    </div>
+                    <div class="my-auto">
                         <img style="width:60px; height: 30px" src="~/ats wbg.png" />
                     </div>
                 </div>
-                <div class="w-100 mt-0 d-flex justify-content-center h-auto align-self-center">
-                    <div class="h-100">
-                        <h3 class="text-white h-100" style="font-weight:900; font-size:xx-large">ATS ENGINEERING - DMD PORTAL</h3>
-                    </div>
-                </div>
                 <div class="w-100 d-flex justify-content-between">
-                    <div class="d-flex">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li>
-                                <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="Index">Home</a>
-                            </li>
-                            <li>
-                                <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="ShowTravelers">Travelers</a>
-                            </li>
-                            @if (EN[1] != "User")
-                            {
-                                <li>
-                                    <a class="nav-link active text-white" aria-current="page" asp-controller="ProblemLog" asp-action="ProblemLogView">Problem Log</a>
-                                </li>
-                            }
-                            <li>
-                                <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="AdminHome">More</a>
-                            </li>
-                        </ul>
+                    <div class="d-flex my-auto">
+                        <div class="mx-2">
+                            <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="Index">Home</a>
+                        </div>
+                        <div class="mx-2">
+                            <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="ShowTravelers">Travelers</a>
+                        </div>
+                        @if (EN[1] != "User")
+                        {
+                            <div class="mx-2">
+                                <a class="nav-link active text-white" aria-current="page" asp-controller="ProblemLog" asp-action="ProblemLogView">Problem Log</a>
+                            </div>
+                        }
+                        <div class="mx-2">
+                            <a class="nav-link active text-white" aria-current="page" asp-controller="Home" asp-action="AdminHome">More</a>
+                        </div>
                     </div>
                     <div>
-                        <div class="align-items-center text-white d-flex justify-content-center" style="margin-left:15px">
+                        <div class="align-items-center text-white d-flex justify-content-center">
                             <form asp-controller="Home" asp-action="LogoutOptions" id="logout" onchange="this.submit()">
                                 <select class="form-select bg-primary w-auto text-white border-1 border-dark" name="option">
                                     @{
@@ -69,14 +65,6 @@
                                                 &#128101;
                                                 Admin
                                             </option>
-                                            <option class="bg-white text-black" value="Actions">
-                                                &#128190;
-                                                Actions
-                                            </option>
-                                            <option class="bg-white text-black" value="Announcements">
-                                                &#128204;
-                                                Announcements
-                                            </option>
                                         }
                                     }
                                     <option class="text-danger bg-white" value="Logout">
@@ -90,7 +78,7 @@
             </div>
         </nav>
     </header>
-    <div class="container-fluid" style="margin-top:130px">
+    <div class="container-fluid" style="margin-top:110px">
         <main role="main" class="">
             @RenderBody()
         </main>

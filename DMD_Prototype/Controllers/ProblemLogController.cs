@@ -31,6 +31,52 @@ namespace DMD_Prototype.Controllers
             return EN;
         }
 
+        public IActionResult PLSubmitValidation(int plID, string Validator, string PLIDStatus, string PLSDStatus, string PLRemarks)
+        {           
+            ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plID);
+
+            if (PLIDStatus == "OPEN")
+            {
+                pl.IDStatus = "OPEN";
+            }
+
+            if (PLSDStatus == "OPEN")
+            {
+                pl.SDStatus = "OPEN";
+            }
+
+            pl.Validator = Validator;
+            pl.PLIDStatus = PLIDStatus;
+            pl.PLSDStatus = PLSDStatus;
+            pl.PLRemarks = PLRemarks;
+
+            if (ModelState.IsValid)
+            {
+                _Db.PLDb.Update(pl);
+                _Db.SaveChanges();
+            }
+
+            return RedirectToAction("ProblemLogView");
+        }
+
+        public IActionResult EditPLValidation(int plid, string rc, string ca, string interimdoc, string standardizeddoc)
+        {
+            ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plid);
+
+            pl.RC = rc;
+            pl.CA = ca;
+            pl.InterimDoc = interimdoc;
+            pl.StandardizedDoc = standardizeddoc;
+
+            if (ModelState.IsValid)
+            {
+                _Db.PLDb.Update(pl);
+                _Db.SaveChanges();
+            }
+
+            return RedirectToAction("ProblemLogView");
+        }
+
         public IActionResult ProblemLogView()
         {
             List<ProblemLogModel> pls = new List<ProblemLogModel>();
@@ -46,11 +92,22 @@ namespace DMD_Prototype.Controllers
                 if (GetUsername()[0] == p.Owner) pls.Add(p); else if (GetUsername()[1] == "PL_INTERVENOR" && p.PLIDStatus != "CLOSED" && p.PLSDStatus != "CLOSED") pls.Add(p);
             }
             
-            return View(pls);
+            return View(pls.OrderByDescending(j => j.LogDate));
         }
 
         public IActionResult SubmitPLValidation(ProblemLogModel fromView)
         {
+            string sdVal;
+
+            if (fromView.Validation == "Invalid")
+            {
+                sdVal = "";
+            }
+            else
+            {
+                sdVal = string.IsNullOrEmpty(fromView.StandardizedDoc) ? "No input" : fromView.StandardizedDoc;
+            }
+
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == fromView.PLID);
             {
                 pl.OwnerRemarks = fromView.OwnerRemarks;
@@ -59,10 +116,10 @@ namespace DMD_Prototype.Controllers
                 pl.CA = fromView.CA;
                 pl.InterimDoc = fromView.InterimDoc;
                 pl.IDTCD = fromView.IDTCD;
-                pl.IDStatus = fromView.IDStatus;
-                pl.StandardizedDoc = string.IsNullOrEmpty(fromView.StandardizedDoc) ? "No Input" : fromView.StandardizedDoc;
+                pl.IDStatus = fromView.Validation == "Valid" ? "For Validation" : "";
+                pl.StandardizedDoc = sdVal;
                 pl.SDTCD = fromView.SDTCD;
-                pl.SDStatus = fromView.SDStatus;
+                pl.SDStatus = fromView.Validation == "Valid" ? "OPEN" : "";
                 pl.Validation = fromView.Validation;
             }
 

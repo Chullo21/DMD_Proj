@@ -73,6 +73,13 @@ namespace DMD_Prototype.Controllers
         {
             MTIModel model = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNo)!;
 
+            string filePath = Path.Combine(mainDir, docuNo);
+
+            ViewData["opl"] = Directory.GetFiles(filePath).Where(j => j.Contains("OPL")).ToList();
+            ViewData["derogation"] = Directory.GetFiles(filePath).Where(j => j.Contains("Derogation")).ToList();
+            ViewData["prco"] = Directory.GetFiles(filePath).Where(j => j.Contains("PRCO")).ToList();
+            ViewData["memo"] = Directory.GetFiles(filePath).Where(j => j.Contains("EngineeringMemo")).ToList();
+
             return View(model);
         }
 
@@ -199,29 +206,52 @@ namespace DMD_Prototype.Controllers
 
         private void CopyMultipleDocs(List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo)
         {         
-            Dictionary<string, List<IFormFile>> files = new Dictionary<string, List<IFormFile>>();
+            //Dictionary<string, List<IFormFile>> files = new Dictionary<string, List<IFormFile>>();
             
-            if (onepointlesson?.Count() > 0) files.Add(oplName, onepointlesson);
-            if (prco?.Count() > 0) files.Add(prcoName, prco);
-            if (derogation?.Count() > 0) files.Add(derogationName, derogation);
-            if (engineeringmemo?.Count() > 0) files.Add(memoName, engineeringmemo);
+            //if (onepointlesson?.Count > 0) files.Add(oplName, onepointlesson);
+            //if (prco?.Count > 0) files.Add(prcoName, prco);
+            //if (derogation?.Count > 0) files.Add(derogationName, derogation);
+            //if (engineeringmemo?.Count > 0) files.Add(memoName, engineeringmemo);
 
-            foreach (var file in files)
-            {
-                foreach (var item in file.Value)
-                {
-                    string filePath = Path.Combine(mainDir, DocumentNumberVar);
+            //foreach (var file in files)
+            //{
+            //    foreach (var item in file.Value)
+            //    {
+            //        string filePath = Path.Combine(mainDir, DocumentNumberVar);
 
-                    string fileNameOnly = Path.GetFileNameWithoutExtension(file.Key);
-                    
-                    List<string> getFiles = Directory.GetFiles(filePath).Where(j => j.Contains(fileNameOnly)).ToList();
+            //        string fileNameOnly = Path.GetFileNameWithoutExtension(file.Key);
 
-                    using (FileStream fs = new FileStream(Path.Combine(filePath, fileNameOnly + "_" + (getFiles.Count + 1).ToString() + ".pdf"), FileMode.Create))
-                    {
-                        item.CopyTo(fs);
-                    }
-                }
-            }
+            //        List<string> getFiles = Directory.GetFiles(filePath).Where(j => j.Contains(fileNameOnly)).Select(Path.GetFileNameWithoutExtension).ToList().OrderBy(j => j.;
+
+            //        int counter = 0;
+
+            //        while (true)
+            //        {
+            //            foreach (var entry  in getFiles)
+            //            {
+            //                string[] name = entry.Split('_');
+
+            //                if (name[1] == counter.ToString())
+            //                {
+
+            //                }
+            //            }
+
+            //            counter++;
+            //        }
+                        
+                        
+
+            //        //string fileNameOnly = Path.GetFileNameWithoutExtension(file.Key);
+
+            //        //List<string> getFiles = Directory.GetFiles(filePath).Where(j => j.Contains(fileNameOnly)).ToList();
+
+            //        //using (FileStream fs = new FileStream(Path.Combine(filePath, fileNameOnly + "_" + (getFiles.Count + 1).ToString() + ".pdf"), FileMode.Create))
+            //        //{
+            //        //    item.CopyTo(fs);
+            //        //}
+            //    }
+            //}
         }
 
         public IActionResult ShowDoc(string docunumber, string whichDoc)
@@ -232,7 +262,7 @@ namespace DMD_Prototype.Controllers
                 FileStream fs = new FileStream(Path.Combine(mainDir, "1_WORKMANSHIP_STANDARD_FOLDER", "WS.pdf"), FileMode.Open);
                 fs.CopyTo(ms);
 
-                return File(ms.ToArray(), "application/pdf"); ;
+                return File(ms.ToArray(), "application/pdf");
             }
 
             byte[] res = null;

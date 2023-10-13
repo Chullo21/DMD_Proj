@@ -39,7 +39,7 @@
                     <th>
                         Technician
                     </th>
-                    <th>
+                    <th class="w-25">
 
                     </th>
                 </tr>
@@ -70,18 +70,25 @@
                             @Html.DisplayFor(modelItem => item.UserID)
                         </td>
                         <td>
-                            <div class="d-flex">
-                                <button class="btn btn-success mx-1">View</button>
+                            <div class="d-flex text-nowrap">
+                                <button class="btn btn-success">View</button>
 
                                 @if (item.FinishDate != null && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR"))
                                 {
-                                    <a asp-controller="DocGenerator" asp-action="ConvertExcelToPdf" asp-route-sessionId="@item.SessionID" class="btn btn-primary">Download</a>
+                                    <a asp-controller="Document" asp-action="DownloadTraveler" asp-route-sessionId="@item.SessionID" class="btn btn-primary mx-2">Download Trav</a>
                                 }
 
-                                @if (EN[1] == "ADMIN")
+                                @if (item.FinishDate != null && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR") && item.LogType != "N")
+                                {
+                                    string logtype;
+                                    if (item.LogType == "C") logtype = "CL"; else logtype = "TEL";
+                                    <a asp-controller="Document" asp-action="DownloadLogsheet" asp-route-sessionId="@item.SessionID" class="btn btn-warning">Download @{Write(logtype);}</a>
+                                }
+
+                                @*@if (EN[1] == "ADMIN")
                                 {
                                     <button class="btn btn-secondary text-nowrap mx-1">Edit</button>
-                                }
+                                }*@
                             </div>
                         </td>
                     </tr>

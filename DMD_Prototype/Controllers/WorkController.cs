@@ -42,7 +42,7 @@ namespace DMD_Prototype.Controllers
 
         private void SessionSaver(string docNo, string user)
         {
-            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, UserIDGetter(user));
+            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, UserIDGetter(user), _mtimodel.FirstOrDefault(j => j.DocumentNumber == docNo).AfterTravLog);
             sesID = swModel.SessionID;
 
             if (ModelState.IsValid)

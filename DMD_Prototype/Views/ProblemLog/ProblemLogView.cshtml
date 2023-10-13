@@ -4,6 +4,9 @@
     ViewData["Title"] = "Problem Logs";
     string[] EN = TempData["EN"] as string[];
     TempData.Keep();
+
+    string idtcd;
+    string sdtcd;
 }
 
 @section scripts {
@@ -22,7 +25,7 @@
     </script>
 }
 <div>
-    <i>NOTE: Click a row to view more details.</i>
+    <i>NOTE: Click a row to see complete details.</i>
     <div class="table-responsive">
         <table class="table table-hover text-nowrap text-center" id="plTable">
             <thead class="table-primary">
@@ -71,14 +74,32 @@
             <tbody>
                 @foreach (var item in Model)
                 {
+                    string cellbg = "";
+                    idtcd = "";
+                    sdtcd = "";
 
-                    <tr class="border-1 border-dark" data-bs-target="#plDetails" data-bs-toggle="modal" onclick="SetDets('@item.PLNo', '@item.LogDate', '@item.WorkWeek', '@item.AffectedDoc', '@item.PNDN',
-'@item.Desc', '@item.Problem', '@item.Reporter', '@item.Category', '@item.RC', '@item.CA', '@item.InterimDoc', '@item.IDTCD.Value.ToShortDateString()', '@item.IDStatus', '@item.StandardizedDoc', '@item.SDTCD.Value.ToShortDateString()', '@item.SDStatus',
+
+                    if (item.Validation == "Invalid")
+                    {
+                        cellbg = "table-success";
+                    }
+                    else if (item.Validation == "Valid")
+                    {
+                        cellbg = "table-danger";
+                        idtcd = item.IDTCD.Value.ToShortDateString();
+                        sdtcd = item.SDTCD.Value.ToShortDateString();
+                    }
+
+
+
+                    <tr class="border-1 border-dark @cellbg" data-bs-target="#plDetails" data-bs-toggle="modal" onclick="SetDets('@item.PLNo', '@item.LogDate', '@item.WorkWeek', '@item.AffectedDoc', '@item.PNDN',
+'@item.Desc', '@item.Problem', '@item.Reporter', '@item.Category', '@item.RC', '@item.CA', '@item.InterimDoc', '@idtcd', '@item.IDStatus', '@item.StandardizedDoc', '@item.SDTCD', '@item.SDStatus',
 '@item.Validator', '@item.PLIDStatus', '@item.PLSDStatus', '@item.PLRemarks', '@item.OwnerRemarks')">
-                        <td class="border-1 border-dark" >
+
+                        <td class="border-1 border-dark">
                             @Html.DisplayFor(modelItem => item.PLNo)
                         </td>
-                        <td >
+                        <td>
                             @item.LogDate.ToShortDateString()
                         </td>
                         <td>
@@ -126,13 +147,18 @@
                         </td>
                         <td>
                             <div class="d-flex justify-content-between">
-                                    @if (string.IsNullOrEmpty(item.Validation) && item.Owner == EN[0])
+                                    @if (string.IsNullOrEmpty(item.Validation) && (item.Owner == EN[0] || EN[1] == "ADMIN"))
                                     {
-                                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#validatemodal" onclick="document.getElementById('plidVal').value = '@item.PLID'">Validate</button>
+                                        <button class="btn btn-primary" data-bs-toggle="modal" onclick="OpenValidatePL('@item.PLID')">Validate</button>
                                     }
-                                    else if (!string.IsNullOrEmpty(item.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN"))
+                                    else if ((item.Owner == EN[0] || EN[1] == "ADMIN") && item.Validation == "Valid")
                                     {
-                                        <button class="btn btn-success">Validate</button>
+                                        <button class="btn btn-primary" data-bs-toggle="modal" onclick="EditValidation('@item.PLID', '@item.Validation', '@item.RC', '@item.CA', '@item.InterimDoc', '@item.StandardizedDoc')">Edit</button>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(item.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN") && item.Validation == "Valid" && (item.PLSDStatus == "OPEN" || string.IsNullOrEmpty(item.PLSDStatus)))
+                                    {
+                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="document.getElementById('plidPL').value = '@item.PLID'">Validate</button>
                                     }
                             </div>
                         </td>
@@ -144,6 +170,20 @@
 </div>
 
 <script>
+    function EditValidation(plid, val, rc, ca, id, sd) {
+        $('#editplvalidationmodal').modal('show');
+        $('#editplid').val(plid);
+        $('#editrc').val(rc);
+        $('#editca').val(ca);
+        $('#editinterim').val(id);
+        $('#editstand').val(sd);
+    }
+
+    function OpenValidatePL(plid) {
+        $('#validatemodal').modal('show');
+        $('#plidVal').val(plid);
+    }
+
     function PLConc(val)
     {
         if (val === 'Valid'){
@@ -196,6 +236,7 @@
 
     function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rc, ca, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem, orem)
     {
+
         document.getElementById('plno').innerHTML = pl;
         document.getElementById('logdate').innerHTML = log;
         document.getElementById('ww').innerHTML = wweek;
@@ -206,8 +247,8 @@
         document.getElementById('reporter').innerHTML = rep;
 
         document.getElementById('cat').innerHTML = cat;
-        document.getElementById('rc').innerHTML = rc;
-        document.getElementById('ca').innerHTML = ca;
+        document.getElementById('rc').val = rc;
+        document.getElementById('ca').val = ca;
         document.getElementById('id').innerHTML = id;
         document.getElementById('idtcd').innerHTML = idtcd;
         document.getElementById('idstatus').innerHTML = idstat;
@@ -222,7 +263,96 @@
 
         document.getElementById('oRem').innerHTML = orem;
     }
+
+    function ClearPLVal()
+    {
+        document.getElementById('idstatPL').value = '';
+        document.getElementById('sdstatPL').value = '';
+        document.getElementById('plRemark').value = '';
+    }
 </script>
+
+<div class="modal fade" data-bs-backdrop="static" id="ackmodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title fw-bold fs-5">Acknowledge Problem Log</p>
+                <button class="btn-close" data-bs-dismiss="modal" onclick="ClearPLVal()"></button>
+            </div>
+           <form asp-controller="ProblemLog" asp-action="PLSubmitValidation">
+               <input name="plID" id="plidPL" hidden/>
+                <div class="modal-body">
+                    <div>
+                        <div>
+                            <label class="form-label">Validated by</label>
+                            <input class="form-control w-auto text-center" value="@EN[0]" name="Validator" readonly required />
+                        </div>
+                        <div>
+                            <label class="form-label">Interim Status</label>
+                            <select class="form-select" name="PLIDStatus" id="idstatPL" required>
+                                <option selected hidden value="">Please Select Status</option>
+                                <option>OPEN</option>
+                                <option>CLOSED</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Standardized Status</label>
+                            <select class="form-select" name="PLSDStatus" id="sdstatPL" required>
+                                <option selected hidden value="">Please Select Status</option>
+                                <option>OPEN</option>
+                                <option>CLOSED</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Remarks</label>
+                            <textarea class="form-control w-100" name="PLRemarks" id="plRemark" style="max-height:100px" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input class="btn btn-primary" type="submit"/>
+                </div>
+           </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" id="editplvalidationmodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form asp-controller="ProblemLog" asp-action="EditPLValidation">
+                <input id="editplid" name="plid" hidden/>
+                <div class="modal-header">
+                    <p class="modal-title w-100 text-center fs-5 fw-bold">Edit Validation</p>
+                    <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div>
+                            <label class="form-label">Root Cause</label>
+                            <textarea class="form-control" style="max-height:100px" id="editrc" name="rc" required></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Corrective Action</label>
+                            <textarea class="form-control" style="max-height:100px" id="editca" name="ca" required></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Interim Document</label>
+                            <input class="form-control" id="editinterim" name="interimdoc" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Standardized Document</label>
+                            <input class="form-control" id="editstand" name="standardizeddoc" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input class="btn btn-primary" type="submit" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" data-bs-backdrop="static" id="plmodal">
     <div class="modal-dialog modal-dialog-centered">
@@ -291,7 +421,7 @@
                 <input value="" id="plidVal" name="PLID" hidden/>
                 <div class="modal-header">
                     <p class="modal-title text-center w-100 fs-5 fw-bold">Validate Problem Log</p>
-                    <button class="btn-close" data-bs-dismiss="modal" onclick="PLConc()"></button>
+                    <button class="btn-close" data-bs-dismiss="modal" onclick="$('#validatemodal').find('input, textarea, select').val(''); document.getElementById('plisValid').style.display = 'none'"></button>
                 </div>
                 <div class="modal-body">
                     <div>
@@ -337,10 +467,6 @@
                                         <label class="form-label">TCD</label>
                                         <input class="form-control" type="date" id="idtcdVal" name="IDTCD" readonly/>
                                     </div>
-                                    <div>
-                                        <label class="form-label">Status</label>
-                                        <input class="form-control" id="idstatVal" name="IDStatus" value="For Verification" readonly/>
-                                    </div>
                                 </div>
                                 <div class="d-flex w-100 justify-content-evenly">
                                     <div>
@@ -351,29 +477,25 @@
                                         <label class="form-label">TCD</label>
                                         <input class="form-control" type="date" id="sdtcdVal" name="SDTCD" readonly/>
                                     </div>
-                                    <div>
-                                        <label class="form-label">Status</label>
-                                        <input class="form-control" id="sdstatVal" name="SDStatus" value="OPEN" readonly/>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <input type="submit" class="btn btn-primary" />
+                    <button class="btn btn-primary" >Submit</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<div class="modal fade text-center" data-bs-backdrop="true" id="plDetails" style="z-index:2001">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+<div class="modal fade text-center" data-bs-backdrop="true" data-bs-keyboard="true" id="plDetails" style="z-index:2001">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen">
         <div class="modal-content">
             <div class="modal-header">
                 <p class="modal-title text-center w-100 fs-5 fw-bold">More Details</p>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                <button class="btn btn-danger" data-bs-dismiss="modal">Close</button>
             </div>
             <div class="modal-body">
                 <div>
@@ -432,12 +554,6 @@
                                         Category
                                     </th>
                                     <th>
-                                        RC
-                                    </th>
-                                    <th>
-                                        CA
-                                    </th>
-                                    <th>
                                         Interim Doc.
                                     </th>
                                     <th>
@@ -460,10 +576,6 @@
                             <tbody>
                                 <tr>
                                     <td id="cat">
-                                    </td>
-                                    <td id="rc">
-                                    </td>
-                                    <td id="ca">
                                     </td>
                                     <td id="id">
                                     </td>
@@ -512,13 +624,23 @@
                             </tbody>
                         </table>
                     </div>
-                    <div>
-                        <label class="form-label">Problem</label>
-                        <textarea id="prob" class="form-control" style="max-height:100px; min-height:50px" readonly></textarea>
-                    </div>
-                    <div>
-                        <label class="form-label">Originator's Remarks</label>
-                        <textarea id="oRem" class="form-control" style="max-height:100px; min-height:50px" readonly></textarea>
+                    <div class="text-start">
+                        <div>
+                            <label class="form-label">Problem</label>
+                            <textarea id="prob" class="form-control" style="max-height:100px; min-height:50px" readonly></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Root Cause</label>
+                            <textarea id="rc" class="form-control" style="max-height:100px; min-height:50px" readonly></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Corrective Action</label>
+                            <textarea id="ca" class="form-control" style="max-height:100px; min-height:50px" readonly></textarea>
+                        </div>                       
+                        <div>
+                            <label class="form-label">Originator's Remarks</label>
+                            <textarea id="oRem" class="form-control" style="max-height:100px; min-height:50px" readonly></textarea>
+                        </div>
                     </div>
                 </div>           
             </div>
