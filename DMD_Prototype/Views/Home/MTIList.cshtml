@@ -29,7 +29,7 @@
     </div>
     <div class="table-responsive">
         <table class="table table-bordered table-hover text-center" id="myTable">
-            <thead class="table-primary">
+            <thead class="table-primary text-nowrap">
                 <tr>
                     <th>
                         Doc. #
@@ -69,18 +69,124 @@
                             @item.DateCreated.ToShortDateString()
                         </td>
                         <td>
-                            <div class="d-flex">
-                                <a class="btn btn-primary w-100" asp-controller="MTI" asp-action="MTIView" asp-route-docuNumber="@item.DocumentNumber">View</a>
-                                @if (accData[1] == "ADMIN" || accData[1] == "ORIGINATOR")
-                                {
-                                    <a class="btn btn-success w-100 mx-2" asp-controller="MTI" asp-action="EditDocumentView" asp-route-docuNo="@item.DocumentNumber">Edit</a>
+                            <div class="d-flex text-nowrap justify-content-center">
+                                <a class="btn btn-primary" asp-controller="MTI" asp-action="MTIView" asp-route-docuNumber="@item.DocumentNumber">View</a>
+
+                                @if (accData[1] == "ADMIN" || (accData[1] == "ORIGINATOR" && item.OriginatorName == accData[2]))
+                                {                                   
+                                    <button class="btn btn-success mx-3" data-bs-toggle="modal" data-bs-target="#editDetModal" onclick="SetDets('@item.DocumentNumber', '@item.AssemblyPN', '@item.AssemblyDesc', '@item.RevNo', '@item.AfterTravLog', '@item.LogsheetDocNo', '@item.LogsheetRevNo', '@item.DocType')">Edit Details</button>
+                                    <a class="btn btn-secondary" asp-controller="MTI" asp-action="EditDocumentView" asp-route-docuNo="@item.DocumentNumber">Update Documents</a>
                                 }
+                                <script>
+                                    function SetDets(doc, assypn, assydesc, rev, after, logDoc, logRev, dtype)
+                                    {
+                                        if (after === 'T')
+                                        {
+                                            document.getElementById('editDetLogType').innerHTML = 'Test Equipment Log';
+                                        }
+                                        else if (after === 'C')
+                                        {
+                                            document.getElementById('editDetLogType').innerHTML = 'Configuration Log';
+                                        }
+                                        else
+                                        {
+                                            document.getElementById('editDetLogType').innerHTML = 'None';
+                                            document.getElementById('editDetLogDocNo').removeAttribute('required');
+                                            document.getElementById('editDetLogRevNo').removeAttribute('required');
+                                            document.getElementById('logDocDiv').style.display = 'none';
+                                            document.getElementById('logRevDiv').style.display = 'none';
+                                        }
+
+                                        document.getElementById('editDetDocNo').value = doc;
+                                        document.getElementById('editDetAssyPN').value = assypn;
+                                        document.getElementById('editDetAssyDesc').value = assydesc
+                                        document.getElementById('editDetRevNo').value = rev;
+                                        document.getElementById('editDetLogType').value = after;
+                                        document.getElementById('editDetLogDocNo').value = logDoc;
+                                        document.getElementById('editDetLogRevNo').value = logRev;
+                                        document.getElementById('editDetDocType').value = dtype;
+                                    }
+                                </script>
                             </div>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
+    </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" id="editDetModal">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title fs-5 fw-bold">Edit Document Details</p>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-controller="MTI" asp-action="EditDocumentDetails">
+            <input name="DocType" value="" id="editDetDocType" hidden required/>
+                <div class="modal-body row">
+                    <div class="col-6">
+                        <div>
+                            <label class="form-label">Document Number</label>
+                            <input class="form-control" name="DocumentNumber" value="" id="editDetDocNo" required readonly />
+                        </div>
+                        <div>
+                            <label class="form-label">Assembly Part Number</label>
+                            <input class="form-control" name="AssemblyPN" value="" id="editDetAssyPN" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Assembly Description</label>
+                            <input class="form-control" name="AssemblyDesc" value="" id="editDetAssyDesc" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Revision Number</label>
+                            <input class="form-control" name="RevNo" value="" id="editDetRevNo" required />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div>
+                            <label class="form-label">Logsheet Type</label>
+                            <select class="form-select" name="AfterTravLog" onchange="ChangeLogType(this.value)" required>
+                                <option id="editDetLogType" selected hidden></option>
+                                <option value="N">None</option>
+                                <option value="C">Configuration Log</option>
+                                <option value="T">Test Equipment Log</option>
+                            </select>
+                            <script>
+                                function ChangeLogType(logType) {
+                                    if (logType === 'N') {
+                                        document.getElementById('logDocDiv').style.display = 'none';
+                                        document.getElementById('logRevDiv').style.display = 'none';
+                                        document.getElementById('editDetLogDocNo').removeAttribute('required');
+                                        document.getElementById('editDetLogRevNo').removeAttribute('required');
+                                        document.getElementById('editDetLogDocNo').value = '';
+                                        document.getElementById('editDetLogRevNo').value = '';
+                                    }
+                                    else {
+                                        document.getElementById('logDocDiv').style.display = 'block';
+                                        document.getElementById('logRevDiv').style.display = 'block';
+                                        document.getElementById('editDetLogDocNo').setAttribute('required', 'true');
+                                        document.getElementById('editDetLogRevNo').setAttribute('required', 'true');
+                                    }
+                                }
+                            </script>
+                        </div>
+                        <div id="logDocDiv">
+                            <label class="form-label">Logsheet Document Control Number</label>
+                            <input class="form-control" name="LogsheetDocNo" value="" id="editDetLogDocNo" required />
+                        </div>
+                        <div id="logRevDiv">
+                            <label class="form-label">Logsheet Revision Number</label>
+                            <input class="form-control" name="LogsheetRevNo" value="" id="editDetLogRevNo" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @section scripts {

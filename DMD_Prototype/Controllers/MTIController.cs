@@ -4,6 +4,7 @@ using DMD_Prototype.Models;
 using OfficeOpenXml;
 using Microsoft.CodeAnalysis;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace DMD_Prototype.Controllers
 {
@@ -35,25 +36,47 @@ namespace DMD_Prototype.Controllers
             _accounts = _Db.AccountDb.ToList();
         }
 
-        public IActionResult EditDocument(string docuno, string assyno, string assydesc, string revno,
-            IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
+        public IActionResult DeleteDeviationDoc(string dir, string devType, string docNo)
+        {
+            System.IO.File.Delete(dir);
+
+            string filePath = Path.Combine(mainDir, docNo);
+
+            ViewData[devType] = Directory.GetFiles(filePath).Where(j => j.Contains(devType)).ToList();
+
+            return Json(null);
+        }
+
+        public IActionResult EditDocumentDetails(MTIModel mti)
+        {
+            MTIModel tempMTI = _mtiModel.FirstOrDefault(j => j.DocumentNumber == mti.DocumentNumber);
+
+            tempMTI.AssemblyPN = mti.AssemblyPN;
+            tempMTI.AssemblyDesc = mti.AssemblyDesc;
+            tempMTI.RevNo = mti.RevNo;
+            tempMTI.AfterTravLog = mti.AfterTravLog;
+            tempMTI.LogsheetDocNo = mti.LogsheetDocNo;
+            tempMTI.LogsheetRevNo = mti.LogsheetRevNo;
+
+            if (ModelState.IsValid)
+            {
+                _Db.MTIDb.Update(tempMTI);
+                _Db.SaveChanges();
+            }
+
+            return RedirectToAction("MTIList", "Home", new { whichDoc = tempMTI.Product, whichType = tempMTI.DocType});
+        }
+
+        public IActionResult EditDocument(string docuno,IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
             List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile,
-            string logType, string? docctrlno, string? revnono)
+            List<string> DirsTobeDeleted)
         {
 
             var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuno);
 
-            bool changeLogType = fromDb.AfterTravLog != logType || (fromDb.LogsheetDocNo != docctrlno || fromDb.LogsheetRevNo != revnono);
-
             MTIModel mod = new MTIModel();
             {
                 mod = fromDb;
-                mod.AssemblyPN = assyno;
-                mod.AssemblyDesc = assydesc;
-                mod.RevNo = revno;
-                mod.AfterTravLog = logType;
-                mod.LogsheetDocNo = changeLogType ? docctrlno : mod.LogsheetDocNo;
-                mod.LogsheetRevNo = changeLogType ? revnono : mod.LogsheetRevNo;
             }
 
             if (ModelState.IsValid)
@@ -75,10 +98,10 @@ namespace DMD_Prototype.Controllers
 
             string filePath = Path.Combine(mainDir, docuNo);
 
-            ViewData["opl"] = Directory.GetFiles(filePath).Where(j => j.Contains("OPL")).ToList();
-            ViewData["derogation"] = Directory.GetFiles(filePath).Where(j => j.Contains("Derogation")).ToList();
-            ViewData["prco"] = Directory.GetFiles(filePath).Where(j => j.Contains("PRCO")).ToList();
-            ViewData["memo"] = Directory.GetFiles(filePath).Where(j => j.Contains("EngineeringMemo")).ToList();
+            ViewBag.opl= Directory.GetFiles(filePath).Where(j => j.Contains("OPL")).ToList();
+            ViewBag.derogation = Directory.GetFiles(filePath).Where(j => j.Contains("Derogation")).ToList();
+            ViewBag.prco = Directory.GetFiles(filePath).Where(j => j.Contains("PRCO")).ToList();
+            ViewBag.memo = Directory.GetFiles(filePath).Where(j => j.Contains("EngineeringMemo")).ToList();
 
             return View(model);
         }
@@ -265,7 +288,7 @@ namespace DMD_Prototype.Controllers
                 return File(ms.ToArray(), "application/pdf");
             }
 
-            byte[] res = null;
+            byte[]? res = null;
 
             List<string> files = Directory.GetFiles(Path.Combine(mainDir, docunumber)).ToList();
 
