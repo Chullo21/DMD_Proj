@@ -134,7 +134,7 @@
                 <div class="card-body">
                     <div>
                         <label class="form-label">Traveler</label>
-                        <input class="form-control" type="file" name="travFile"/>
+                        <input class="form-control" type="file" name="travFile" accept=".xlsx"/>
                     </div>
                     <div class="mt-5">
                         <i>NOTE: As an originator, you will be given a template for the traveler. Please follow the steps given by the developer to avoid conflicts regarding this. You can always reach the developer for guidance.</i>
@@ -212,7 +212,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="flex-column">
-                        <div id="oplDiv">
+                        <div id="oplDiv" class="flex-column">
                             @{
                                 counter = 1;
 
@@ -220,7 +220,7 @@
                                 {
                                     string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                                    <div class="d-flex justify-content-between">
+                                    <div class="d-flex justify-content-between my-2">
                                         <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
                                             @{
                                                 Write(counter.ToString());
@@ -233,7 +233,7 @@
                                 }
                             }
                         </div>
-                        <div id="derogDiv">
+                        <div id="derogDiv" class="flex-column">
                             @{
                                 counter = 1;
 
@@ -241,20 +241,20 @@
                                 {
                                     string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                                    <div class="d-flex justify-content-between">
+                                    <div class="d-flex justify-content-between my-2">
                                         <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
                                             @{
                                                 Write(counter.ToString());
                                             }
                                         </button>
 
-                                        <button class="btn btn-danger" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'derogDiv')">Delete</button>
+                                        <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'derogDiv')">Delete</button>
                                     </div>
                                     counter++;
                                 }
                             }
                         </div>
-                        <div id="prcoDiv">
+                        <div id="prcoDiv" class="flex-column">
                             @{
                                 counter = 1;
 
@@ -262,20 +262,20 @@
                                 {
                                     string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                                    <div class="d-flex justify-content-between">
+                                    <div class="d-flex justify-content-between my-2">
                                         <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
                                             @{
                                                 Write(counter.ToString());
                                             }
                                         </button>
 
-                                        <button class="btn btn-danger" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'prcoDiv')">Delete</button>
+                                        <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'prcoDiv')">Delete</button>
                                     </div>
                                     counter++;
                                 }
                             }
                         </div>
-                        <div id="memoDiv">
+                        <div id="memoDiv" class="flex-column">
                             @{
                                 counter = 1;
 
@@ -283,7 +283,7 @@
                                 {
                                     string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                                    <div class="d-flex justify-content-between">
+                                    <div class="d-flex justify-content-between my-2">
                                         <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
                                             @{
                                                 Write(counter.ToString());

@@ -10,9 +10,14 @@ namespace DMD_Prototype.Controllers
 {
     public class MTIController : Controller
     {
+        public MTIController(ISharedFunct shared, AppDbContext db)
+        {
+            ishared = shared;
+            _Db = db;
+        }
+
+        private readonly ISharedFunct ishared;
         private readonly AppDbContext _Db;
-        private readonly List<MTIModel> _mtiModel;
-        private readonly List<AccountModel> _accounts;
 
         private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
         private readonly string usersDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
@@ -29,11 +34,20 @@ namespace DMD_Prototype.Controllers
         private readonly string derogationName = "Derogation.pdf";
         private readonly string memoName = "EngineeringMemo.pdf";
 
-        public MTIController(AppDbContext _context)
+        public IActionResult ChangeDocOwner(string docNo, string  docOwner)
         {
-            _Db = _context;
-            _mtiModel = _Db.MTIDb.ToList();
-            _accounts = _Db.AccountDb.ToList();
+            MTIModel mti = _Db.MTIDb.FirstOrDefault(j => j.DocumentNumber == docNo);
+            {
+                mti.OriginatorName = ishared.GetAccounts().FirstOrDefault(j => j.AccName == docOwner).UserID;
+            }
+
+            if (ModelState.IsValid)
+            {
+                _Db.MTIDb.Update(mti);
+                _Db.SaveChanges();
+            }
+
+            return RedirectToAction("MTIList", "Home", new {whichDoc = mti.Product, whichType = mti.DocType});
         }
 
         public IActionResult DeleteDeviationDoc(string dir, string devType, string docNo)
@@ -49,7 +63,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult EditDocumentDetails(MTIModel mti)
         {
-            MTIModel tempMTI = _mtiModel.FirstOrDefault(j => j.DocumentNumber == mti.DocumentNumber);
+            MTIModel tempMTI = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == mti.DocumentNumber);
 
             tempMTI.AssemblyPN = mti.AssemblyPN;
             tempMTI.AssemblyDesc = mti.AssemblyDesc;
@@ -68,11 +82,10 @@ namespace DMD_Prototype.Controllers
         }
 
         public IActionResult EditDocument(string docuno,IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
-            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile,
-            List<string> DirsTobeDeleted)
+            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile, List<string> DirsTobeDeleted)
         {
 
-            var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuno);
+            var fromDb = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuno);
 
             MTIModel mod = new MTIModel();
             {
@@ -82,6 +95,8 @@ namespace DMD_Prototype.Controllers
             if (ModelState.IsValid)
             {
                 DocumentNumberVar = docuno;
+
+                DeleteMultipleFiles(DirsTobeDeleted, docuno);
                 CopyNoneMultipleDocs(mpti, drawing, bom, schema, travFile);
                 CopyMultipleDocs(opl, prco, derogation, memo);
 
@@ -94,7 +109,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult EditDocumentView(string docuNo)
         {
-            MTIModel model = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNo)!;
+            MTIModel model = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuNo)!;
 
             string filePath = Path.Combine(mainDir, docuNo);
 
@@ -106,9 +121,9 @@ namespace DMD_Prototype.Controllers
             return View(model);
         }
 
-        public IActionResult MTIView(string docuNumber, bool workStat, string sesID, List<string> travelerProgress)
+        public IActionResult MTIView(string docuNumber, bool workStat, string sesID)
         {
-            MTIModel mti = _mtiModel.FirstOrDefault(j => j.DocumentNumber == docuNumber);
+            MTIModel mti = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuNumber);
 
             MTIViewModel mModel = new MTIViewModel();
             {
@@ -129,6 +144,23 @@ namespace DMD_Prototype.Controllers
             return View(mModel);
         }
 
+        public ContentResult ValidateDocNo(string DocNo)
+        {
+            string jsonResponse = "";
+
+            if (ishared.GetMTIs().Any(j => j.DocumentNumber == DocNo)) jsonResponse = "Document Number already exist\r\n";
+
+            return Content(JsonConvert.SerializeObject(new {Failed = jsonResponse}), "application/json");
+        }
+
+        private void DeleteMultipleFiles(List<string> fileNames, string docNo)
+        {
+            foreach (string filename in fileNames)
+            {
+                System.IO.File.Delete(Path.Combine(mainDir, docNo, $"{filename}.pdf"));
+            }
+        }
+
         private List<string>? DeviationDocNames(string DocName, string docNo)
         {
             List<string>? listOfDocs = new List<string>();
@@ -144,20 +176,6 @@ namespace DMD_Prototype.Controllers
             return listOfDocs;
         }
 
-        private byte[] getDocumentsFromDb(string docuNumber, string whichDoc, string extension)
-        {
-            string folderPath = Path.Combine(mainDir, docuNumber, whichDoc + extension);
-
-            using (FileStream fileStream = new FileStream(folderPath, FileMode.Open))
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    fileStream.CopyTo(ms);
-                    return ms.ToArray();
-                }
-            }
-        }
-
         public IActionResult CreateMTIView()
         {
             return View();
@@ -168,7 +186,6 @@ namespace DMD_Prototype.Controllers
             List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo, 
             string product, string doctype, string originator, IFormFile TravelerFile, string afterTrav, string? docctrlno, string? revnono)
         {
-            var fromDb = _mtiModel.FirstOrDefault(j => j.DocumentNumber == documentnumber);
 
             MTIModel mti = new MTIModel();
             {
@@ -178,7 +195,7 @@ namespace DMD_Prototype.Controllers
                 mti.RevNo = revnumber;
                 mti.Product = product;
                 mti.DocType = doctype;
-                mti.OriginatorName = _accounts.FirstOrDefault(j => j.AccName == originator).UserID;
+                mti.OriginatorName = ishared.GetAccounts().FirstOrDefault(j => j.AccName == originator).UserID;
                 mti.AfterTravLog = afterTrav;
                 mti.LogsheetDocNo = docctrlno;
                 mti.LogsheetRevNo = revnono;
@@ -193,14 +210,9 @@ namespace DMD_Prototype.Controllers
 
                 _Db.MTIDb.Add(mti);
                 _Db.SaveChanges();
+            }
 
-                return RedirectToAction("MTIList", "Home", new { whichDoc = product });
-            }
-            else
-            {
-                TempData["Error"] = "Something went wrong, please try reuploading again.";
-                return View("CreateMTIView", mti);
-            }
+            return RedirectToAction("MTIList", "Home", new { whichDoc = product });
         }
 
         private void CreateNewFolder(string docNumber)
@@ -228,75 +240,74 @@ namespace DMD_Prototype.Controllers
         }
 
         private void CopyMultipleDocs(List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo)
-        {         
-            //Dictionary<string, List<IFormFile>> files = new Dictionary<string, List<IFormFile>>();
-            
-            //if (onepointlesson?.Count > 0) files.Add(oplName, onepointlesson);
-            //if (prco?.Count > 0) files.Add(prcoName, prco);
-            //if (derogation?.Count > 0) files.Add(derogationName, derogation);
-            //if (engineeringmemo?.Count > 0) files.Add(memoName, engineeringmemo);
+        {
+            Dictionary<string, List<IFormFile>> files = new Dictionary<string, List<IFormFile>>();
 
-            //foreach (var file in files)
-            //{
-            //    foreach (var item in file.Value)
-            //    {
-            //        string filePath = Path.Combine(mainDir, DocumentNumberVar);
+            if (onepointlesson?.Count > 0) files.Add(oplName, onepointlesson);
+            if (prco?.Count > 0) files.Add(prcoName, prco);
+            if (derogation?.Count > 0) files.Add(derogationName, derogation);
+            if (engineeringmemo?.Count > 0) files.Add(memoName, engineeringmemo);
 
-            //        string fileNameOnly = Path.GetFileNameWithoutExtension(file.Key);
+            string filePath = Path.Combine(mainDir, DocumentNumberVar);
 
-            //        List<string> getFiles = Directory.GetFiles(filePath).Where(j => j.Contains(fileNameOnly)).Select(Path.GetFileNameWithoutExtension).ToList().OrderBy(j => j.;
+            foreach (var file in files)
+            {
+                foreach (var item in file.Value)
+                {
+                    int counter = 1;
 
-            //        int counter = 0;
+                    string fileNameOnly = Path.GetFileNameWithoutExtension(file.Key);
 
-            //        while (true)
-            //        {
-            //            foreach (var entry  in getFiles)
-            //            {
-            //                string[] name = entry.Split('_');
+                    List<string> getFiles = Directory.GetFiles(filePath).Where(j => j.Contains(fileNameOnly)).ToList();
 
-            //                if (name[1] == counter.ToString())
-            //                {
+                    do
+                    {
+                        if (!System.IO.File.Exists(Path.Combine(filePath, $"{fileNameOnly}_{counter}.pdf")))
+                        {
+                            using (FileStream fs = new FileStream(Path.Combine(filePath, fileNameOnly + "_" + (getFiles.Count + 1).ToString() + ".pdf"), FileMode.Create))
+                            {
+                                item.CopyTo(fs);
+                            }
 
-            //                }
-            //            }
+                            break;
+                        }
+                        counter++;
+                    } while (true);
+                }
+            }
+        }
 
-            //            counter++;
-            //        }
-                        
-                        
+        private byte[] getDocumentsFromDb(string docuNumber, string whichDoc, string extension)
+        {
+            string folderPath = Path.Combine(mainDir, docuNumber, whichDoc + extension);
 
-            //        //string fileNameOnly = Path.GetFileNameWithoutExtension(file.Key);
-
-            //        //List<string> getFiles = Directory.GetFiles(filePath).Where(j => j.Contains(fileNameOnly)).ToList();
-
-            //        //using (FileStream fs = new FileStream(Path.Combine(filePath, fileNameOnly + "_" + (getFiles.Count + 1).ToString() + ".pdf"), FileMode.Create))
-            //        //{
-            //        //    item.CopyTo(fs);
-            //        //}
-            //    }
-            //}
+            using (FileStream fileStream = new FileStream(folderPath, FileMode.Open))
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    fileStream.CopyTo(ms);
+                    return ms.ToArray();
+                }
+            }
         }
 
         public IActionResult ShowDoc(string docunumber, string whichDoc)
         {
             if (whichDoc == "WS")
-            {
-                MemoryStream ms = new MemoryStream();
-                FileStream fs = new FileStream(Path.Combine(mainDir, "1_WORKMANSHIP_STANDARD_FOLDER", "WS.pdf"), FileMode.Open);
-                fs.CopyTo(ms);
-
-                return File(ms.ToArray(), "application/pdf");
+            {              
+                using(FileStream fs = new FileStream(Path.Combine(mainDir, "1_WORKMANSHIP_STANDARD_FOLDER", "WS.pdf"), FileMode.Open))
+                {
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        fs.CopyTo(ms);
+                        return File(ms.ToArray(), "application/pdf");
+                    }
+                        
+                }             
             }
-
-            byte[]? res = null;
-
-            List<string> files = Directory.GetFiles(Path.Combine(mainDir, docunumber)).ToList();
-
-            if (Directory.GetFiles(Path.Combine(mainDir, docunumber)).Any(j => Path.GetFileName(j) == whichDoc + ".pdf"))
+            else if (Directory.GetFiles(Path.Combine(mainDir, docunumber)).Any(j => Path.GetFileName(j) == whichDoc + ".pdf"))
             {
-                res = getDocumentsFromDb(docunumber, whichDoc, ".pdf");
-
-                return File(res, "application/pdf");
+                return File(getDocumentsFromDb(docunumber, whichDoc, ".pdf"), "application/pdf");
             }
             else
             {
@@ -333,5 +344,19 @@ namespace DMD_Prototype.Controllers
         public string AfterTravlog { get; set; }
         public string Product { get; set; }
 
+    }
+
+    public class CreateMPTIModel
+    {
+        public string DocumentNumber { get; set; } = string.Empty;
+        public string AssyNo { get; set; } = string.Empty;
+        public string AssyDesc { get; set; } = string.Empty;
+        public string RevNo { get; set; } = string.Empty;
+        public IFormFile? MPTI { get; set; }
+        public IFormFile? Traveler { get; set; }
+        public IFormFile? BOM { get; set; }
+        public IFormFile? Drawing { get; set; }
+        public IFormFile? Schema { get; set; }
+        public string? Message { get; set; }
     }
 }

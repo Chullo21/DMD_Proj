@@ -9,16 +9,12 @@ namespace DMD_Prototype.Controllers
     public class LoginController : Controller
     {
         private readonly AppDbContext _Db;
-        private readonly List<AccountModel> _accounts;
-        private readonly List<PauseWorkModel> _pauseWork;
-        private readonly List<StartWorkModel> _swWork;
+        private readonly ISharedFunct ishared;
 
-        public LoginController(AppDbContext _context)
+        public LoginController(AppDbContext _context, ISharedFunct ishared)
         {
             _Db = _context;
-            _accounts = _Db.AccountDb.ToList();
-            _pauseWork = _Db.PauseWorkDb.ToList();
-            _swWork = _Db.StartWorkDb.ToList();
+            this.ishared = ishared;
         }
 
         public IActionResult LoginPage()
@@ -35,7 +31,7 @@ namespace DMD_Prototype.Controllers
 
         public ContentResult TryLogin(string user, string pass)
         {
-            AccountModel? acc = _accounts.FirstOrDefault(j => j.Username == user && j.Password == pass);
+            AccountModel? acc = ishared.GetAccounts().FirstOrDefault(j => j.Username == user && j.Password == pass);
 
             string jsonContent = string.Empty;
             string val = string.Empty;
@@ -49,12 +45,12 @@ namespace DMD_Prototype.Controllers
 
                 TempData["EN"] = accData;
 
-                if (CheckForActiveSession(acc.UserID))
-                {
-                    val = Path.Combine("Work", "ContinueWork") + $"?userID={acc.UserID}" + $"&noPW={false}";
-                    type = 'a';
-                }
-                else if (CheckForActionSessionInSW(acc.UserID))
+                //if (CheckForActiveSession(acc.UserID))
+                //{
+                //    val = Path.Combine("Work", "ContinueWork") + $"?userID={acc.UserID}" + $"&noPW={false}";
+                //    type = 'a';
+                //}
+                if (CheckForActionSessionInSW(acc.UserID))
                 {
                     val = Path.Combine("Work", "ContinueWork") + $"?userID={acc.UserID}" + $"&noPW={true}";
                     type = 'a';
@@ -73,12 +69,12 @@ namespace DMD_Prototype.Controllers
 
         private bool CheckForActiveSession(string tech)
         {
-            return _pauseWork.Any(j => j.Technician == tech && j.RestartDT == null);
+            return ishared.GetPauseWorks().Any(j => j.Technician == tech && j.RestartDT == null);
         }
 
         private bool CheckForActionSessionInSW(string tech)
         {
-            return _swWork.Any(j => j.UserID == tech && j.FinishDate == null);
+            return ishared.GetStartWork().Any(j => j.UserID == tech && j.FinishDate == null);
         }
 
     }

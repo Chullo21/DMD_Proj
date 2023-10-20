@@ -32,11 +32,14 @@ namespace DMD_Prototype.Models
         public string? PLRemarks { get; set; } = string.Empty;
 
         public string Validation { get; set; } = string.Empty;
-        public string? OwnerRemarks { get; set; } = string.Empty; 
-        public string Owner { get; set; } = string.Empty;
+        public string? OwnerRemarks { get; set; } = string.Empty;
+
+        // Conditionals
+
+        public string DocNo { get; set; } = string.Empty;
 
         public ProblemLogModel CreatePL(string plNo, DateTime logDate, string workWeek, string affectedDoc,
-            string product, string pnDn, string desc, string problem, string reporter, string owner)
+            string product, string pnDn, string desc, string problem, string reporter, string docNo)
         {
             PLNo = plNo;
             LogDate = logDate;
@@ -47,7 +50,7 @@ namespace DMD_Prototype.Models
             Desc = desc;
             Problem = problem;
             Reporter = reporter;
-            Owner = owner;
+            DocNo = docNo;
 
             return this;
         }

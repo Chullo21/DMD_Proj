@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="wwwroot\Common\Automations\Excel_To_PDF_Converter.bat" />
+    <Content Remove="wwwroot\Common\Automations\OpenExcel.bat" />
     <Content Remove="wwwroot\Common\Templates\CL.xlsx" />
     <Content Remove="wwwroot\Common\Templates\ProblemLog.xlsx" />
     <Content Remove="wwwroot\Common\Templates\TEL.xlsx" />
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="wwwroot\Common\Automations\Excel_To_PDF_Converter.bat">
+    <EmbeddedResource Include="wwwroot\Common\Automations\OpenExcel.bat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="wwwroot\Common\Templates\CL.xlsx">

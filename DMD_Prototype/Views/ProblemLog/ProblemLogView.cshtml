@@ -1,4 +1,4 @@
-﻿@model IEnumerable<DMD_Prototype.Models.ProblemLogModel>
+﻿@model IEnumerable<DMD_Prototype.Controllers.ProblemLogViewModel>
 
 @{
     ViewData["Title"] = "Problem Logs";
@@ -79,57 +79,57 @@
                     sdtcd = "";
 
 
-                    if (item.Validation == "Invalid")
+                    if (item.PL.Validation == "Invalid")
                     {
                         cellbg = "table-success";
                     }
-                    else if (item.Validation == "Valid")
+                    else if (item.PL.Validation == "Valid")
                     {
                         cellbg = "table-danger";
-                        idtcd = item.IDTCD.Value.ToShortDateString();
-                        sdtcd = item.SDTCD.Value.ToShortDateString();
+                        idtcd = item.PL.IDTCD.Value.ToShortDateString();
+                        sdtcd = item.PL.SDTCD.Value.ToShortDateString();
                     }
 
 
 
-                    <tr class="border-1 border-dark @cellbg" data-bs-target="#plDetails" data-bs-toggle="modal" onclick="SetDets('@item.PLNo', '@item.LogDate', '@item.WorkWeek', '@item.AffectedDoc', '@item.PNDN',
-'@item.Desc', '@item.Problem', '@item.Reporter', '@item.Category', '@item.RC', '@item.CA', '@item.InterimDoc', '@idtcd', '@item.IDStatus', '@item.StandardizedDoc', '@item.SDTCD', '@item.SDStatus',
-'@item.Validator', '@item.PLIDStatus', '@item.PLSDStatus', '@item.PLRemarks', '@item.OwnerRemarks')">
+                    <tr class="border-1 border-dark @cellbg" data-bs-target="#plDetails" data-bs-toggle="modal" onclick="SetDets('@item.PL.PLNo', '@item.PL.LogDate', '@item.PL.WorkWeek', '@item.PL.AffectedDoc', '@item.PL.PNDN',
+'@item.PL.Desc', '@item.PL.Problem', '@item.PL.Reporter', '@item.PL.Category', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@idtcd', '@item.PL.IDStatus', '@item.PL.StandardizedDoc', '@item.PL.SDTCD', '@item.PL.SDStatus',
+'@item.PL.Validator', '@item.PL.PLIDStatus', '@item.PL.PLSDStatus', '@item.PL.PLRemarks', '@item.PL.OwnerRemarks')">
 
                         <td class="border-1 border-dark">
-                            @Html.DisplayFor(modelItem => item.PLNo)
+                            @Html.DisplayFor(modelItem => item.PL.PLNo)
                         </td>
                         <td>
-                            @item.LogDate.ToShortDateString()
+                            @item.PL.LogDate.ToShortDateString()
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.AffectedDoc)
+                            @Html.DisplayFor(modelItem => item.PL.AffectedDoc)
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Category)
+                            @Html.DisplayFor(modelItem => item.PL.Category)
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.InterimDoc)
+                            @Html.DisplayFor(modelItem => item.PL.InterimDoc)
                         </td>
                         <td>
-                            @if (item.IDTCD != null)
+                            @if (item.PL.IDTCD != null)
                             {
-                                Write(item.IDTCD.Value.ToShortDateString());
+                                Write(item.PL.IDTCD.Value.ToShortDateString());
                             }
                             else
                             {
                                 Write("");
                             }
                         <td>
-                            @item.IDStatus
+                                @item.PL.IDStatus
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.StandardizedDoc)
+                                @Html.DisplayFor(modelItem => item.PL.StandardizedDoc)
                         </td>
                         <td>
-                            @if (item.SDTCD != null)
+                                @if (item.PL.SDTCD != null)
                             {
-                                Write(item.SDTCD.Value.ToShortDateString());
+                                    Write(item.PL.SDTCD.Value.ToShortDateString());
                             }
                             else
                             {
@@ -137,28 +137,28 @@
                             }
                         </td>
                         <td>
-                            @item.SDStatus
+                                @item.PL.SDStatus
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.PLIDStatus)
+                            @Html.DisplayFor(modelItem => item.PL.PLIDStatus)
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.PLSDStatus)
+                                @Html.DisplayFor(modelItem => item.PL.PLSDStatus)
                         </td>
                         <td>
                             <div class="d-flex justify-content-between">
-                                    @if (string.IsNullOrEmpty(item.Validation) && (item.Owner == EN[0] || EN[1] == "ADMIN"))
+                                    @if (string.IsNullOrEmpty(item.PL.Validation) && (item.Owner == EN[2] || EN[1] == "ADMIN"))
                                     {
-                                        <button class="btn btn-primary" data-bs-toggle="modal" onclick="OpenValidatePL('@item.PLID')">Validate</button>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" onclick="OpenValidatePL('@item.PL.PLID')">Validate</button>
                                     }
-                                    else if ((item.Owner == EN[0] || EN[1] == "ADMIN") && item.Validation == "Valid")
+                                    else if ((item.Owner == EN[2] || EN[1] == "ADMIN") && item.PL.Validation == "Valid")
                                     {
-                                        <button class="btn btn-primary" data-bs-toggle="modal" onclick="EditValidation('@item.PLID', '@item.Validation', '@item.RC', '@item.CA', '@item.InterimDoc', '@item.StandardizedDoc')">Edit</button>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc')">Edit</button>
                                     }
 
-                                    @if (!string.IsNullOrEmpty(item.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN") && item.Validation == "Valid" && (item.PLSDStatus == "OPEN" || string.IsNullOrEmpty(item.PLSDStatus)))
+                                    @if (!string.IsNullOrEmpty(item.PL.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN") && item.PL.Validation == "Valid" && (item.PL.PLSDStatus == "OPEN" || string.IsNullOrEmpty(item.PL.PLSDStatus)))
                                     {
-                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="document.getElementById('plidPL').value = '@item.PLID'">Validate</button>
+                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="document.getElementById('plidPL').value = '@item.PL.PLID'">Validate</button>
                                     }
                             </div>
                         </td>
@@ -234,7 +234,7 @@
         }
     }
 
-    function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rc, ca, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem, orem)
+    function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rcc, caa, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem, orem)
     {
 
         document.getElementById('plno').innerHTML = pl;
@@ -247,8 +247,8 @@
         document.getElementById('reporter').innerHTML = rep;
 
         document.getElementById('cat').innerHTML = cat;
-        document.getElementById('rc').val = rc;
-        document.getElementById('ca').val = ca;
+        document.getElementById('rc').innerHTML = rcc;
+        document.getElementById('ca').innerHTML = caa;
         document.getElementById('id').innerHTML = id;
         document.getElementById('idtcd').innerHTML = idtcd;
         document.getElementById('idstatus').innerHTML = idstat;

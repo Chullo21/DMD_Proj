@@ -4,111 +4,90 @@
 
     string[] EN = TempData["EN"] as string[];
     TempData.Keep();
+
 }
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="container-fluid row mx-0">
-    <div class="flex-column col-md-12 col-lg-8 my-2">
-        <form asp-controller="" asp-action="">
-            <div class="w-100 d-flex">
-                <div class="w-25">
-                    <select class="form-select">
-                        <option value="" selected hidden>Select Category</option>
-                        <option>PNP HEAD MX</option>
-                        <option>JLP</option>
-                        <option>JTP</option>
-                        <option>OLB</option>
-                        <option>TERADYNE</option>
-                        <option>SPARES</option>
-                    </select>
+<div class="container-fluid row mx-0 mt-4">   
+    <div class="flex-column col-md-12 col-lg-4">       
+        <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
+            <div class="card-header text-center border-2 border-dark fs-3" style="background-color:#B5AD9A">
+                <p class="modal-title fs-5 fw-bold text-center">Documents Lists</p>
+            </div>
+            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-evenly">
+                <div class="w-75 mx-auto h-auto">
+                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="PNP">PNP HEAD MX</a>
                 </div>
-                <div class="w-75">
-                    <input class="form-control" type="search" placeholder="Search document" />
+                <div class="w-75 mx-auto h-auto">
+                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="JLP">JLP</a>
+                </div>
+                <div class="w-75 mx-auto h-auto">
+                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="JTP">JTP</a>
+                </div>
+                <div class="w-75 mx-auto h-auto">
+                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="OLB">OLB</a>
+                </div>
+                <div class="w-75 mx-auto h-auto">
+                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="TERADYNE">TERADYNE</a>
+                </div>
+                <div class="w-75 mx-auto h-auto">
+                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="SPARES">SPARES</a>
                 </div>
             </div>
-        </form>
-        <div class="row mt-3">
-            <div class="col-sm-12 col-md-6">
-                <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
-                    <div class="card-header text-center border-2 border-dark fs-3" style="background-color:#B5AD9A">
-                        <p class="modal-title fs-5 fw-bold text-center">Documents Lists</p>
+        </div>
+    </div>
+    <div class="col-md-12 col-lg-4">
+        <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
+            <div class="card-header border-2 border-dark fs-3" style="background-color:#B5AD9A">
+                <p class="modal-title fs-5 fw-bold text-center">Documents Statuses</p>
+            </div>
+            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
+                <div class="card w-75 border-2 border-dark">
+                    <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                        <p class="card-title text-center fs-5 fw-bold text-white">Uploaded Documents</p>
                     </div>
-                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-evenly">
-                        <div class="w-75 mx-auto h-auto">
-                            <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="PNP">PNP HEAD MX</a>
-                        </div>
-                        <div class="w-75 mx-auto h-auto">
-                            <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="JLP">JLP</a>
-                        </div>
-                        <div class="w-75 mx-auto h-auto">
-                            <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="JTP">JTP</a>
-                        </div>
-                        <div class="w-75 mx-auto h-auto">
-                            <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="OLB">OLB</a>
-                        </div>
-                        <div class="w-75 mx-auto h-auto">
-                            <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="TERADYNE">TERADYNE</a>
-                        </div>
-                        <div class="w-75 mx-auto h-auto">
-                            <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="SPARES">SPARES</a>
-                        </div>
+                    <div class="card-body">
+                        <p class="text-center fw-bold fs-1">@Model.ControlledVal</p>
                     </div>
                 </div>
-            </div>
-            <div class="col-sm-12 col-md-6">
-                <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
-                    <div class="card-header border-2 border-dark fs-3" style="background-color:#B5AD9A">
-                        <p class="modal-title fs-5 fw-bold text-center">Documents Statuses</p>
+                <div class="card w-75 border-2 border-dark">
+                    <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                        <p class="card-title text-center fs-5 fw-bold text-white">Interim Documents</p>
                     </div>
-                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
-                        <div class="card w-75 border-2 border-dark">
-                            <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                                <p class="card-title text-center fs-5 fw-bold text-white">Uploaded Documents</p>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-center fw-bold" style="font-size:30px">@Model.ControlledVal</p>
-                            </div>
-                        </div>
-                        <div class="card w-75 border-2 border-dark">
-                            <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                                <p class="card-title text-center fs-5 fw-bold text-white">Interim Documents</p>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-center fw-bold" style="font-size:30px">@Model.InterimVal</p>
-                            </div>
-                        </div>
-                        <div class="card w-75 border-2 border-dark mb-sm-2">
-                            <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                                <p class="card-title text-center fs-5 fw-bold text-white">Obsolete Documents</p>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-center fw-bold" style="font-size:30px">@Model.ObsoleteVal</p>
-                            </div>
-                        </div>
+                    <div class="card-body">
+                        <p class="text-center fw-bold fs-1">@Model.InterimVal</p>
+                    </div>
+                </div>
+                <div class="card w-75 border-2 border-dark">
+                    <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                        <p class="card-title text-center fs-5 fw-bold text-white">Obsolete Documents</p>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center fw-bold fs-1">@Model.ObsoleteVal</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="flex-column col-md-12 col-lg-4 ">
+    <div class="flex-column col-md-12 col-lg-4">
         <div class="w-100 mb-2">
             <div class="card w-100 border-2 border-dark" style="background-color:#E9E4E9">
                 <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                    <p class="modal-title fs-5 fw-bold text-center">Problem Log</p>
+                    <p class="modal-title fs-5 fw-bold text-center">Problem Log Count</p>
                 </div>
                 <div>
-                    <canvas id="bar"></canvas>
+                    <canvas id="problemlognumber"></canvas>
                 </div>
             </div>
         </div>
-        <div class="w-100">
-            <div class="card w-100 h-auto border-2 border-dark" style="background-color:#E9E4E9">
+        <div class="w-100 mb-2">
+            <div class="card w-100 border-2 border-dark" style="background-color:#E9E4E9">
                 <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                    <p class="modal-title fs-5 fw-bold text-center">Some chart</p>
+                    <p class="modal-title fs-5 fw-bold text-center">PL Open and Closed</p>
                 </div>
-                <div class="d-flex justify-content-center">
-                    <canvas id="pieChartValid" class="h-50 w-50"></canvas>             
+                <div>
+                    <canvas id="ProblemLogOpenAndClosed"></canvas>
                 </div>
             </div>
         </div>
@@ -116,12 +95,86 @@
 </div>
 
 <script>
+
+    function getMonthsToCurrent() {
+        const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        const currentMonth = new Date().getMonth();
+
+        const monthsToCurrent = months.slice(0, currentMonth + 1);
+
+        return monthsToCurrent;
+    }
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        var months = getMonthsToCurrent();
+
+        var ctx = document.getElementById('ProblemLogOpenAndClosed');
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Open',
+                        data: @Model.OpenPL,
+                        backgroundColor: 'green',
+                        borderColor: 'black',
+                        borderWidth: 0,
+                        pointStyle: 'rect'
+                    },
+                    {
+                        label: 'Open',
+                        data: @Model.ClosedPL,
+                        backgroundColor: 'red',
+                        borderColor: 'black',
+                        borderWidth: 0,
+                        pointStyle: 'rect'
+                    }
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {},
+                        ticks: {
+                            color: 'black',
+                            precision: 0
+                        },
+                        title: {
+                            color: 'black',
+                            display: true,
+                            text: ''
+                        },
+                    },
+                    x: {
+                        ticks: {
+                            color: 'black',
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true,
+                        }
+                    }
+                }
+            }
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         var months = ["JLP", "JTP", "PNP", "OLB"];
         var bgiv = '';
         var bgv = '#F57653';
 
-        var ctx = document.getElementById('bar').getContext('2d');
+        var ctx = document.getElementById('problemlognumber');
         var chart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -172,89 +225,4 @@
     });
 </script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var data = [1, 2];
-        var labels = ['Complete', 'Incomplete'];
 
-        var pp = document.getElementById('pieChartValid').getContext('2d');
-        var piechart = new Chart(pp, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        data: data,
-                        backgroundColor: [
-                            '#2BC58B',
-                            '#F57653'
-                        ],
-                        borderColor: [
-                            'black'
-                        ],
-                        borderWidth: 2,
-                        pointStyle: 'circle'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: true,
-                        }
-                    }
-                },
-
-            }
-        });
-    });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var data = [1, 2, 3, 4];
-        var labels = ['Function', 'Form', 'Fit', 'Safety'];
-
-        var fs = document.getElementById('fs').getContext('2d');
-        var fsChart = new Chart(fs, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        data: data,
-                        backgroundColor: [
-                            '#E83800',
-                            '#3BD1B8',
-                            '#ACEB63',
-                            '#FFF85E'
-                        ],
-                        borderColor: [
-                            'black'
-                        ],
-                        borderWidth: 2,
-                        pointStyle: 'circle'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: true,
-                        }
-                    }
-                }
-            }
-        });
-    });
-</script>
-
-<script>
-    function submitForm() {
-        document.getElementById("myForm").submit();
-    }
-</script>

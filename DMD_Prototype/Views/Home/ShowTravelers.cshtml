@@ -1,4 +1,4 @@
-﻿@model IEnumerable<DMD_Prototype.Models.StartWorkModel>
+﻿@model DMD_Prototype.Controllers.TravelerViewModel
 
 @{
     ViewData["Title"] = "Travelers";
@@ -45,7 +45,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model.Traveler.OrderByDescending(j => j.StartDate))
                 {
                     string finishedDate = "Not Finished yet";
 
@@ -71,7 +71,7 @@
                         </td>
                         <td>
                             <div class="d-flex text-nowrap">
-                                <button class="btn btn-success">View</button>
+                                <button class="btn btn-success" type="button" onclick="OpenExcel('@item.SessionID')">View</button>
 
                                 @if (item.FinishDate != null && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR"))
                                 {
@@ -82,13 +82,13 @@
                                 {
                                     string logtype;
                                     if (item.LogType == "C") logtype = "CL"; else logtype = "TEL";
-                                    <a asp-controller="Document" asp-action="DownloadLogsheet" asp-route-sessionId="@item.SessionID" class="btn btn-warning">Download @{Write(logtype);}</a>
+                                    <a asp-controller="Document" asp-action="DownloadLogsheet" asp-route-sessionId="@item.SessionID" class="btn btn-warning">Download @{Write(logtype);}</a>                                
                                 }
 
-                                @*@if (EN[1] == "ADMIN")
+                                @if (EN[1] == "ADMIN" && item.FinishDate == null)
                                 {
-                                    <button class="btn btn-secondary text-nowrap mx-1">Edit</button>
-                                }*@
+                                    <button class="btn btn-secondary mx-2" data-bs-toggle="modal" data-bs-target="#changeworker" onclick="ChangeTravWorker('@item.UserID', '@item.SWID')">Transfer Work</button>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -97,3 +97,77 @@
         </table>
     </div>
 </div>
+
+<script>
+    function ChangeTravWorker(prevworker, id)
+    {
+        @*$(function () {
+            $.ajax({
+                url: '@Url.Action("GetOrigName", "Home")',
+                data: {userId: prevworker},
+                success: function (response)
+                {
+                    document.getElementById('currentWorker').value = response.Name;
+                }
+            });
+        });*@
+        document.getElementById('travID').value = id;
+        document.getElementById('currentWorker').value = prevworker;
+        document.getElementById('currentworkerselect').innerHTML = prevworker;
+    }
+</script>
+
+<div class="modal fade" data-bs-backdrop="static" id="changeworker">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title fs-5 fw-bold">Transfer Work</p>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-controller="Traveler" asp-action="ChangeTravWorker">
+                <input id="travID" name="ID" hidden/>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <label class="form-label">Current Worker</label>
+                            <input class="form-control" value="" id="currentWorker"/>
+                        </div>
+                        <div>
+                            <label class="form-label">Update Worker</label>
+                            <select class="form-select" name="toWorker">
+                                <option id="currentworkerselect" hidden selected></option>
+                                @foreach (string name in Model.Users)
+                                {
+                                    <option>@name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function OpenExcel(sesId)
+    {
+        $(function () {
+            $.ajax({
+                url: '@Url.Action("OpenExcelFile", "DocGenerator")',
+                data: { sessionId: sesId, user: '@EN[1]'},
+                success: function (response) {
+
+                },
+                error: function (response){
+
+                }
+            });
+                
+        });
+    }
+</script>

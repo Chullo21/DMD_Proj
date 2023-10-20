@@ -10,7 +10,7 @@ namespace DMD_Prototype.Controllers
     public class ProblemLogController : Controller
     {
         private readonly AppDbContext _Db;
-        private readonly ISharedFunct _shared;
+        private readonly ISharedFunct ishare;
 
         private readonly List<ProblemLogModel> _plModel;
         private readonly List<AccountModel> _accounts;
@@ -20,7 +20,7 @@ namespace DMD_Prototype.Controllers
             _Db = context;
             _plModel = _Db.PLDb.ToList();
             _accounts = _Db.AccountDb.ToList();
-            _shared = shared;
+            ishare = shared;
         }
 
         private string[] GetUsername()
@@ -35,14 +35,40 @@ namespace DMD_Prototype.Controllers
         {           
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plID);
 
-            if (PLIDStatus == "OPEN")
+            switch (PLIDStatus)
             {
-                pl.IDStatus = "OPEN";
+                case "OPEN":
+                    {
+                        pl.IDStatus = "DENIED";
+                        break;
+                    }
+                case "CLOSEd":
+                    {
+                        pl.IDStatus = "CLOSED";
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
             }
 
-            if (PLSDStatus == "OPEN")
+            switch (PLSDStatus)
             {
-                pl.SDStatus = "OPEN";
+                case "OPEN":
+                    {
+                        pl.SDStatus = "DENIED";
+                        break;
+                    }
+                case "CLOSEd":
+                    {
+                        pl.SDStatus = "CLOSED";
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
             }
 
             pl.Validator = Validator;
@@ -79,7 +105,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult ProblemLogView()
         {
-            List<ProblemLogModel> pls = new List<ProblemLogModel>();
+            List<ProblemLogViewModel> pls = new List<ProblemLogViewModel>();
 
             if (!_plModel.Any())
             {
@@ -88,11 +114,14 @@ namespace DMD_Prototype.Controllers
 
             foreach (var p in _plModel)
             {
-                p.Owner = _accounts.FirstOrDefault(j => j.UserID == p.Owner).AccName;
-                if (GetUsername()[0] == p.Owner) pls.Add(p); else if (GetUsername()[1] == "PL_INTERVENOR" && p.PLIDStatus != "CLOSED" && p.PLSDStatus != "CLOSED") pls.Add(p);
+                ProblemLogViewModel mod = new ProblemLogViewModel();
+                mod.Owner = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == p.DocNo).OriginatorName;
+                mod.PL = p;
+
+                pls.Add(mod);
             }
-            
-            return View(pls.OrderByDescending(j => j.LogDate));
+
+            return View(pls.OrderByDescending(j => j.PL.LogDate));
         }
 
         public IActionResult SubmitPLValidation(ProblemLogModel fromView)
@@ -185,5 +214,11 @@ namespace DMD_Prototype.Controllers
 
             return res;
         }
+    }
+
+    public class ProblemLogViewModel
+    {
+        public ProblemLogModel PL { get; set; }
+        public string Owner { get; set; }
     }
 }

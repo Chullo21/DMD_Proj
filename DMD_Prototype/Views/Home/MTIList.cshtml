@@ -1,11 +1,19 @@
-﻿@model IEnumerable<MTIModel>
+﻿@model DMD_Prototype.Controllers.MTIListModel
 
 @{
     ViewData["Title"] = "Engineering Documents";
     string[] accData = TempData["EN"] as string[];
     string prod = TempData["Subj"] as string;
     string doc = TempData["DocType"] as string ?? "MPI";
+    string viewType = "View";
+    string viewColorType = "btn-primary";
     TempData.Keep();
+
+    if (accData[1] == "USER")
+    {
+        viewType = "WORK";
+        viewColorType = "btn-warning";
+    }
 }
 
 <div class="container flex-column">
@@ -46,12 +54,19 @@
                     <th>
                         Date Created
                     </th>
-                    <th></th>
+                    <th>
+                        Actions
+                    </th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model.list)
                 {
+                    if(item.ObsoleteStat)
+                    {
+                        continue;
+                    }
+
                     <tr>
                         <td>
                             @Html.DisplayFor(modelItem => item.DocumentNumber)
@@ -70,13 +85,19 @@
                         </td>
                         <td>
                             <div class="d-flex text-nowrap justify-content-center">
-                                <a class="btn btn-primary" asp-controller="MTI" asp-action="MTIView" asp-route-docuNumber="@item.DocumentNumber">View</a>
+                                <a class="btn @viewColorType" asp-controller="MTI" asp-action="MTIView" asp-route-docuNumber="@item.DocumentNumber">@viewType</a>
 
                                 @if (accData[1] == "ADMIN" || (accData[1] == "ORIGINATOR" && item.OriginatorName == accData[2]))
                                 {                                   
                                     <button class="btn btn-success mx-3" data-bs-toggle="modal" data-bs-target="#editDetModal" onclick="SetDets('@item.DocumentNumber', '@item.AssemblyPN', '@item.AssemblyDesc', '@item.RevNo', '@item.AfterTravLog', '@item.LogsheetDocNo', '@item.LogsheetRevNo', '@item.DocType')">Edit Details</button>
                                     <a class="btn btn-secondary" asp-controller="MTI" asp-action="EditDocumentView" asp-route-docuNo="@item.DocumentNumber">Update Documents</a>
                                 }
+
+                                @if (accData[1] == "ADMIN")
+                                {
+                                    <button type="button" class="btn btn-warning mx-3" data-bs-toggle="modal" data-bs-target="#changeownermodal" onclick="OrigName('@item.OriginatorName', '@item.DocumentNumber')">Transfer Owner</button>
+                                }
+
                                 <script>
                                     function SetDets(doc, assypn, assydesc, rev, after, logDoc, logRev, dtype)
                                     {
@@ -113,6 +134,57 @@
                 }
             </tbody>
         </table>
+    </div>
+</div>
+
+<script>
+    function OrigName(userId, docno)
+    {
+        $(function () {
+            $.ajax({
+                url: '@Url.Action("GetOrigName", "Home")',
+                data: {userId: userId},
+                success: function (response) {
+                    document.getElementById('currentowner').innerHTML = response.Name;
+                    $('#coDocNoo').val(docno);
+                }
+            });
+        });
+    }
+</script>
+
+<div class="modal fade" data-bs-backdrop="static" id="changeownermodal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title fs-5 fw-bold">Change Owner</p>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-controller="MTI" asp-action="ChangeDocOwner">
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <label class="form-label">Document No.</label>
+                            <input class="form-control" id="coDocNoo" name="docNo" required readonly />
+                        </div>
+                        <div class="mx-1"></div>
+                        <div>
+                            <label class="form-label">Owner</label>
+                            <select class="form-select" name="docOwner">
+                                <option id="currentowner" selected hidden></option>
+                                @foreach (string orig in Model.Originators)
+                                {
+                                    <option>@orig</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -189,6 +261,7 @@
         </div>
     </div>
 </div>
+
 @section scripts {
     <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />

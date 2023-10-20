@@ -201,6 +201,11 @@
                                 <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@opl', 'One Point Lesson')" data-bs-toggle="modal" data-bs-target="#docuFrame">One Point Lesson @counter</button>
                                 counter++;
                             }
+
+                            if (Model.Opl.Count <= 0)
+                            {
+                                <p class="text-center w-100">No Document</p>
+                            }
                         }                     
                     </div>                
                 </div>
@@ -215,6 +220,11 @@
                             {
                                 <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@prco', 'PRCO')" data-bs-toggle="modal" data-bs-target="#docuFrame">PRCO @counter</button>
                                 counter++;
+                            }
+
+                            if (Model.Prco.Count <= 0)
+                            {
+                                <p class="text-center w-100">No Document</p>
                             }
                         }                    
                     </div>
@@ -231,6 +241,11 @@
                                 <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@dero', 'Derogation')" data-bs-toggle="modal" data-bs-target="#docuFrame">Derogation @counter</button>
                                 counter++;
                             }
+
+                            if (Model.Derogation.Count <= 0)
+                            {
+                                <p class="text-center w-100">No Document</p>
+                            }
                         }
                     </div>
                 </div>
@@ -245,6 +260,11 @@
                             {
                                 <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@memo', 'Engineering Memo')" data-bs-toggle="modal" data-bs-target="#docuFrame">Engineering Memo @counter</button>
                                 counter++;
+                            }
+
+                            if (Model.Memo.Count <= 0)
+                            {
+                                <p class="text-center w-100">No Document</p>
                             }
                         }
                     </div>
@@ -559,6 +579,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeproblog"></button>
                 </div>
                 <form asp-controller="Work" asp-action="SubmitProblemLog" asp-route-rDocNumber="@Model.DocumentNumber" id="probForm">
+                    <input value="@Model.DocumentNumber" id="plDocNo" name="docNo" hidden />
                     <div class="modal-body">
                         <div class="d-flex mb-2">
                             <div class="w-25 d-flex justify-content-between mx-2">
@@ -593,7 +614,7 @@
                             <tbody>
                                 <tr>
                                     <td>
-                                        <input class="form-control" id="ww" value="" placeholder="Required" name="wweek" required />
+                                        <input class="form-control" id="ww" value="" placeholder="Required" name="wweek" type="number" required />
                                     </td>
                                     <td>
                                         <input class="form-control" value="@Model.Product" name="product" readonly/>
@@ -706,7 +727,7 @@
     </form>
 
 <script>
-    var dTitle = document.getElementById('docTitle');
+        var dTitle = document.getElementById('docTitle');
 
         document.querySelectorAll('input').forEach(function (input) {
             input.setAttribute("autocomplete", "off");
@@ -714,7 +735,9 @@
 
         window.onload = function ()
         {
+            console.log('@Model.WorkingStat');
             $(function () {
+                
                 $.ajax({
                     url: '@Url.Action("UserRefreshed", "Work")',
                     data: { sessionId: '@Model.SessionID' },
@@ -722,27 +745,31 @@
                         $('#stepnoid').val(response.StepNo);
                         $('#taskid').val(response.Task);
 
-                        var Sing = document.getElementById('single');
-                        var Thr = document.getElementById('three');
+                        if (document.getElementById('stepnoid').value === '' && '@Model.WorkingStat' === 'True')
+                        {
+                            if ('@Model.AfterTravlog' !== 'N')
+                            {
+                                $('#startlogsession').modal('show');
+                            }
+                        }
+                        else
+                        {
+                            var Sing = document.getElementById('single');
+                            var Thr = document.getElementById('three');
 
-                        if (response.Div === 't') {
-                            Sing.style.display = 'none';
-                            Thr.style.display = 'block';
-                        }
-                        else {
-                            Sing.style.display = 'block';
-                            Thr.style.display = 'none';
-                        }
+                            if (response.Div === 't') {
+                                Sing.style.display = 'none';
+                                Thr.style.display = 'block';
+                            }
+                            else {
+                                Sing.style.display = 'block';
+                                Thr.style.display = 'none';
+                            }
+                        }                      
                     }
                 });
             });
         };
-
-        //if ('@Model.WorkingStat' === 'True' && document.getElementById('stepnoid').value === '' && document.getElementById('taskid').value === '' && '@Model.AfterTravlog' !== 'N') {
-        //    $(function () {
-        //        $('#logsheet').modal('show');
-        //    });
-        //}
 
     function WhichDev(docName, doctit) {
         document.getElementById('closeoffcanvas').click();

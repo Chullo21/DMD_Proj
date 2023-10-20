@@ -10,39 +10,27 @@ namespace DMD_Prototype.Controllers
     public class WorkController : Controller
     {
         private readonly AppDbContext _Db;
-        private readonly List<AccountModel> _accounts;
-        private readonly List<PauseWorkModel> _pwmodel;
-        private readonly List<StartWorkModel> _swmodel;
-        private readonly List<ProblemLogModel> _plModel;
-        private readonly List<MTIModel> _mtimodel;
 
         private string sesID;
-        private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
-        private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere";
-        private readonly string travName = "TravelerFileDoNotEdit.xlsx";
-        private readonly string userTravName = "Traveler.xlsx";
-        private readonly string logName = "Logsheet.xlsx";
 
-        public WorkController(AppDbContext _context)
+        private readonly ISharedFunct ishared;
+
+        public WorkController(AppDbContext _context, ISharedFunct ishared)
         {
             _Db = _context;
-            _accounts = _Db.AccountDb.ToList();
-            _pwmodel = _Db.PauseWorkDb.ToList();
-            _swmodel = _Db.StartWorkDb.ToList();
-            _plModel = _Db.PLDb.ToList();
-            _mtimodel = _Db.MTIDb.ToList();
+            this.ishared = ishared;
         }
 
         private string UserIDGetter(string name)
         {
-            string userid = _accounts.FirstOrDefault(j => j.AccName == name).UserID;
+            string userid = ishared.GetAccounts().FirstOrDefault(j => j.AccName == name).UserID;
 
             return userid;
         }
 
         private void SessionSaver(string docNo, string user)
         {
-            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, UserIDGetter(user), _mtimodel.FirstOrDefault(j => j.DocumentNumber == docNo).AfterTravLog);
+            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, UserIDGetter(user), ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo).AfterTravLog);
             sesID = swModel.SessionID;
 
             if (ModelState.IsValid)
@@ -65,13 +53,13 @@ namespace DMD_Prototype.Controllers
 
         private void CreateNewFolder(string sesID)
         {
-            string filePath = Path.Combine(userDir, sesID);
+            string filePath = Path.Combine(ishared.GetPath("userDir"), sesID);
             Directory.CreateDirectory(filePath);
         }
 
         private void CopyTravToSession(string docNo, string wOrder, string serialNo)
         {
-            string filePath = Path.Combine(mainDir, docNo, travName);
+            string filePath = Path.Combine(ishared.GetPath("mainDir"), docNo, ishared.GetPath("travName"));
 
             ExcelPackage package = new ExcelPackage(filePath);
 
@@ -83,13 +71,22 @@ namespace DMD_Prototype.Controllers
                 ws.Cells[7, 9].Value = serialNo;
                 ws.Cells[1, 10].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
             }
+           
+            package.SaveAs(Path.Combine(ishared.GetPath("userDir"), sesID, ishared.GetPath("userTravName")));
+        }
 
-            package.SaveAs(Path.Combine(userDir, sesID, userTravName));
+        private bool CheckForExistingLogsheet(string ses, string logname)
+        {
+            return System.IO.File.Exists(Path.Combine(ishared.GetPath("userDir"), ses, logname));
         }
 
         public void CreateLogsheet(string logType, string sessionId)
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            if (CheckForExistingLogsheet(sessionId, ishared.GetPath("logName")))
+            {
+                return;
+            }
 
             string filePath;
 
@@ -102,13 +99,15 @@ namespace DMD_Prototype.Controllers
                 filePath = "DMD_Prototype.wwwroot.Common.Templates.CL.xlsx";
             }
 
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
             Stream stream = assembly.GetManifestResourceStream(filePath);
 
             using (ExcelPackage package = new ExcelPackage(stream))
             {
                 package.Workbook.Worksheets[0].Cells[5, 3].Value = DateTime.Now.ToShortDateString();
 
-                package.SaveAs(Path.Combine(userDir, sessionId, logName));
+                package.SaveAs(Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName")));
             }
         }
 
@@ -119,7 +118,7 @@ namespace DMD_Prototype.Controllers
             CopyTravToSession(docNo, wOrder, serialNo);
 
             return RedirectToAction("MTIView", "MTI", new {docuNumber = docNo, workStat = true,
-                sesID = sesID, travelerProgress = GetProgressFromTraveler(sesID)});
+                sesID = sesID});
         }
 
         public IActionResult PauseWork(string docNo, string EN, string reason, string sessID)
@@ -136,7 +135,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult ContinueWork(string userID, bool noPW)
         {
-            StartWorkModel swmodel = _swmodel.FirstOrDefault(j => j.UserID == userID && j.FinishDate == null);
+            StartWorkModel swmodel = ishared.GetStartWork().FirstOrDefault(j => j.UserID == userID && j.FinishDate == null);
 
             if (noPW)
             {
@@ -160,7 +159,7 @@ namespace DMD_Prototype.Controllers
 
         public ContentResult SubmitLog(string logcellone, string logcelltwo, string logcellthree, string sessionId, string logType)
         {
-            string filePath = Path.Combine(userDir, sessionId, logName);
+            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName"));
 
             int rowCount = 10;
 
@@ -232,9 +231,9 @@ namespace DMD_Prototype.Controllers
 
         private void SubmitDateFinished(string sessionId, string logType, string docNo)
         {
-            MTIModel mTIModel = _mtimodel.FirstOrDefault(j => j.DocumentNumber == docNo);
+            MTIModel mTIModel = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo);
 
-            string filePath = Path.Combine(userDir, sessionId, userTravName);
+            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("userTravName"));
             string dateNow = DateTime.Now.ToShortDateString();
 
             using (ExcelPackage package = new ExcelPackage(filePath))
@@ -250,7 +249,7 @@ namespace DMD_Prototype.Controllers
 
             if (logType != "N")
             {
-                using (ExcelPackage package = new ExcelPackage(Path.Combine(userDir, sessionId, logName)))
+                using (ExcelPackage package = new ExcelPackage(Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName"))))
                 {
                     string startDate = package.Workbook.Worksheets.First().Cells[5, 3].Value.ToString();
 
@@ -274,7 +273,7 @@ namespace DMD_Prototype.Controllers
 
         private void CompleteWork(string sessionId)
         {
-            StartWorkModel swModel = _swmodel.FirstOrDefault(j => j.SessionID == sessionId);
+            StartWorkModel swModel = ishared.GetStartWork().FirstOrDefault(j => j.SessionID == sessionId);
 
             swModel.FinishDate = DateTime.Now;
 
@@ -308,7 +307,7 @@ namespace DMD_Prototype.Controllers
                 return progress;
             }
 
-            string filePath = Path.Combine(userDir, sessionID, userTravName);
+            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionID, ishared.GetPath("userTravName"));
             int rowCount = 11;
 
             using (ExcelPackage package = new ExcelPackage(filePath))
@@ -361,7 +360,7 @@ namespace DMD_Prototype.Controllers
 
         private void SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date)
         {
-            string filePath = Path.Combine(userDir, sessionID, userTravName);
+            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionID, ishared.GetPath("userTravName"));
             int rowCount = 11;
             int sheetCounter = 0;
 
@@ -418,10 +417,10 @@ namespace DMD_Prototype.Controllers
             string desc, string probcon, string reportedby, string product, string rDocNumber)
         {
 
-            if (ModelState.IsValid )
+            if (ModelState.IsValid)
             {
-                _Db.PLDb.Add(new ProblemLogModel().CreatePL(SetSeries("PL"), DateTime.Now, wweek, affected, product,
-                    docno, desc, probcon, reportedby, _mtimodel.FirstOrDefault(j => j.DocumentNumber == rDocNumber).OriginatorName));
+                _Db.PLDb.Add(new ProblemLogModel().CreatePL(SetSeries("PL"), DateTime.Now, $"Week {wweek}", affected, product,
+                    docno, desc, probcon, reportedby, rDocNumber));
                 _Db.SaveChanges();
             }
 
@@ -433,7 +432,7 @@ namespace DMD_Prototype.Controllers
         {
             string yearNow = DateTime.Now.Year.ToString()[2..];
 
-            List<ProblemLogModel> series = _plModel.Where(j => j.LogDate.Year == DateTime.Now.Year).ToList();
+            List<ProblemLogModel> series = ishared.GetProblemLogs().Where(j => j.LogDate.Year == DateTime.Now.Year).ToList();
 
             if (series.Count <= 0)
             {
