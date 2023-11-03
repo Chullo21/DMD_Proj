@@ -25,7 +25,7 @@
 <form asp-controller="MTI" asp-action="EditDocument" enctype="multipart/form-data">
     <div class="card mb-2">
         <div class="card-body d-flex">
-            <div class="row w-100">
+            <div class="row w-100 justify-content-lg-around">
                 <div class="col-sm-12 col-md-6 d-flex justify-content-sm-center row">
                     <div class="d-sm-flex d-lg-flex col-sm-12 col-lg-6">
                         <label class="form-label text-nowrap my-auto mx-2">Document #:</label>
@@ -58,8 +58,19 @@
                 <div class="card-body w-100 row">
                     <div class="row">
                         <div class="col-6">
-                            <div class="flex-column">
-                                <label class="w-100 text-nowrap">MPI/MTI: </label>
+                            <div class="flex-column">                              
+                                <div class="d-flex">
+                                    <label class="w-100 text-nowrap mt-auto">MPI/MTI: </label>
+                                    <select class="form-select" name="mtpistatus">
+                                        @{
+                                            string currentStatus = Model.MTPIStatus == 'c' ? "Controlled" : "Interim";
+
+                                        }
+                                        <option selected hidden value="@Model.MTPIStatus">@currentStatus</option>
+                                        <option value="c">Controlled</option>
+                                        <option value="i">Interim</option>
+                                    </select>                                   
+                                </div>
                                 <input class="form-control w-100" type="file" name="mpti" accept=".pdf" />
                             </div>
                             <div class="flex-column">
@@ -137,7 +148,7 @@
                         <input class="form-control" type="file" name="travFile" accept=".xlsx"/>
                     </div>
                     <div class="mt-5">
-                        <i>NOTE: As an originator, you will be given a template for the traveler. Please follow the steps given by the developer to avoid conflicts regarding this. You can always reach the developer for guidance.</i>
+                        <i>NOTE: As an originator, you will be given a template for the traveler. Please follow the steps given by the developer.</i>
                     </div>
                 </div>
             </div>

@@ -31,7 +31,6 @@ namespace DMD_Prototype.Controllers
                 res = JsonConvert.SerializeObject(new { failed = "p", documentNumber = model.DocumentNumber.ToString() });
             }
 
-            //return RedirectToAction("MTIView", "MTI", new {docuNumber = model.DocumentNumber, workStat = false, sesID = ""});
             return Content(res, "application/json");
         }
 
@@ -60,9 +59,9 @@ namespace DMD_Prototype.Controllers
         {
             switch (option)
             {
-                case "Admin":
+                case "Accounts":
                     {
-                        return RedirectToAction("AdminView", "Admin");
+                        return RedirectToAction("AccountsView", "Admin");
                     }
                 case "Logout":
                     {
@@ -70,7 +69,7 @@ namespace DMD_Prototype.Controllers
                     }
                 default:
                     {
-                        return RedirectToAction("AdminView", "Admin");
+                        return RedirectToAction("LoginPage", "Login");
                     }
             }
         }
@@ -131,15 +130,18 @@ namespace DMD_Prototype.Controllers
             {
                 mod.ControlledVal =  mtis.Count();               
                 mod.ObsoleteVal = mtis.Count(j => j.ObsoleteStat);
-                mod.JTPVal = pls.Count(j => j.Product == "JTP");
-                mod.JLPVal = pls.Count(j => j.Product == "JLP");
-                mod.OLBVal = pls.Count(j => j.Product == "OLB");
-                mod.PNPVal = pls.Count(j => j.Product == "PNP");
+                mod.JTPVal = pls.Count(j => j.Product == "JTP" && j.Validation == "Valid");
+                mod.JLPVal = pls.Count(j => j.Product == "JLP" && j.Validation == "Valid");
+                mod.OLBVal = pls.Count(j => j.Product == "OLB" && j.Validation == "Valid");
+                mod.PNPVal = pls.Count(j => j.Product == "PNP" && j.Validation == "Valid");
 
-                mod.InterimVal = pls.Count(j => j.PLIDStatus == "OPEN");
+                mod.InterimVal = mtis.Count(j => j.MTPIStatus == 'i');
 
-                mod.OpenPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "OPEN" || string.IsNullOrEmpty(j.PLSDStatus)).OrderBy(j => j.LogDate).ToList()));
-                mod.ClosedPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "CLOSED").OrderBy(j => j.LogDate).ToList()));
+                mod.OpenIDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLIDStatus == "OPEN" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
+                mod.ClosedIDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLIDStatus == "CLOSED" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
+
+                mod.OpenSDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "OPEN" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
+                mod.ClosedSDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "CLOSED" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
             }
 
             return mod;
@@ -150,8 +152,10 @@ namespace DMD_Prototype.Controllers
     {
         public int ControlledVal { get; set; }
         public int InterimVal { get; set; }
-        public string OpenPL { get; set; }
-        public string ClosedPL { get; set; }
+        public string OpenIDPL { get; set; }
+        public string ClosedIDPL { get; set; }
+        public string OpenSDPL { get; set; }
+        public string ClosedSDPL { get; set; }
         public int ObsoleteVal { get; set; }
 
         public int JTPVal { get; set; }

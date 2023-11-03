@@ -1,5 +1,4 @@
-﻿using DMD_Prototype.Controllers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace DMD_Prototype.Controllers
 {
@@ -13,16 +12,6 @@ namespace DMD_Prototype.Controllers
         public DocumentController(ISharedFunct ishared)
         {
             _ishared = ishared;
-        }
-
-        public IActionResult DownloadTraveler(string sessionId)
-        {
-            return _ishared.DuplicateAndOpenFile(sessionId, userTravName);
-        }
-
-        public IActionResult DownloadLogsheet(string sessionId)
-        {
-            return _ishared.DuplicateAndOpenFile(sessionId, userLogName);
         }
     }
 }

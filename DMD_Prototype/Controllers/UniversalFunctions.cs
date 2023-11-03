@@ -7,7 +7,6 @@ namespace DMD_Prototype.Controllers
 {   
     public interface ISharedFunct
     {
-        public FileResult DuplicateAndOpenFile(string sessionId, string whichDoc);
         public IActionResult ShowPdf(string path);
         public string GetPath(string path);
 
@@ -31,9 +30,15 @@ namespace DMD_Prototype.Controllers
 
         private readonly AppDbContext _Db;
 
-        private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
-        private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
-        private readonly string tempDir = "D:\\jtoledo\\Desktop\\TempFiles";
+        //private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
+        //private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
+        //private readonly string tempDir = "D:\\jtoledo\\Desktop\\TempFiles";
+        private readonly string userDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Sessions";
+        private readonly string mainDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Documents";
+        private readonly string tempDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Temp";
+
+        private readonly string wsFolderName = "1_WORKMANSHIP_STANDARD_FOLDER";
+        private readonly string wsName = "WS.pdf";
         private readonly string userTravName = "Traveler.xlsx";
         private readonly string userLogName = "Logsheet.xlsx";
 
@@ -76,9 +81,49 @@ namespace DMD_Prototype.Controllers
         {
             switch (whichPath)
             {
+                case "wsf":
+                    {
+                        return wsFolderName;
+                    }
+                case "ws":
+                    {
+                        return wsName;
+                    }
+                case "schema":
+                    {
+                        return schemaName;
+                    }
+                case "bom":
+                    {
+                        return bomName;
+                    }
+                case "assy":
+                    {
+                        return assydrawingName;
+                    }
+                case "opl":
+                    {
+                        return oplName;
+                    }
+                case "prco":
+                    {
+                        return prcoName;
+                    }
+                case "derog":
+                    {
+                        return derogationName;
+                    }
+                case "memo":
+                    {
+                        return memoName;
+                    }
                 case "mainDir":
                     {
                         return mainDir;
+                    }
+                case "mainDoc":
+                    {
+                        return maindocName;
                     }
                 case "userDir":
                     {
@@ -105,17 +150,6 @@ namespace DMD_Prototype.Controllers
                         return "error";
                     }
             }
-        }
-
-        public FileResult DuplicateAndOpenFile(string sessionId, string whichDoc)
-        {
-
-            using (var package = new ExcelPackage(Path.Combine(userDir, sessionId, whichDoc)))
-            {
-                byte[] res = package.GetAsByteArray();
-                return File(res, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", whichDoc);
-            }
-
         }
 
         public IActionResult ShowPdf(string path)

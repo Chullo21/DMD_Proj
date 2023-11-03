@@ -1,13 +1,9 @@
-﻿using DMD_Prototype.Data;
-using DMD_Prototype.Models;
+﻿using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Office.Interop.Excel;
 using Newtonsoft.Json;
 using OfficeOpenXml;
-using OfficeOpenXml.Utils;
-using System.Diagnostics;
 using System.Reflection;
-using System.Security.AccessControl;
 
 namespace DMD_Prototype.Controllers
 {
@@ -15,40 +11,68 @@ namespace DMD_Prototype.Controllers
     {        
         public DocGeneratorController(ISharedFunct shared)
         {
-            _shared = shared;
+            ishare = shared;
         }
 
-        private readonly ISharedFunct _shared;
+        private readonly ISharedFunct ishare;
 
-        public void OpenExcelFile(string sessionId, string user)
+        private byte[] GetAndConvertExcelFile(string sessionId, string whichFile)
         {
-            string theFile = Path.Combine(_shared.GetPath("userDir"), sessionId, _shared.GetPath("userTravName"));
+            string srcDir = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
 
-            string tempPath = _shared.GetPath("tempDir");
+            string outputDir = Path.Combine(ishare.GetPath("tempDir"), "PDF.pdf");
 
-            Random rand = new Random();
+            Application excelApp = new Application();
 
-            string procPath = Path.Combine(tempPath, $"{rand.Next()}.xlsx");
+            excelApp.Visible = false;
 
-            do
-            {
-                procPath = Path.Combine(tempPath, $"{rand.Next()}.xlsx");
-            } while (System.IO.File.Exists(procPath));
+            Workbook workbook = excelApp.Workbooks.Open(srcDir);
 
-            ExcelPackage package = new ExcelPackage(theFile);
+            workbook.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, outputDir);
 
-            package.SaveAs(procPath);
+            workbook.Close(false);
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+            excelApp.Quit();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
 
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = procPath,
-                UseShellExecute = true
-            };
+            byte[] pdfInBytes = System.IO.File.ReadAllBytes(outputDir);
 
-            Process.Start(startInfo);
+            System.IO.File.Delete(outputDir);
 
+            return pdfInBytes;
         }
 
+        public IActionResult DownloadExcel(string sessionId, string whichFile)
+        {
+            string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
+
+            using(ExcelPackage package = new ExcelPackage(filePath))
+            {
+                string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                return File(package.GetAsByteArray(), contentType, $"{sessionId}_{whichFile}.xlsx");
+            }
+        }
+
+        public IActionResult DownloadTravelerTemplate()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            using (ExcelPackage package = new ExcelPackage(assembly.GetManifestResourceStream("DMD_Prototype.wwwroot.Common.Templates.Traveler.xlsx")))
+            {
+                string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                return File(package.GetAsByteArray(), contentType, "Traveler_Template.xlsx");
+            }
+        }
+
+        public IActionResult ViewExcelFile(string sessionId)
+        {
+            return File(GetAndConvertExcelFile(sessionId, "userTravName"), "application/pdf");
+        }
+
+        public IActionResult DownloadPdf(string sessionId, string whichFile)
+        {
+            return File(GetAndConvertExcelFile(sessionId, whichFile), "application/pdf", $"{sessionId}.pdf");
+        }
 
     }
 }

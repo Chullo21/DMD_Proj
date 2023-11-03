@@ -9,13 +9,47 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="container-fluid row mx-0 mt-4">   
-    <div class="flex-column col-md-12 col-lg-4">       
+<div class="container-fluid row mx-0">   
+    <div class="col-md-8 col-lg-4 mx-auto mb-md-2">       
         <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
             <div class="card-header text-center border-2 border-dark fs-3" style="background-color:#B5AD9A">
                 <p class="modal-title fs-5 fw-bold text-center">Documents Lists</p>
             </div>
             <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-evenly">
+                @if (EN[1] != "USER")
+                {
+                    <div class="w-75 mx-auto h-auto">
+                        <button class="w-100 btn btn-warning border-2 border-dark" style="font-size:20px" data-bs-toggle="modal" data-bs-target="#wsmodal">Workmanship Standard</button>
+                    </div>
+
+                    <div class="modal fade" data-bs-backdrop="static" id="wsmodal">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white ">
+                                    <div class="modal-title d-flex">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-file-binary-fill my-auto" viewBox="0 0 16 16">
+                                            <path d="M5.526 9.273c-.542 0-.832.563-.832 1.612 0 .088.003.173.006.252l1.56-1.143c-.126-.474-.375-.72-.733-.72zm-.732 2.508c.126.472.372.718.732.718.54 0 .83-.563.83-1.614 0-.085-.003-.17-.006-.25l-1.556 1.146z" />
+                                            <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM7.05 10.885c0 1.415-.548 2.206-1.524 2.206C4.548 13.09 4 12.3 4 10.885c0-1.412.548-2.203 1.526-2.203.976 0 1.524.79 1.524 2.203zm3.805 1.52V13h-3v-.595h1.181V9.5h-.05l-1.136.747v-.688l1.19-.786h.69v3.633h1.125z" />
+                                        </svg>
+                                        <p class="fs-5 mx-2 fw-bold my-auto">Workmanship Standard</p>
+                                    </div>
+                                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form class="d-flex mb-2" asp-controller="MTI" asp-action="UploadWS" enctype="multipart/form-data">
+                                        <div class="">
+                                            <input class="form-control" type="file" name="file" accept=".pdf" required/>
+                                        </div>
+                                        <div>
+                                            <input class="btn btn-primary mx-3" type="submit" value="Upload"/>
+                                        </div>
+                                    </form>
+                                    <iframe class="w-100" src="@Url.Action("ShowDoc", "MTI", new {docunumber = "", whichdoc = "WS"})" style="height:70vh"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
                 <div class="w-75 mx-auto h-auto">
                     <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="PNP">PNP HEAD MX</a>
                 </div>
@@ -37,31 +71,31 @@
             </div>
         </div>
     </div>
-    <div class="col-md-12 col-lg-4">
+    <div class="col-md-10 col-lg-4 mb-md-2 mx-auto">       
         <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
             <div class="card-header border-2 border-dark fs-3" style="background-color:#B5AD9A">
                 <p class="modal-title fs-5 fw-bold text-center">Documents Statuses</p>
             </div>
-            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-around">
-                <div class="card w-75 border-2 border-dark">
+            <div class="card-body flex-column">
+                <div class="card border-2 border-dark">
                     <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                        <p class="card-title text-center fs-5 fw-bold text-white">Uploaded Documents</p>
+                        <p class="card-title text-center fs-6 fw-bold text-white">Uploaded Documents</p>
                     </div>
                     <div class="card-body">
                         <p class="text-center fw-bold fs-1">@Model.ControlledVal</p>
                     </div>
                 </div>
-                <div class="card w-75 border-2 border-dark">
+                <div class="card border-2 border-dark my-2">
                     <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                        <p class="card-title text-center fs-5 fw-bold text-white">Interim Documents</p>
+                        <p class="card-title text-center fs-6 fw-bold text-white">Interim Documents</p>
                     </div>
                     <div class="card-body">
                         <p class="text-center fw-bold fs-1">@Model.InterimVal</p>
                     </div>
                 </div>
-                <div class="card w-75 border-2 border-dark">
+                <div class="card border-2 border-dark">
                     <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                        <p class="card-title text-center fs-5 fw-bold text-white">Obsolete Documents</p>
+                        <p class="card-title text-center fs-6 fw-bold text-white">Obsolete Documents</p>
                     </div>
                     <div class="card-body">
                         <p class="text-center fw-bold fs-1">@Model.ObsoleteVal</p>
@@ -71,24 +105,20 @@
         </div>
     </div>
     <div class="flex-column col-md-12 col-lg-4">
-        <div class="w-100 mb-2">
-            <div class="card w-100 border-2 border-dark" style="background-color:#E9E4E9">
-                <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                    <p class="modal-title fs-5 fw-bold text-center">Problem Log Count</p>
-                </div>
-                <div>
-                    <canvas id="problemlognumber"></canvas>
-                </div>
+        <div class="card border-2 border-dark mb-2" style="background-color:#E9E4E9">
+            <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
+                <p class="modal-title fs-5 fw-bold text-center">Problem Log Count</p>
+            </div>
+            <div class="">
+                <canvas id="problemlognumber"></canvas>
             </div>
         </div>
-        <div class="w-100 mb-2">
-            <div class="card w-100 border-2 border-dark" style="background-color:#E9E4E9">
-                <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                    <p class="modal-title fs-5 fw-bold text-center">PL Open and Closed</p>
-                </div>
-                <div>
-                    <canvas id="ProblemLogOpenAndClosed"></canvas>
-                </div>
+        <div class="card border-2 border-dark mb-md-5 mb-lg-0" style="background-color:#E9E4E9">
+            <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
+                <p class="modal-title fs-5 fw-bold text-center">PL Open and Closed</p>
+            </div>
+            <div class="">
+                <canvas id="ProblemLogOpenAndClosed"></canvas>
             </div>
         </div>
     </div>
@@ -119,20 +149,40 @@
                 labels: months,
                 datasets: [
                     {
-                        label: 'Open',
-                        data: @Model.OpenPL,
-                        backgroundColor: 'green',
+                        label: 'Open Interim',
+                        data: @Model.OpenIDPL,
+                        backgroundColor: '#ffa600',
                         borderColor: 'black',
-                        borderWidth: 0,
-                        pointStyle: 'rect'
+                        borderWidth: 0.5,
+                        pointStyle: 'rect',
+                        stack: '0'
                     },
                     {
-                        label: 'Open',
-                        data: @Model.ClosedPL,
-                        backgroundColor: 'red',
+                        label: 'Open Standardized',
+                        data: @Model.OpenSDPL,
+                        backgroundColor: '#ef5675',
                         borderColor: 'black',
-                        borderWidth: 0,
-                        pointStyle: 'rect'
+                        borderWidth: 0.5,
+                        pointStyle: 'rect',
+                        stack: '1'
+                    },
+                    {
+                        label: 'Closed Interim',
+                        data: @Model.ClosedIDPL,
+                        backgroundColor: '#7a5195',
+                        borderColor: 'black',
+                        borderWidth: 0.5,
+                        pointStyle: 'rect',
+                        stack: '0'
+                    },                   
+                    {
+                        label: 'Closed Standardized',
+                        data: @Model.ClosedSDPL,
+                        backgroundColor: '#003f5c',
+                        borderColor: 'black',
+                        borderWidth: 0.5,
+                        pointStyle: 'rect',
+                        stack: '1'
                     }
                 ],
             },
@@ -151,18 +201,21 @@
                             display: true,
                             text: ''
                         },
+                        stacked: true
                     },
                     x: {
                         ticks: {
                             color: 'black',
-                        }
+                        },
+                        stacked: true
                     }
                 },
                 plugins: {
                     legend: {
                         labels: {
                             usePointStyle: true,
-                        }
+                        },
+                        
                     }
                 }
             }
@@ -183,9 +236,9 @@
                     {
                         label: 'Problem Log Count',
                         data: [@Model.JLPVal, @Model.JTPVal, @Model.PNPVal, @Model.OLBVal],
-                        backgroundColor: bgv,
+                        backgroundColor: '#ffa600',
                         borderColor: 'black',
-                        borderWidth: 0,
+                        borderWidth: .5,
                         pointStyle: 'rect'
                     },
                 ],

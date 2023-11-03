@@ -17,13 +17,10 @@ namespace DMD_Prototype.Models
         [Required]
         public string AccName { get; set; } = string.Empty;
 
-        [Required]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
         public string Sec { get; set; } = string.Empty;
 
-        [Required]
         public string Dom { get; set; } = string.Empty;
 
         [Required]
@@ -32,7 +29,6 @@ namespace DMD_Prototype.Models
         [Required]
         public string Password { get; set; } = string.Empty;
 
-        [Required]
         public DateTime DateCreated { get; set; } = DateTime.Now;
 
         //Conditionals

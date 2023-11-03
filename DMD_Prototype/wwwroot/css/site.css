@@ -29,7 +29,7 @@ body {
     position: fixed;
     bottom: 0;
     width: 100%;
-    height: 35px;
+    height: 4%;
     background-color: blue;
     border-top: 2px solid;
 }
@@ -43,7 +43,8 @@ body {
 .loginbg {
     background-image: url('../pimesbg6.jpg');
     background-repeat: no-repeat;
-    background-size: 100% 100%;
+    background-size: cover;
+    background-position: center;
 }
 
 .loginform {
@@ -52,3 +53,32 @@ body {
     left: 50%
 }
 
+.loader {
+    display: none;
+    position:fixed;
+    top:70%;
+    left:45%;
+    width: fit-content;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: 30px;
+    background: linear-gradient(90deg,#000 50%,#0000 0) right/200% 100%;
+    animation: l21 2s infinite linear;
+    z-index:2005;
+}
+
+    .loader::before {
+        content: "Loading...";
+        color: #0000;
+        padding: 0 5px;
+        background: inherit;
+        background-image: linear-gradient(90deg,#fff 50%,#000 0);
+        -webkit-background-clip:text;
+        background-clip:text;
+    }
+
+@keyframes l21 {
+    100% {
+        background-position: left
+    }
+}

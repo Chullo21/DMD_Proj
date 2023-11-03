@@ -14,6 +14,10 @@ namespace DMD_Prototype.Models
         public string RevNo { get; set; } = string.Empty;
         public DateTime DateCreated { get; set; } = DateTime.Now;
 
+        //Document Statuses
+
+        public char MTPIStatus { get; set; } = 'C';
+
         // Special columns
 
         public string? LogsheetDocNo { get; set; }

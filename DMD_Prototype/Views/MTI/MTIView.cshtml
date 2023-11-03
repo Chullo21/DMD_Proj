@@ -28,13 +28,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ATS Engineering</title>
+    <script src="~/js/site.js"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <style>
+        .modal {
+            z-index: 2002;
+        }
+    </style>
 </head>
 <body>
-    <div class="container-fluid">
+    <div class="container-fluid position-absolute" style="z-index:2001">
         <div class="w-100">
             <div class="row bg-primary" style="height:60px">
                 <div class="col-1 align-self-center d-flex justify-content-center">
@@ -116,7 +122,7 @@
                             </div>                            
                         </button>
                     </div>
-                    <div class=" align-self-center">
+                    <div class="align-self-center">
                         <button class="btn btn-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#docs">
                             <div class="d-flex justify-content-between align-items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
@@ -133,16 +139,19 @@
         </div>
     </div>
 
-    <div class="container-fluid">
-        <iframe type="application/pdf" toolbar="0" navpanes="0" print="0" class="w-100 border-3 border-dark" id="MainDoc" style="max-height:660px; min-height:660px" src="@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber, whichDoc = "MainDoc"})"></iframe>
+    <div class="container-fluid position-fixed top-0">
+        <iframe class="w-100 border-3 border-dark" id="MainDoc" style="min-height:100vh" src="@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber, whichDoc = "MainDoc"})"></iframe>
     </div>
 
     <div class="modal fade" id="confirmStart" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <form asp-controller ="Work" asp-action="StartWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]">
                 <div class="modal-content">
-                    <div class="modal-header w-100 d-flex justify-content-center">
-                        <p class="modal-title fs-5">Confirm</p>
+                    <div class="modal-header d-flex justify-content-start bg-primary text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-question-diamond-fill my-auto" viewBox="0 0 16 16">
+                            <path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098L9.05.435zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25h-.825zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927z" />
+                        </svg>
+                        <p class="fs-5 fw-bold my-auto mx-2">Confirm</p>
                     </div>
                     <div class="modal-body flex-column">
                         <div>
@@ -277,11 +286,16 @@
     <div class="modal fade" id="travmodal" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="traveler">
         <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
             <form id="submitTravForm" asp-controller="Work" asp-action="SubmitTravelerLog" class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5 fw-bold" id="traveler">Traveler</h1>
+                <div class="modal-header bg-primary text-white">                   
+                    <div class="d-flex">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-list-columns-reverse my-auto" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M0 .5A.5.5 0 0 1 .5 0h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 0 .5Zm4 0a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1h-10A.5.5 0 0 1 4 .5Zm-4 2A.5.5 0 0 1 .5 2h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5Zm-4 2A.5.5 0 0 1 .5 4h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5Zm-4 2A.5.5 0 0 1 .5 6h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5Zm-4 2A.5.5 0 0 1 .5 8h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5Zm-4 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1h-10a.5.5 0 0 1-.5-.5Zm-4 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5Zm-4 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5Z" />
+                        </svg>
+                        <h1 class="modal-title fs-5 fw-bold my-auto mx-3" id="traveler">Traveler</h1>
+                    </div>
                     <button type="button" id="closetravmodal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body">                   
                     <div>
                         <table class="table table-hover table-bordered text-center">
                             <thead class="table-primary">
@@ -413,7 +427,7 @@
         });
     </script>
 
-    <div class="modal fade" id="startlogsession" data-bs-backdrop="stati" data-bs-keyboard="false">
+    <div class="modal fade" id="startlogsession" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
                 <form asp-controller="Work" id="logsheetform" asp-action="CreateLogsheet" asp-route-sessionId="@Model.SessionID" asp-route-logType="@Model.AfterTravlog">
@@ -485,7 +499,7 @@
                 
                 var stepNumber = document.getElementById('stepnoid').value;
                 var Task = document.getElementById('taskid').value;
-                var Single = null;
+                var Single = document.getElementById('singleParaid').value;
                 var Div = [];
 
                 if (divType === 't')
@@ -494,10 +508,11 @@
                     Div.push(document.getElementById('secParaid').value);
                     Div.push(document.getElementById('thirdParaid').value);
                 }
-                else
+
+                if (Single === '' && Div.length === 0)
                 {
-                    Single = document.getElementById('singleParaid').value;
-                }             
+                    return;
+                }
 
                 $.ajax({
                     type: 'POST',
@@ -565,7 +580,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="document.getElementById('docFrame').src = ''"></button>
                 </div>
                 <div class="modal-body">
-                    <iframe class="border-3 border-dark" style="min-height:600px; max-height:600px; width:100%" id="docFrame" src=""></iframe>
+                    <div class="position-absolute bg-transparent end-0" style="height:60px; width:25%">                       
+                    </div>
+                    <div>
+                        <iframe class="border-3 border-dark" style="min-height:600px; max-height:600px; width:100%" id="docFrame" src=""></iframe>
+                    </div>
                 </div>
             </div>
         </div>
@@ -574,8 +593,13 @@
     <div class="modal fade text-center" id="problemlogForm" data-bs-backdrop="true" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
-                <div class="modal-header">
-                    <p class="modal-title fs-5 fw-bold">Problem Log</p>
+                <div class="modal-header bg-primary text-white">
+                    <div class="d-flex">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-bookmark-x-fill my-auto" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5zM6.854 5.146a.5.5 0 1 0-.708.708L7.293 7 6.146 8.146a.5.5 0 1 0 .708.708L8 7.707l1.146 1.147a.5.5 0 1 0 .708-.708L8.707 7l1.147-1.146a.5.5 0 0 0-.708-.708L8 6.293 6.854 5.146z" />
+                        </svg>
+                        <p class="modal-title fs-5 fw-bold my-auto mx-2">Problem Log</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeproblog"></button>
                 </div>
                 <form asp-controller="Work" asp-action="SubmitProblemLog" asp-route-rDocNumber="@Model.DocumentNumber" id="probForm">
@@ -592,7 +616,7 @@
                             </div>
                         </div>
                         <table class="table table-bordered">
-                            <thead>
+                            <thead class="table-primary">
                                 <tr>
                                     <th>
                                         Work Week
@@ -692,8 +716,16 @@
     <div class="modal fade" data-bs-backdrop="true" id="plConfirm">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <p class="w-100 text-center fs-5 fw-bold">Problem Log Submitted</p>
+                <div class="modal-header bg-primary text-white">
+                    <div class="modal-title d-flex">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-info-square-fill my-auto" viewBox="0 0 16 16">
+                            <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm8.93 4.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                        </svg>
+                        <p class="text-center fs-5 fw-bold my-auto mx-2">Problem Log</p>
+                    </div>                   
+                </div>
+                <div class="modal-body">
+                    Problem Log submitted.
                 </div>
                 <div class="modal-footer">
                     <button class="btn-primary btn w-auto" type="button" data-bs-dismiss="modal">Okay</button>
@@ -735,7 +767,6 @@
 
         window.onload = function ()
         {
-            console.log('@Model.WorkingStat');
             $(function () {
                 
                 $.ajax({
@@ -745,18 +776,19 @@
                         $('#stepnoid').val(response.StepNo);
                         $('#taskid').val(response.Task);
 
-                        if (document.getElementById('stepnoid').value === '' && '@Model.WorkingStat' === 'True')
-                        {
-                            if ('@Model.AfterTravlog' !== 'N')
-                            {
+                        if (response.StepNo === null && '@Model.WorkingStat' === 'True') {
+                            if ('@Model.AfterTravlog' !== 'N'){
                                 $('#startlogsession').modal('show');
+                            }
+                            else{
+                                $('#endsession').modal('show');
                             }
                         }
                         else
                         {
                             var Sing = document.getElementById('single');
                             var Thr = document.getElementById('three');
-
+                            divType = response.Div;
                             if (response.Div === 't') {
                                 Sing.style.display = 'none';
                                 Thr.style.display = 'block';

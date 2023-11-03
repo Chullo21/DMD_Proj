@@ -1,9 +1,12 @@
 ﻿using DMD_Prototype.Data;
+using DMD_Prototype.Migrations;
 using DMD_Prototype.Models;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
-using System.Runtime.CompilerServices;
+using OfficeOpenXml;
+using System.Diagnostics.Metrics;
+using System.Reflection;
 
 namespace DMD_Prototype.Controllers
 {
@@ -31,7 +34,111 @@ namespace DMD_Prototype.Controllers
             return EN;
         }
 
-        public IActionResult PLSubmitValidation(int plID, string Validator, string PLIDStatus, string PLSDStatus, string PLRemarks)
+        private Stream GetProblemLogTemplate()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            return assembly.GetManifestResourceStream("DMD_Prototype.wwwroot.Common.Templates.ProblemLogTemplate.xlsx");
+        }
+
+        private byte[] ExportPL(List<ProblemLogModel> pls)
+        {
+            int counter = 10;
+
+            using(ExcelPackage package = new ExcelPackage(GetProblemLogTemplate()))
+            {
+                var ws = package.Workbook.Worksheets[0];
+
+                foreach (var p in pls)
+                {
+                    ws.Cells[counter, 1].Value = p.PLNo;
+                    ws.Cells[counter, 2].Value = p.LogDate.ToShortDateString();
+                    ws.Cells[counter, 3].Value = p.WorkWeek;
+                    ws.Cells[counter, 4].Value = p.AffectedDoc;
+                    ws.Cells[counter, 5].Value = p.Product;
+                    ws.Cells[counter, 6].Value = p.PNDN;
+                    ws.Cells[counter, 7].Value = p.Desc;
+                    ws.Cells[counter, 8].Value = p.Problem;
+                    ws.Cells[counter, 9].Value = p.Reporter;
+                    ws.Cells[counter, 10].Value = p.Validation;
+                    ws.Cells[counter, 11].Value = p.OwnerRemarks;
+                    ws.Cells[counter, 12].Value = p.Category;
+                    ws.Cells[counter, 13].Value = p.RC;
+                    ws.Cells[counter, 14].Value = p.CA;
+                    ws.Cells[counter, 15].Value = p.InterimDoc;
+                    ws.Cells[counter, 16].Value = p.IDTCD;
+                    ws.Cells[counter, 17].Value = p.IDStatus;
+                    ws.Cells[counter, 18].Value = p.StandardizedDoc;
+                    ws.Cells[counter, 19].Value = p.SDTCD;
+                    ws.Cells[counter, 20].Value = p.SDStatus;
+                    ws.Cells[counter, 21].Value = p.Validator;
+                    ws.Cells[counter, 22].Value = p.PLIDStatus;
+                    ws.Cells[counter, 23].Value = p.PLSDStatus;
+
+                    counter++;
+                }
+
+                return package.GetAsByteArray();
+            }
+        }
+
+        public IActionResult DownloadFile(string selection, DateTime? from, DateTime? to)
+        {
+            string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            Response.Headers["Content-Disposition"] = "inline; filename=" + $"ProblemLog_{DateTime.Now.Year}.xlsx";
+            return File(ExportPL(GetProblemLogs(selection, from, to)), contentType);
+        }
+
+        private List<ProblemLogModel> GetProblemLogs(string selection, DateTime? from, DateTime? to)
+        {
+            List<ProblemLogModel> pls = new List<ProblemLogModel>();
+
+            switch (selection)
+            {
+                case "Year":
+                    {
+                        pls = ishare.GetProblemLogs().Where(j => j.LogDate.Year == DateTime.Now.Year).ToList();
+                        break;
+                    }
+                case "Month":
+                    {
+                        pls = ishare.GetProblemLogs().Where(j => j.LogDate.Month == DateTime.Now.Month && j.LogDate.Year == DateTime.Now.Year).ToList();
+                        break;
+                    }
+                case "Range":
+                    {
+                        pls = ishare.GetProblemLogs().Where(j => j.LogDate.Date >= from && j.LogDate.Date <= to).ToList();
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
+            }
+
+            return pls;
+        }
+
+        public ContentResult CheckForPLData(string selection, DateTime? from, DateTime? to)
+        {
+            List<ProblemLogModel> pls = GetProblemLogs(selection, from, to);
+
+            string convertString = "Selected date will return with zero or no data, action terminated";
+            bool plStat = false;
+
+            if (pls.Count > 0 && pls != null)
+            {
+                convertString = "Download will beggin shortly.";
+                plStat = true;
+
+            }
+
+            string jsonContent = JsonConvert.SerializeObject(new { message = convertString, stat =  plStat});
+            return Content(jsonContent, "application/json");
+
+        }
+
+        public IActionResult InterimDocValidation(int plID, string Validator, string PLIDStatus, string PLRemarks)
         {           
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plID);
 
@@ -42,7 +149,7 @@ namespace DMD_Prototype.Controllers
                         pl.IDStatus = "DENIED";
                         break;
                     }
-                case "CLOSEd":
+                case "CLOSED":
                     {
                         pl.IDStatus = "CLOSED";
                         break;
@@ -53,27 +160,8 @@ namespace DMD_Prototype.Controllers
                     }
             }
 
-            switch (PLSDStatus)
-            {
-                case "OPEN":
-                    {
-                        pl.SDStatus = "DENIED";
-                        break;
-                    }
-                case "CLOSEd":
-                    {
-                        pl.SDStatus = "CLOSED";
-                        break;
-                    }
-                default:
-                    {
-                        break;
-                    }
-            }
-
             pl.Validator = Validator;
             pl.PLIDStatus = PLIDStatus;
-            pl.PLSDStatus = PLSDStatus;
             pl.PLRemarks = PLRemarks;
 
             if (ModelState.IsValid)
@@ -85,14 +173,53 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("ProblemLogView");
         }
 
-        public IActionResult EditPLValidation(int plid, string rc, string ca, string interimdoc, string standardizeddoc)
+        public IActionResult PermanentDocValidation(int plId, string plStatus, string plRemarks, string validator)
+        {
+            ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plId);
+
+            switch (plStatus)
+            {
+                case "OPEN":
+                    {
+                        pl.SDStatus = "DENIED";
+                        break;
+                    }
+                case "CLOSED":
+                    {
+                        pl.SDStatus = "CLOSED";
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
+            }
+
+            pl.PLSDStatus = plStatus;
+            pl.Validator = validator;
+            pl.PLRemarks = plRemarks;
+
+            if (ModelState.IsValid)
+            {
+                _Db.PLDb.Update(pl);
+                _Db.SaveChanges();
+            }
+
+            return RedirectToAction("ProblemLogView");
+        }
+
+        public IActionResult EditPLValidation(int plid, string rc, string ca, string? interimdoc, string standardizeddoc)
         {
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plid);
 
             pl.RC = rc;
-            pl.CA = ca;
-            pl.InterimDoc = interimdoc;
+            pl.CA = ca;            
             pl.StandardizedDoc = standardizeddoc;
+
+            if (pl.PLIDStatus != "CLOSED")
+            {
+                pl.InterimDoc = interimdoc;
+            }
 
             if (ModelState.IsValid)
             {
@@ -150,6 +277,12 @@ namespace DMD_Prototype.Controllers
                 pl.SDTCD = fromView.SDTCD;
                 pl.SDStatus = fromView.Validation == "Valid" ? "OPEN" : "";
                 pl.Validation = fromView.Validation;
+
+                if (fromView.Validation == "Valid")
+                {
+                    pl.PLIDStatus = "OPEN";
+                    pl.PLSDStatus = "OPEN";
+                }
             }
 
             if (ModelState.IsValid)
@@ -195,6 +328,25 @@ namespace DMD_Prototype.Controllers
             string jsonContent = JsonConvert.SerializeObject(new {ID = ID.ToString("yyyy-MM-dd"), SD = SD.ToString("yyyy-MM-dd") });
 
             return Content(jsonContent, "application/json");
+        }
+
+        public ContentResult GetDocStatus(string docNo)
+        {
+            MTIModel doc = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo);
+
+            return Content(JsonConvert.SerializeObject(new { status = doc.MTPIStatus != 'i' ? "Controlled" : "Interim" }), "application/json");
+        }
+
+        public IActionResult GetPLDoc(string docNo)
+        {
+            using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), docNo, ishare.GetPath("mainDoc")), FileMode.Open))
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    fs.CopyTo(ms);
+                    return File(ms.ToArray(), "application/pdf");
+                }
+            }
         }
 
         private DateTime GetWorkingDays(int days)

@@ -345,7 +345,7 @@ namespace DMD_Prototype.Controllers
                     {
                         progress[0] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value.ToString();
                         progress[1] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString();
-                        progress[2] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 12].Value.ToString();
+                        progress[2] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Merge ? "s" : "t";
 
                         break;
                     }
@@ -370,15 +370,16 @@ namespace DMD_Prototype.Controllers
 
                 do
                 {
-                    if (worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value == null && worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value == null)
+                    if (worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value == null)
                     {
                         sheetCounter++;
                         rowCount = 11;
                     }
 
-                    if (worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value.ToString() == stepNo && worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString() == tAsk)
+                    if (worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value.ToString() == stepNo && worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString() == tAsk
+                        && worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Value == null)
                     {
-                        if (byThree.Count() > 0 && byThree != null)
+                        if (string.IsNullOrEmpty(singlePara))
                         {
                             worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Value = byThree[0];
                             worksheet.Worksheets[sheetCounter].Cells[rowCount, 10].Value = byThree[1];
@@ -390,6 +391,7 @@ namespace DMD_Prototype.Controllers
                         }
 
                         worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value = $"{tech}||{date}";
+                        worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Style.ShrinkToFit = true;
 
                         break;
                     }
