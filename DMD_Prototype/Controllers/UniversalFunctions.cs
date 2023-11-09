@@ -30,12 +30,13 @@ namespace DMD_Prototype.Controllers
 
         private readonly AppDbContext _Db;
 
-        //private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
-        //private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
-        //private readonly string tempDir = "D:\\jtoledo\\Desktop\\TempFiles";
-        private readonly string userDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Sessions";
-        private readonly string mainDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Documents";
-        private readonly string tempDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Temp";
+        private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
+        private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
+        private readonly string tempDir = "D:\\jtoledo\\Desktop\\TempFiles";
+
+        //private readonly string userDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Sessions";
+        //private readonly string mainDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Documents";
+        //private readonly string tempDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Temp";
 
         private readonly string wsFolderName = "1_WORKMANSHIP_STANDARD_FOLDER";
         private readonly string wsName = "WS.pdf";

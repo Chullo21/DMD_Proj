@@ -45,24 +45,19 @@ namespace DMD_Prototype.Controllers
 
                 TempData["EN"] = accData;
 
-                //if (CheckForActiveSession(acc.UserID))
-                //{
-                //    val = Path.Combine("Work", "ContinueWork") + $"?userID={acc.UserID}" + $"&noPW={false}";
-                //    type = 'a';
-                //}
                 if (CheckForActionSessionInSW(acc.UserID))
                 {
-                    val = Path.Combine("Work", "ContinueWork") + $"?userID={acc.UserID}" + $"&noPW={true}";
+                    val = $"?userID={acc.UserID}" + $"&noPW={true}";
                     type = 'a';
                 }
                 else
                 {
-                    val = Path.Combine("Home", "Index");
-                    type = 'a';
+                    //val = Path.Combine("Home", "Index");
+                    type = 'b';
                 }
             }
 
-            jsonContent = JsonConvert.SerializeObject(new { Type = type, nLink = val });
+            jsonContent = JsonConvert.SerializeObject(new { Type = type, nLink = val.ToString() });
 
             return Content(jsonContent, "application/json");
         }

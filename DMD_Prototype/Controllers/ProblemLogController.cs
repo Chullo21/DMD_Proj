@@ -138,8 +138,8 @@ namespace DMD_Prototype.Controllers
 
         }
 
-        public IActionResult InterimDocValidation(int plID, string Validator, string PLIDStatus, string PLRemarks)
-        {           
+        public IActionResult InterimDocValidation(int plID, string PLIDStatus, string PLRemarks, string validator)
+        {
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plID);
 
             switch (PLIDStatus)
@@ -160,7 +160,7 @@ namespace DMD_Prototype.Controllers
                     }
             }
 
-            pl.Validator = Validator;
+            pl.Validator = validator;
             pl.PLIDStatus = PLIDStatus;
             pl.PLRemarks = PLRemarks;
 

@@ -335,6 +335,19 @@
                                             </div>
                                             <div style="display:none" id="single" class="w-100">
                                                 <input class="form-control w-100" id="singleParaid" autocomplete="off" />
+                                                <div class="h-100">
+                                                    @if (Model.DocType == "MPI")
+                                                    {
+                                                        <button class="btn btn-primary w-100 mt-4" type="button" onclick="ParaDone()">Done</button>
+                                                    }
+                                                </div>
+                                                <script>
+                                                    function ParaDone()
+                                                    {
+                                                        document.getElementById('singleParaid').value = 'Done';
+                                                        document.getElementById('submittravbtn').click();
+                                                    }
+                                                </script>
                                             </div>
                                         </div>
                                     </td>
@@ -768,11 +781,12 @@
         window.onload = function ()
         {
             $(function () {
-                
+                console.log('success');
                 $.ajax({
                     url: '@Url.Action("UserRefreshed", "Work")',
                     data: { sessionId: '@Model.SessionID' },
                     success: function (response) {
+                        
                         $('#stepnoid').val(response.StepNo);
                         $('#taskid').val(response.Task);
 
@@ -797,7 +811,16 @@
                                 Sing.style.display = 'block';
                                 Thr.style.display = 'none';
                             }
-                        }                      
+                        }
+
+                        if ('@Model.DocType' === 'MPI') {
+                            var sing = document.getElementById('singleParaid');
+                            sing.setAttribute('required', '');
+                            sing.setAttribute('hidden', '');
+                            document.getElementById('submittravbtn').setAttribute('hidden', '');
+                            document.getElementById('three').style.display = 'none';
+                            document.getElementById('single').style.display = 'block';
+                        }
                     }
                 });
             });

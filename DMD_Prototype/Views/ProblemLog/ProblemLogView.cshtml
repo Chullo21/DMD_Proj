@@ -280,7 +280,7 @@
 
                                 @if (!string.IsNullOrEmpty(item.PL.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN") && item.PL.Validation == "Valid" && (item.PL.PLSDStatus == "OPEN" || string.IsNullOrEmpty(item.PL.PLSDStatus)))
                                 {
-                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="InterimDocValidation('@item.PL.PLID', '@item.PL.PLIDStatus', '@item.PL.DocNo')">Validate</button>
+                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="InterimDocValidation('@item.PL.PLID', '@item.PL.PLIDStatus', '@item.PL.DocNo', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc')">Validate</button>
                                 }
                             </div>
                         </td>
@@ -302,23 +302,33 @@
         });
     }
 
-    function InterimDocValidation(plId, interimStat, docNo) {
+    function InterimDocValidation(plId, interimStat, docNo, id, pd) {
         
         $(function (){
             docNumber = docNo;
             document.getElementById('plidPL').value = plId;
-            var idDiv = document.getElementById('InterimDiv');
-            var pdDiv = document.getElementById('PermaDiv');
+            var idDiv = document.getElementById('IDiv');
+            var pdDiv = document.getElementById('PDiv');
 
-            if (interimStat === 'CLOSED') {
-                idDiv.style.display = 'none';
-                document.getElementById('plSubmitForm').setAttribute('action', '/ProblemLog/PermanentDocValidation');
-                document.getElementById('permaSel').setAttribute('required', 'required');
+            if (id !== 'CLOSED'){
+                $('#idorpd').val(id);
             }
-            else {
+            else{
+                $('#idorpd').val(pd);
+            }
+
+            if (interimStat === 'OPEN'){
+                idDiv.style.display = 'block';
                 pdDiv.style.display = 'none';
-                document.getElementById('plSubmitForm').setAttribute('action', '/ProblemLog/InterimDocValidation');
-                document.getElementById('interimSel').setAttribute('required', 'required');
+
+                document.getElementById('ISel').setAttribute('required', '');
+                document.getElementById('PSel').removeAttribute('required')
+            }
+            else if (interimStat === 'CLOSED'){
+                idDiv.style.display = 'none';
+                pdDiv.style.display = 'block';
+                document.getElementById('PSel').setAttribute('required', '');
+                document.getElementById('ISel').removeAttribute('required')
             }
 
             $.ajax({
@@ -456,7 +466,7 @@
     }
 </script>
 
-<div class="modal fade" data-bs-backdrop="static" id="showdocmodal" style="z-index:2001">
+<div class="modal fade" data-bs-backdrop="static" id="showdocmodal" style="z-index:2002">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary">
@@ -474,6 +484,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(function (){
+        $('#plSubmitForm').submit(function (event){
+            event.preventDefault();
+
+            var paras = '?plID=' + $('#plidPL').val() + '&Validator=' + $('#validator').val();
+
+            if ($('#ISel').val() !== ""){
+                window.location.href = '@Url.Action("InterimDocValidation", "ProblemLog")' + paras + '&PLIDStatus=' + $('#ISel').val() + '&PLRemarks=' + $('#plRemark').val();
+            }
+            else
+            {
+                window.location.href = '@Url.Action("PermanentDocValidation", "ProblemLog")' + paras + '&plStatus=' + $('#PSel').val() + '&PLRemarks=' + $('#plRemark').val();
+            }
+        });
+    });
+</script>
 
 <div class="modal fade" data-bs-backdrop="static" id="ackmodal">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -493,16 +521,31 @@
                     <div>
                         <div class="d-flex">
                             <label class="form-label mx-2">Validated by:</label>
-                            <input class="form-control w-auto text-center" value="@EN[0]" name="Validator" readonly required />
+                            <input class="form-control w-auto text-center" value="@EN[0]" id="validator" readonly required />
                         </div>
-                        <div class="d-flex align-items-center my-2" id="InterimDiv">                          
-                            <div class="d-flex">
-                                <label class="form-label text-nowrap my-auto mx-2">Interim Status: </label>
-                                <select class="form-select" name="PLIDStatus" id="interimSel">
-                                    <option selected hidden value="">Please Select Status</option>
-                                    <option>OPEN</option>
-                                    <option>CLOSED</option>
-                                </select>
+                        <div class="d-flex align-items-center my-2 text-nowrap">                          
+                            <div id="IDiv">
+                                <div class="d-flex">
+                                    <label class="form-label text-nowrap my-auto mx-2">Interim Status: </label>
+                                    <select class="form-select" name="PLIDStatus" id="ISel">
+                                        <option selected hidden value="">Please Select Status</option>
+                                        <option>OPEN</option>
+                                        <option>CLOSED</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="PDiv">
+                                <div class="d-flex">
+                                    <label class="form-label text-nowrap my-auto mx-2">Standardized Status</label>
+                                    <select class="form-select" name="plStatus" id="PSel">
+                                        <option selected hidden value="">Please Select Status</option>
+                                        <option>OPEN</option>
+                                        <option>CLOSED</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex mx-3">
+                                <input class="form-control" type="text" value="" id="idorpd" readonly />
                             </div>
                             <div class="mx-3">
                                 <button class="btn btn-primary position-relative" type="button" onclick="GetDoc()">
@@ -511,19 +554,12 @@
                                         
                                     </span>
                                 </button>
-                            </div>
+                            </div>                        
                         </div>
-                        <div id="PermaDiv">
-                            <label class="form-label">Standardized Status</label>
-                            <select class="form-select" name="plStatus" id="permaSel">
-                                <option selected hidden value="">Please Select Status</option>
-                                <option>OPEN</option>
-                                <option>CLOSED</option>
-                            </select>
-                        </div>
+                        
                         <div class="flex-column my-2">
                             <label class="form-label text-center w-100">Your Remarks:</label>
-                            <textarea class="form-control w-100" name="PLRemarks" id="plRemark" style="max-height:100px" required></textarea>
+                            <textarea class="form-control w-100" id="plRemark" style="max-height:100px" required></textarea>
                         </div>
                     </div>
                 </div>

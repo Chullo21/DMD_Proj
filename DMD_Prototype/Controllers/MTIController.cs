@@ -128,6 +128,7 @@ namespace DMD_Prototype.Controllers
                 mModel.RevNo = mti.RevNo;
                 mModel.AfterTravlog = mti.AfterTravLog;
                 mModel.Product = mti.Product;
+                mModel.DocType = mti.DocType;
             }
 
             return View(mModel);
@@ -349,6 +350,7 @@ namespace DMD_Prototype.Controllers
         public string? SessionID { get; set; }
         public string AfterTravlog { get; set; }
         public string Product { get; set; }
+        public string DocType { get; set; }
 
     }
 
