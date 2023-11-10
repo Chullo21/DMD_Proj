@@ -53,14 +53,14 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public IActionResult DownloadTravelerTemplate()
+        public IActionResult DownloadTravelerTemplate(string docType)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
 
-            using (ExcelPackage package = new ExcelPackage(assembly.GetManifestResourceStream("DMD_Prototype.wwwroot.Common.Templates.Traveler.xlsx")))
+            using (ExcelPackage package = new ExcelPackage(assembly.GetManifestResourceStream($"DMD_Prototype.wwwroot.Common.Templates.{docType}.xlsx")))
             {
                 string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                return File(package.GetAsByteArray(), contentType, "Traveler_Template.xlsx");
+                return File(package.GetAsByteArray(), contentType, $"{docType.ToLower()}_Template.xlsx");
             }
         }
 

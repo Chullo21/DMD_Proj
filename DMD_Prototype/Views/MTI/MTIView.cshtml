@@ -344,7 +344,7 @@
                                                 <script>
                                                     function ParaDone()
                                                     {
-                                                        document.getElementById('singleParaid').value = 'Done';
+                                                        document.getElementById('singleParaid').value = '@DateTime.Now.Date.ToShortDateString()';
                                                         document.getElementById('submittravbtn').click();
                                                     }
                                                 </script>
@@ -530,7 +530,7 @@
                 $.ajax({
                     type: 'POST',
                     url: $(this).attr('action'),
-                    data: { stepNo: stepNumber, tAsk: Task, byThree: Div, singlePara: Single, sessionID: '@sesID', tech: '@EN[0]', date: '@DateTime.Now.ToShortDateString()' },
+                    data: { stepNo: stepNumber, tAsk: Task, byThree: Div, singlePara: Single, sessionID: '@sesID', tech: '@EN[0]', date: '@DateTime.Now.ToShortDateString()' , docType: '@Model.DocType'},
                     success: function (response) {
                         document.getElementById('closetravmodal').click();
                         DisableTravBtn();
@@ -657,7 +657,7 @@
                                         <input class="form-control" value="@Model.Product" name="product" readonly/>
                                     </td>
                                     <td>
-                                        <input class="form-control" id="aff" value="" placeholder="Required" name="affected" required />
+                                        <input class="form-control" id="aff" value="@Model.AssyNo" name="affected" readonly />
                                     </td>
                                     <td>
                                         <input class="form-control" id="doc" value="" placeholder="Required" name="docno" required />

@@ -358,7 +358,7 @@ namespace DMD_Prototype.Controllers
             return progress;
         }
 
-        private void SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date)
+        private void SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date, string docType)
         {
             string filePath = Path.Combine(ishared.GetPath("userDir"), sessionID, ishared.GetPath("userTravName"));
             int rowCount = 11;
@@ -390,7 +390,15 @@ namespace DMD_Prototype.Controllers
                             worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Value = singlePara;
                         }
 
-                        worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value = $"{tech}||{date}";
+                        if (docType == "MTI")
+                        {
+                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value = $"{tech}||{date}";
+                        }
+                        else
+                        {
+                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value = $"{tech}";
+                        }
+
                         worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Style.ShrinkToFit = true;
 
                         break;
@@ -405,9 +413,9 @@ namespace DMD_Prototype.Controllers
 
         [HttpPost]
         public ContentResult SubmitTravelerLog(string stepNo, string tAsk, string[]? byThree,
-            string? singlePara, string sessionID, string tech, string date)
+            string? singlePara, string sessionID, string tech, string date, string docType)
         {           
-            SaveTravLog(stepNo, tAsk, byThree, singlePara, sessionID, tech, date);
+            SaveTravLog(stepNo, tAsk, byThree, singlePara, sessionID, tech, date, docType);
 
             string[] res = GetProgressFromTraveler(sessionID);
             string jsonData = JsonConvert.SerializeObject(new { StepNo = res[0], Task = res[1], Div = res[2] });

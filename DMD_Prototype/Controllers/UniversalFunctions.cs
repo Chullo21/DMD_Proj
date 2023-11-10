@@ -163,5 +163,10 @@ namespace DMD_Prototype.Controllers
         }
     }
 
-
+    public enum Tri
+    {
+        v,
+        iv,
+        d
+    }
 }

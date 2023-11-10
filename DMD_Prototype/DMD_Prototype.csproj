@@ -15,9 +15,10 @@
   <ItemGroup>
     <Content Remove="wwwroot\Common\Automations\OpenExcel.bat" />
     <Content Remove="wwwroot\Common\Templates\CL.xlsx" />
+    <Content Remove="wwwroot\Common\Templates\MPI_TRAVELER.xlsx" />
+    <Content Remove="wwwroot\Common\Templates\MTI_TRAVELER.xlsx" />
     <Content Remove="wwwroot\Common\Templates\ProblemLogTemplate.xlsx" />
     <Content Remove="wwwroot\Common\Templates\TEL.xlsx" />
-    <Content Remove="wwwroot\Common\Templates\Traveler.xlsx" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,13 +40,16 @@
     <EmbeddedResource Include="wwwroot\Common\Templates\CL.xlsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="wwwroot\Common\Templates\MPI_TRAVELER.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="wwwroot\Common\Templates\MTI_TRAVELER.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="wwwroot\Common\Templates\ProblemLogTemplate.xlsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="wwwroot\Common\Templates\TEL.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="wwwroot\Common\Templates\Traveler.xlsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

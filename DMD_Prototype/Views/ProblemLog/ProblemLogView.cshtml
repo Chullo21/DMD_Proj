@@ -275,7 +275,7 @@
                                 }
                                 else if ((item.Owner == EN[2] || EN[1] == "ADMIN") && item.PL.Validation == "Valid" && item.PL.PLSDStatus != "CLOSED")
                                 {
-                                    <button class="btn btn-primary" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus')">Edit</button>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus')">Update</button>
                                 }
 
                                 @if (!string.IsNullOrEmpty(item.PL.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN") && item.PL.Validation == "Valid" && (item.PL.PLSDStatus == "OPEN" || string.IsNullOrEmpty(item.PL.PLSDStatus)))
@@ -310,25 +310,24 @@
             var idDiv = document.getElementById('IDiv');
             var pdDiv = document.getElementById('PDiv');
 
-            if (id !== 'CLOSED'){
-                $('#idorpd').val(id);
-            }
-            else{
-                $('#idorpd').val(pd);
-            }
+            $('#inputid').val(id);
+            $('#inputpd').val(pd);
 
-            if (interimStat === 'OPEN'){
-                idDiv.style.display = 'block';
-                pdDiv.style.display = 'none';
+            if ('@EN[1]' !== 'ADMIN')
+            {
+                if (interimStat === 'OPEN') {
+                    idDiv.style.display = 'block';
+                    pdDiv.style.display = 'none';
 
-                document.getElementById('ISel').setAttribute('required', '');
-                document.getElementById('PSel').removeAttribute('required')
-            }
-            else if (interimStat === 'CLOSED'){
-                idDiv.style.display = 'none';
-                pdDiv.style.display = 'block';
-                document.getElementById('PSel').setAttribute('required', '');
-                document.getElementById('ISel').removeAttribute('required')
+                    document.getElementById('ISel').setAttribute('required', '');
+                    document.getElementById('PSel').removeAttribute('required')
+                }
+                else if (interimStat === 'CLOSED') {
+                    idDiv.style.display = 'none';
+                    pdDiv.style.display = 'block';
+                    document.getElementById('PSel').setAttribute('required', '');
+                    document.getElementById('ISel').removeAttribute('required')
+                }
             }
 
             $.ajax({
@@ -524,29 +523,35 @@
                             <input class="form-control w-auto text-center" value="@EN[0]" id="validator" readonly required />
                         </div>
                         <div class="d-flex align-items-center my-2 text-nowrap">                          
-                            <div id="IDiv">
-                                <div class="d-flex">
-                                    <label class="form-label text-nowrap my-auto mx-2">Interim Status: </label>
-                                    <select class="form-select" name="PLIDStatus" id="ISel">
-                                        <option selected hidden value="">Please Select Status</option>
-                                        <option>OPEN</option>
-                                        <option>CLOSED</option>
-                                    </select>
+                            <div class="flex-column">
+                                <div id="IDiv">
+                                    <div class="d-flex">
+                                        <label class="form-label text-nowrap my-auto mx-2">Interim Status: </label>
+                                        <select class="form-select w-auto" name="PLIDStatus" id="ISel">
+                                            <option selected hidden value="">Please Select Status</option>
+                                            <option>OPEN</option>
+                                            <option>CLOSED</option>
+                                        </select>
+                                        <div class="mx-3">
+                                            <input class="form-control" type="text" value="" id="inputid" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="PDiv">
+                                    <div class="d-flex my-2">
+                                        <label class="form-label text-nowrap my-auto mx-2">Standardized Status</label>
+                                        <select class="form-select w-auto" name="plStatus" id="PSel">
+                                            <option selected hidden value="">Please Select Status</option>
+                                            <option>OPEN</option>
+                                            <option>CLOSED</option>
+                                        </select>
+                                        <div class="mx-3">
+                                            <input class="form-control" type="text" value="" id="inputpd" readonly />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div id="PDiv">
-                                <div class="d-flex">
-                                    <label class="form-label text-nowrap my-auto mx-2">Standardized Status</label>
-                                    <select class="form-select" name="plStatus" id="PSel">
-                                        <option selected hidden value="">Please Select Status</option>
-                                        <option>OPEN</option>
-                                        <option>CLOSED</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="d-flex mx-3">
-                                <input class="form-control" type="text" value="" id="idorpd" readonly />
-                            </div>
+                            
                             <div class="mx-3">
                                 <button class="btn btn-primary position-relative" type="button" onclick="GetDoc()">
                                     View Document
@@ -753,7 +758,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" >Submit</button>
+                    <button class="btn btn-primary">Submit</button>
                 </div>
             </form>
         </div>
