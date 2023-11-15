@@ -1,7 +1,5 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Office.Interop.Excel;
-using Newtonsoft.Json;
 using OfficeOpenXml;
 using System.Reflection;
 

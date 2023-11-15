@@ -28,13 +28,14 @@ namespace DMD_Prototype.Controllers
             return userid;
         }
 
-        private void SessionSaver(string docNo, string user)
+        private void SessionSaver(string docNo, string user, string wo, string serialNo, string module)
         {
             StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, UserIDGetter(user), ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo).AfterTravLog);
             sesID = swModel.SessionID;
 
             if (ModelState.IsValid)
             {
+                _Db.ModuleDb.Add(new ModuleModel().CreateModule(sesID, module, serialNo, wo));
                 _Db.StartWorkDb.Add(swModel);
                 _Db.SaveChanges();
             }
@@ -61,18 +62,19 @@ namespace DMD_Prototype.Controllers
         {
             string filePath = Path.Combine(ishared.GetPath("mainDir"), docNo, ishared.GetPath("travName"));
 
-            ExcelPackage package = new ExcelPackage(filePath);
-
-            for (int i = 0; i < package.Workbook.Worksheets.Count(); i++)
+            using(ExcelPackage package = new ExcelPackage(filePath))
             {
-                var ws = package.Workbook.Worksheets[i];
-                ws.Cells[8, 3].Value = DateTime.Now.ToShortDateString();
-                ws.Cells[6, 9].Value = wOrder;
-                ws.Cells[7, 9].Value = serialNo;
-                ws.Cells[1, 10].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
+                for (int i = 0; i < package.Workbook.Worksheets.Count(); i++)
+                {
+                    var ws = package.Workbook.Worksheets[i];
+                    ws.Cells[8, 3].Value = DateTime.Now.ToShortDateString();
+                    ws.Cells[6, 9].Value = wOrder;
+                    ws.Cells[7, 9].Value = serialNo;
+                    ws.Cells[1, 10].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
+                }
+
+                package.SaveAs(Path.Combine(ishared.GetPath("userDir"), sesID, ishared.GetPath("userTravName")));
             }
-           
-            package.SaveAs(Path.Combine(ishared.GetPath("userDir"), sesID, ishared.GetPath("userTravName")));
         }
 
         private bool CheckForExistingLogsheet(string ses, string logname)
@@ -82,7 +84,6 @@ namespace DMD_Prototype.Controllers
 
         public void CreateLogsheet(string logType, string sessionId)
         {
-
             if (CheckForExistingLogsheet(sessionId, ishared.GetPath("logName")))
             {
                 return;
@@ -103,17 +104,34 @@ namespace DMD_Prototype.Controllers
 
             Stream stream = assembly.GetManifestResourceStream(filePath);
 
+            ModuleModel module = ishared.GetModules().FirstOrDefault(j => j.SessionID == sessionId);
+
             using (ExcelPackage package = new ExcelPackage(stream))
             {
                 package.Workbook.Worksheets[0].Cells[5, 3].Value = DateTime.Now.ToShortDateString();
+                package.Workbook.Worksheets[0].Cells[4, 6].Value = module.WorkOrder;
+                package.Workbook.Worksheets[0].Cells[5, 6].Value = module.SerialNo;
 
                 package.SaveAs(Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName")));
             }
         }
 
-        public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo)
+        public ContentResult ValidateModule(string module, string serialNo)
         {
-            SessionSaver(docNo, EN);
+            string response = "go";
+
+            if (ishared.GetModules().FirstOrDefault(j => j.SerialNo == serialNo || j.Module == module) != null)
+            {
+                response = "stop";
+            }
+
+            string jsonContent = JsonConvert.SerializeObject(new { response = response});
+            return Content(jsonContent, "application/json");
+        }
+
+        public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo, string module)
+        {
+            SessionSaver(docNo, EN, wOrder, serialNo, module);
             CreateNewFolder(sesID);
             CopyTravToSession(docNo, wOrder, serialNo);
 
@@ -405,6 +423,7 @@ namespace DMD_Prototype.Controllers
                     }
 
                     rowCount++;
+
                 } while (true);
 
                 package.SaveAs(filePath);
@@ -454,16 +473,12 @@ namespace DMD_Prototype.Controllers
 
                 string[] splitSeries = lastSeries.Split('-');
 
-                if (!int.TryParse(splitSeries[2], out int resSeries))
-                {
-                    throw new ArgumentException("Invalid variable part");
-                }
+                int resSeries = int.Parse(splitSeries[2]);
 
                 resSeries++;
 
                 return $"{seriesPrimary}-{yearNow}-{resSeries:000}";
             }
-
         }
     }
 

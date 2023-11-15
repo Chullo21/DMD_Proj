@@ -42,6 +42,8 @@ namespace DMD_Prototype.Models
         ADMIN,
         ORIGINATOR,
         USER,
-        PL_INTERVENOR
+        PL_INTERVENOR,
+        SUPERVISOR,
+        VIEWER
     }
 }

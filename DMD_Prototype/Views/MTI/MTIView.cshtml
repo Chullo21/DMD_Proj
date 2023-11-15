@@ -57,6 +57,10 @@
                             </div>
                         </a>
                     }
+                    else
+                    {
+                        <button class="btn bg-warning fw-bold" onclick="GetTravProgress('readonly')">Progress</button>
+                    }
                 </div>
                 <div class="col-7 d-flex justify-content-center align-self-center border-3 border-dark bg-dark ">
                     <marquee class="border-3 border-dark bg-dark text-white">Please follow the steps of your MPI/MTI alongside your traveler, have a great day!.</marquee>
@@ -139,13 +143,113 @@
         </div>
     </div>
 
+    <div class="modal fade" id="travprogressedit" data-bs-backdrop="static" style="z-index: 2003">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <p class="modal-title text-white fs-5 fw-bold">Progress</p>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-controller="Document" asp-action="SaveTravChanges" id="edittravform" asp-route-sessionId="@Model.SessionID">
+                    <div class="modal-body">
+                        <div>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            Step
+                                        </th>
+                                        <th class="w-50">
+                                            Instruction
+                                        </th>
+                                        <th>
+                                            Parameter
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="editprevtravbody">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" type="submit" id="subbutton">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function (){
+            $('#edittravform').submit(function (e){
+                e.preventDefault();
+
+                var formData = $('form').serialize();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        
+                    },
+                    error: function (error) {
+                        
+                    }
+                });
+
+                $('#travprogressedit').modal('hide');
+            });
+        });
+
+        function GetTravProgress(sub)
+        {
+            $(function () {
+
+                var DoneSig = '';
+                var editprogbody = document.getElementById('editprevtravbody');
+                var subb = document.getElementById('subbutton');
+                editprogbody.innerHTML = '';
+
+                if (sub === 'readonly' || '@Model.DocType' === 'MPI') {
+                    subb.style.display = 'none';
+                }
+
+                $('#travprogressedit').modal('show');
+
+                $.ajax({
+                    url: '@Url.Action("GetTravDataForEdit", "Traveler")',
+                    data: {sessionId: '@Model.SessionID'},
+                    success: function (r){
+                        r.r.forEach(function(line){
+
+                            if ('@Model.DocType' === 'MPI') {
+                                sub = 'readonly';
+                                line.SinglePara = 'Done';
+                            }
+
+                            if (line.isMerge === true){
+                                editprogbody.innerHTML += '<tr><td><input name="Step" class="form-control" value="' + line.Step + '" readonly /></td><td><textarea name="Instruction" class="form-control" readonly>' + line.Instruction + '</textarea></td><td><input name="SinglePara" class="form-control" value="' + line.SinglePara + '" ' + sub + ' /><input name="isMerge" value="' + line.isMerge + '" hidden /><input name="FirstThreePara" value="" hidden/><input name="SecondThreePara" value="" hidden/><input name="ThirdThreePara" value="" hidden/></td></tr>';
+                            }
+                            else{
+                                editprogbody.innerHTML += '<tr><td><input name="Step" class="form-control" value="' + line.Step + '" readonly /></td><td><textarea name="Instruction" class="form-control" readonly>' + line.Instruction + '</textarea></td><td><div class="d-flex"><input name="FirstThreePara" class="form-control" value="' + line.FirstThreePara + '" ' + sub + ' /><input name="SecondThreePara" class="form-control" value="' + line.SecondThreePara + '" ' + sub + ' /><input name="ThirdThreePara" class="form-control" value="' + line.ThirdThreePara + '" ' + sub + ' /></div><input name="isMerge" value="' + line.isMerge + '" hidden /></td> <input name="SinglePara" value="" hidden/></tr>';
+                            }
+
+                        });
+                    }
+                });
+            });
+        }
+    </script>
+
     <div class="container-fluid position-fixed top-0">
         <iframe class="w-100 border-3 border-dark" id="MainDoc" style="min-height:100vh" src="@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber, whichDoc = "MainDoc"})"></iframe>
     </div>
 
     <div class="modal fade" id="confirmStart" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-sm">
-            <form asp-controller ="Work" asp-action="StartWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]">
+            <form asp-controller ="Work" asp-action="StartWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" id="startworkform">
                 <div class="modal-content">
                     <div class="modal-header d-flex justify-content-start bg-primary text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-question-diamond-fill my-auto" viewBox="0 0 16 16">
@@ -156,11 +260,15 @@
                     <div class="modal-body flex-column">
                         <div>
                             <label class="form-label">Work Order:</label>
-                            <input class="form-control" name="wOrder" required />
+                            <input class="form-control" name="wOrder" id="workorder" required />
                         </div>
                         <div>
                             <label class="form-label">Serial No:</label>
-                            <input class="form-control" name="serialNo" required />
+                            <input class="form-control" name="serialNo" id="serialno" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Module:</label>
+                            <input class="form-control" name="module" id="module" required />
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -177,6 +285,35 @@
             </form>
         </div>
     </div>
+
+    <script>
+        $(function (){
+            $('#startworkform').submit(function (e){
+                e.preventDefault();
+
+                var workOrder = document.getElementById('workorder').value;
+                var serialNo = document.getElementById('serialno').value;
+                var Module = document.getElementById('module').value;
+
+                $.ajax({
+                    url: '@Url.Action("ValidateModule", "Work")',
+                    data: {module: Module, serialNo: serialNo},
+                    success: function (response){
+                        if (response.response === 'go')
+                        {
+                            window.location.href = '@Url.Action("StartWork", "Work")' + '?docno=' + '@Model.DocumentNumber' + '&EN=' + '@EN[0]' + '&wOrder=' + workOrder + '&serialNo=' + serialNo + '&module=' + Module;
+                        }
+                        else{
+                            alert('Module already exist, are you trying to continue a pending work? Go to "Pending Travelers" instead.');
+                            $('#workorder').val('');
+                            $('#serialno').val('');
+                            $('#module').val('');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 
     <div class="offcanvas offcanvas-end border-3 shadow" style="z-index:2001; background-color:#B5AD9A" data-bs-backdrop="static" id="docs">
         <div class="offcanvas-header bg-primary border-5 border-dark">
@@ -397,13 +534,13 @@
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <input class="form-control w-100" id="one" name="logcellone" autocomplete="off"/>
+                                            <input class="form-control w-100" id="one" name="logcellone" autocomplete="off" required/>
                                         </td>
                                         <td>
-                                            <input class="form-control w-100" id="two" name="logcelltwo" autocomplete="off" />
+                                            <input class="form-control w-100" id="two" name="logcelltwo" autocomplete="off" required/>
                                         </td>
                                         <td>
-                                            <input class="form-control w-100" id="threetrav" name="logcellthree" autocomplete="off" />
+                                            <input class="form-control w-100" id="threetrav" name="logcellthree" autocomplete="off" required/>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -411,8 +548,11 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <div class="d-flex justify-content-between w-100">
-                            <a class="btn btn-primary" asp-controller="Work" asp-action="FinishWork" asp-route-sessionId="@sesID" asp-route-logType="@Model.AfterTravlog" asp-route-docNo="@Model.DocumentNumber">Finish</a>
+                        <div class="d-flex justify-content-between w-100">                        
+                            <div class="d-flex">
+                                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#endsession" onclick="">Done</button>
+                                <button class="btn bg-warning fw-bold mx-4" onclick="GetConfigProgress('readonly')" type="button">View</button>
+                            </div>
                             <input class="btn btn-primary" type="submit" />
                         </div>
                     </div>
@@ -422,6 +562,62 @@
     </div>
 
     <script>
+        //function EndTravAndLog() {
+        //    $(function () {
+        //        $('#')
+        //    });
+        //}
+        var dTitle = document.getElementById('docTitle');
+
+        document.querySelectorAll('input').forEach(function (input) {
+            input.setAttribute("autocomplete", "off");
+        });
+
+        window.onload = function () {
+            $(function () {
+                $.ajax({
+                    url: '@Url.Action("UserRefreshed", "Work")',
+                    data: { sessionId: '@Model.SessionID' },
+                    success: function (response) {
+
+                        $('#stepnoid').val(response.StepNo);
+                        $('#taskid').val(response.Task);
+
+                        if (response.StepNo === null && '@Model.WorkingStat' === 'True') {
+                            if ('@Model.AfterTravlog' !== 'N') {
+                                $('#startlogsession').modal('show');
+                            }
+                            else {
+                                $('#endsession').modal('show');
+                            }
+                        }
+                        else {
+                            var Sing = document.getElementById('single');
+                            var Thr = document.getElementById('three');
+                            divType = response.Div;
+                            if (response.Div === 't') {
+                                Sing.style.display = 'none';
+                                Thr.style.display = 'block';
+                            }
+                            else {
+                                Sing.style.display = 'block';
+                                Thr.style.display = 'none';
+                            }
+                        }
+
+                        if ('@Model.DocType' === 'MPI') {
+                            var sing = document.getElementById('singleParaid');
+                            sing.setAttribute('required', '');
+                            sing.setAttribute('hidden', '');
+                            document.getElementById('submittravbtn').setAttribute('hidden', '');
+                            document.getElementById('three').style.display = 'none';
+                            document.getElementById('single').style.display = 'block';
+                        }
+                    }
+                });
+            });
+        };
+
         $(function () {
             $('#logForm').submit(function (event) {
                 event.preventDefault();
@@ -478,20 +674,119 @@
     </script>
 
     <div class="modal fade" id="endsession" data-bs-backdrop="static">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <p class="modal-title fs-5 fw-bolder">Finished Work</p>
+                <div class="modal-header bg-primary text-white d-flex justify-content-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-clipboard-check-fill my-auto" viewBox="0 0 16 16">
+                        <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z" />
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z" />
+                    </svg>
+                    <p class="modal-title fs-5 fw-bolder my-auto mx-3">Finished Work</p>
                 </div>
                 <div class="modal-body">
-                    You have reached the end of your traveler..
+                    You have reached the end of your session..
                 </div>
                 <div class="modal-footer">
-                    <a class="btn btn-primary" asp-controller="Work" asp-action="FinishWork" asp-route-sessionId="@sesID" asp-route-logType="@Model.AfterTravlog">Finish</a>
+                    <div class="w-100 d-flex justify-content-between">
+                        <div class="d-flex">
+                            <button class="btn bg-warning fw-bold text-nowrap" onclick="GetTravProgress('required')">Review Traveler</button>
+                            @if(Model.AfterTravlog != "N")
+                            {
+                                <button class="btn bg-warning fw-bold mx-4 text-nowrap" onclick="GetConfigProgress('required')">Review Logsheet</button>
+                            }
+                        </div>
+                        <a class="btn btn-primary" asp-controller="Work" asp-action="FinishWork" asp-route-sessionId="@sesID" asp-route-logType="@Model.AfterTravlog" asp-route-docNo="@Model.DocumentNumber">END</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="configprogressedit" data-bs-backdrop="static" style="z-index: 2003">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <p class="modal-title text-white fs-5 fw-bold">Logsheet</p>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-controller="Document" asp-action="SaveConfigChanges" id="editconfigform" asp-route-sessionId="@Model.SessionID">
+                    <div class="modal-body">
+                        <div class="table-responsive" style="height:570px">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            @afterTrav1
+                                        </th>
+                                        <th>
+                                            @afterTrav2
+                                        </th>
+                                        <th>
+                                            @afterTrav3
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="configeditbody">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" type="submit" id="configbutton" style="display:none">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function (){
+            $('#editconfigform').submit(function (e){
+                e.preventDefault();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    success: function (r){
+
+                    }
+                });
+
+                $('#configprogressedit').modal('hide');
+            });
+        });
+
+        function GetConfigProgress(type) {
+
+            if (type === 'required'){
+                if ('@Model.DocType' === 'MTI'){
+                    document.getElementById('configbutton').style.display = 'block';
+                }
+            }
+
+            var configbody = document.getElementById('configeditbody');
+            configbody.innerHTML = '';
+            
+            $(function () {
+
+                $('#configprogressedit').modal('show');
+
+                $.ajax({
+                    url: '@Url.Action("GetConfigDataForEdit", "Document")',
+                    data: { sessionId: '@Model.SessionID' },
+                    success: function (r) {
+                        r.r.forEach(function (line) {
+                            
+                            configbody.innerHTML += '<tr><td><input class="form-control" name="PN" value="' + line.PN + '" ' + type + ' /></td><td><input class="form-control" name="Desc" value="' + line.Desc + '" ' + type + ' /></td><td><input class="form-control" name="Parameter" value="' + line.Parameter + '" ' + type + ' /></td></tr>'
+                        });
+                    }
+                });
+
+                $('#configprogressedit').modal('hide');
+            });
+        }
+    </script>
 
     <script>
         var divType = null;
@@ -503,7 +798,7 @@
 
             setTimeout(function () {
                 button.disabled = false;
-            }, 10000);
+            }, 5000);
         }
 
         $(function () {
@@ -772,60 +1067,6 @@
     </form>
 
 <script>
-        var dTitle = document.getElementById('docTitle');
-
-        document.querySelectorAll('input').forEach(function (input) {
-            input.setAttribute("autocomplete", "off");
-        });
-
-        window.onload = function ()
-        {
-            $(function () {
-                console.log('success');
-                $.ajax({
-                    url: '@Url.Action("UserRefreshed", "Work")',
-                    data: { sessionId: '@Model.SessionID' },
-                    success: function (response) {
-                        
-                        $('#stepnoid').val(response.StepNo);
-                        $('#taskid').val(response.Task);
-
-                        if (response.StepNo === null && '@Model.WorkingStat' === 'True') {
-                            if ('@Model.AfterTravlog' !== 'N'){
-                                $('#startlogsession').modal('show');
-                            }
-                            else{
-                                $('#endsession').modal('show');
-                            }
-                        }
-                        else
-                        {
-                            var Sing = document.getElementById('single');
-                            var Thr = document.getElementById('three');
-                            divType = response.Div;
-                            if (response.Div === 't') {
-                                Sing.style.display = 'none';
-                                Thr.style.display = 'block';
-                            }
-                            else {
-                                Sing.style.display = 'block';
-                                Thr.style.display = 'none';
-                            }
-                        }
-
-                        if ('@Model.DocType' === 'MPI') {
-                            var sing = document.getElementById('singleParaid');
-                            sing.setAttribute('required', '');
-                            sing.setAttribute('hidden', '');
-                            document.getElementById('submittravbtn').setAttribute('hidden', '');
-                            document.getElementById('three').style.display = 'none';
-                            document.getElementById('single').style.display = 'block';
-                        }
-                    }
-                });
-            });
-        };
-
     function WhichDev(docName, doctit) {
         document.getElementById('closeoffcanvas').click();
         var Frame = document.getElementById('docFrame');

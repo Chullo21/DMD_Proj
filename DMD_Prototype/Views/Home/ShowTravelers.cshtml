@@ -151,9 +151,10 @@
                         Transfer Work
                     </p>
                 </div>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                <button class="btn-close" data-bs-dismiss="modal" id="closechangeworkermodal"></button>
             </div>
-            <form asp-controller="Traveler" asp-action="ChangeTravWorker">
+            <form  id="submitworktransfer">
+                @*asp-controller="Traveler" asp-action="ChangeTravWorker"*@
                 <input id="travID" name="ID" hidden/>
                 <div class="modal-body">
                     <div class="d-flex justify-content-around">
@@ -163,7 +164,7 @@
                         </div>
                         <div>
                             <label class="form-label">Update Worker</label>
-                            <select class="form-select" name="toWorker">
+                            <select class="form-select" id="toWorker">
                                 <option id="currentworkerselect" hidden selected></option>
                                 @foreach (string name in Model.Users)
                                 {
@@ -174,7 +175,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" type="submit">
                         Submit
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-terminal-plus mx-1" viewBox="0 0 16 16">
                             <path d="M2 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h5.5a.5.5 0 0 1 0 1H2a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v4a.5.5 0 0 1-1 0V4a1 1 0 0 0-1-1H2Z" />
@@ -186,6 +187,42 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(function (){
+        $('#submitworktransfer').submit(function (e){
+            e.preventDefault();
+
+            var TravId = document.getElementById('travID').value;
+            var WorkerName = document.getElementById('toWorker').value;
+            var CurrentWorker = document.getElementById('currentWorker').value;
+
+            if (CurrentWorker === WorkerName){
+                alert('Action failed, you cannot transfer work of a worker to itself.')
+            }
+            else{
+                $.ajax({
+                    url: '@Url.Action("ValidateWorkTransfer", "Traveler")',
+                    data: { ID: TravId, toWorker: WorkerName },
+                    success: function (r) {
+                        if (r.response === 'go') {
+                            window.location.href = '@Url.Action("ChangeTravWorker", "Traveler")' + '?ID=' + TravId + '&toWorker=' + WorkerName;
+                            alert('Work transfer completed..');
+                        }
+                        else {
+                            alert('Action could not be completed, selected worker could already have an outstanding session.');
+                        }
+                    },
+                    error: function (r) {
+                        alert('Something went wrong');
+                    }
+                });
+            }
+            
+            $('#closechangeworkermodal').click();
+        });
+    });
+</script>
 
 <div class="modal fade" data-bs-backdrop="static" id="viewtravmodal">
     <div class="modal-dialog modal-dialog-centered modal-lg">

@@ -4,6 +4,7 @@ using DMD_Prototype.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DMD_Prototype.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231113044030_addmodulemodel")]
+    partial class addmodulemodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -286,27 +289,6 @@ namespace DMD_Prototype.Migrations
                     b.HasKey("PLID");
 
                     b.ToTable("PLDb");
-                });
-
-            modelBuilder.Entity("DMD_Prototype.Models.RequestSessionModel", b =>
-                {
-                    b.Property<int>("TakeSessionID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TakeSessionID"));
-
-                    b.Property<string>("SWID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("TakeSessionID");
-
-                    b.ToTable("RSDb");
                 });
 
             modelBuilder.Entity("DMD_Prototype.Models.StartWorkModel", b =>

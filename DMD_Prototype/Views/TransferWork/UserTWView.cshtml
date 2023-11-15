@@ -1,0 +1,108 @@
+﻿@model IEnumerable<StartWorkModel>
+@{
+    ViewData["Title"] = "UserTWView";
+
+    string[] EN = TempData["EN"] as string[];
+    TempData.Keep();
+}
+
+<script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
+
+<div class="container">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" id="myTable">
+            <thead class="table-primary text-center">
+                <tr>
+                    <th>
+                        Doc No
+                    </th>
+                    <th>
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tablebody">
+                @foreach (var line in Model)
+                {
+                    <tr>
+                        <td>
+                            @line.DocNo
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" onclick="TakeWork('@line.SWID')">Take</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    //var intervalStopper = false;
+    //var idGetter = '';
+    //var tabBody = document.getElementById('tablebody');
+
+    $('#myTable').DataTable({
+        searching: true,
+        lengthChange: false,
+        pageLength: 7,
+        order: [],
+        ordering: false
+    });
+    
+    //function UpdateList(){
+   
+    //    tabBody.innerHTML = '';
+
+    //    $(function (){
+    //        $.ajax({
+    //            url: '@Url.Action("UpdateSessions", "TransferWork")',
+    //            success: function (r){
+    //                r.r.forEach(function(entry){
+    //                    tabBody.innerHTML += '<tr><td>' + entry.DocNo + '</td><td><button class="btn btn-primary" onclick="TakeWork(\'' + entry.SWID + '\')">Take</button></td></tr>';
+                        
+    //                });
+    //            },
+    //            error: function (r){
+    //                console.log(r);
+    //            }
+    //        });         
+    //    });
+    //}
+
+    //UpdateList();
+    //setInterval(UpdateList, 15000);
+
+    function TakeWork(str)
+    {
+        //intervalStopper = true;
+        idGetter = str;
+        $('#confirmAction').modal('show');
+    }
+
+    function ConfirmAction(){
+        window.location.href = '@Url.Action("TakeSession", "TransferWork")' + '?id=' + idGetter + '&userId=' + '@EN[2]';
+    }
+
+</script>
+
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="confirmAction">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                Confirm
+            </div>
+            <div class="modal-body">
+                Are you sure?
+            </div>
+            <div class="modal-footer">
+                <div class="d-flex justify-content-between w-100">
+                    <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" onclick="ConfirmAction()">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

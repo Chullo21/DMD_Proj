@@ -1,13 +1,13 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
-using OfficeOpenXml;
 
 namespace DMD_Prototype.Controllers
 {   
     public interface ISharedFunct
     {
         public IActionResult ShowPdf(string path);
+
         public string GetPath(string path);
 
         public List<MTIModel> GetMTIs();
@@ -19,6 +19,10 @@ namespace DMD_Prototype.Controllers
         public List<PauseWorkModel> GetPauseWorks();
 
         public List<ProblemLogModel> GetProblemLogs();
+
+        public List<ModuleModel> GetModules();
+
+        public List<RequestSessionModel> GetRS();
     }
 
     public class UniversalFunctions : Controller, ISharedFunct
@@ -52,6 +56,16 @@ namespace DMD_Prototype.Controllers
         private readonly string prcoName = "PRCO.pdf";
         private readonly string derogationName = "Derogation.pdf";
         private readonly string memoName = "EngineeringMemo.pdf";
+
+        public List<RequestSessionModel> GetRS()
+        {
+            return _Db.RSDb.ToList();
+        }
+
+        public List<ModuleModel> GetModules()
+        {
+            return _Db.ModuleDb.ToList();
+        }
 
         public List<ProblemLogModel> GetProblemLogs()
         {

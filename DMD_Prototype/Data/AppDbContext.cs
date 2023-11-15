@@ -19,5 +19,9 @@ namespace DMD_Prototype.Data
         public DbSet<PauseWorkModel> PauseWorkDb { get; set; }
 
         public DbSet<ProblemLogModel> PLDb { get; set; }
+
+        public DbSet<ModuleModel> ModuleDb { get; set; }
+
+        public DbSet<RequestSessionModel> RSDb { get; set; }
     }
 }

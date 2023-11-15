@@ -59,6 +59,25 @@
                                 <a class="nav-link active text-white" asp-controller="ProblemLog" asp-action="ProblemLogView">Problem Log</a>
                             </button>
                         }
+                        @if(EN[1] == "USER" || EN[1] == "ADMIN")
+                        {
+                            <button class="mx-1 d-flex btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-check text-white mx-1 my-auto" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z" />
+                                </svg>
+                                <a class="nav-link active text-white" asp-controller="TransferWork" asp-action="UserTWView">Sessions</a>
+                            </button>
+                        }
+
+                        @if (EN[1] == "SUPERVISOR" || EN[1] == "ADMIN")
+                        {
+                            <button class="mx-1 d-flex btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-check text-white mx-1 my-auto" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z" />
+                                </svg>
+                                <a class="nav-link active text-white" asp-controller="TransferWork" asp-action="SVTWView">Approve WT</a>
+                            </button>
+                        }
                         <div class="mx-1">          
                             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#searchDoc">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search text-white mx-1 my-auto" viewBox="0 0 16 16">
@@ -72,16 +91,12 @@
                         <div class="align-items-center text-white d-flex justify-content-center">
                             <form asp-controller="Home" asp-action="LogoutOptions" id="logout" onchange="this.submit()">
                                 <select class="form-select bg-primary w-auto text-white border-1 border-dark" name="option">
-                                    @{
-                                        string[]? accData = TempData["EN"] as string[];
-                                        TempData.Keep();
-                                    }
                                     <option selected hidden>
                                         &#10004;
-                                        @accData[0]
+                                        @EN[0]
                                     </option>
                                     @{
-                                        if (accData[1] == "ADMIN")
+                                        if (EN[1] == "ADMIN")
                                         {
                                             <option class="" value="Accounts">
                                                 &#128101;

@@ -109,6 +109,14 @@ namespace DMD_Prototype.Controllers
             return View(model);
         }
 
+        public ContentResult GetAllDocuments()
+
+        {
+            List<MTIModel> docs = ishare.GetMTIs().Where(j => !j.ObsoleteStat).ToList();
+
+            return Content(JsonConvert.SerializeObject(new {r = docs}), "application/json");
+        }
+
         private int[] DataPerMonthGetter(List<ProblemLogModel> list)
         {
             int[] res = new int[DateTime.Now.Month];
@@ -142,6 +150,15 @@ namespace DMD_Prototype.Controllers
 
                 mod.OpenSDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "OPEN" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
                 mod.ClosedSDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "CLOSED" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
+
+                mod.PNPCount = mtis.Count(j => j.Product == "PNP" && !j.ObsoleteStat);
+                mod.JLPCount = mtis.Count(j => j.Product == "JLP" && !j.ObsoleteStat);
+                mod.JTPCount = mtis.Count(j => j.Product == "JTP" && !j.ObsoleteStat);
+                mod.OLBCount = mtis.Count(j => j.Product == "OLB" && !j.ObsoleteStat);
+                mod.SWAPCount = mtis.Count(j => j.Product == "SWAP" && !j.ObsoleteStat);
+                mod.SPARESCount = mtis.Count(j => j.Product == "SPARES" && !j.ObsoleteStat);
+
+                mod.AllDocs = mtis.Where(j => !j.ObsoleteStat).ToList();
             }
 
             return mod;
@@ -162,6 +179,15 @@ namespace DMD_Prototype.Controllers
         public int JLPVal { get; set; }
         public int PNPVal { get; set; }
         public int OLBVal { get; set; }
+
+        public int PNPCount { get; set; }
+        public int JLPCount { get; set; }
+        public int JTPCount { get; set; }
+        public int OLBCount { get; set; }
+        public int SWAPCount { get; set; }
+        public int SPARESCount { get; set; }
+
+        public List<MTIModel>? AllDocs { get; set; }
     }
 
     public class MTIListModel

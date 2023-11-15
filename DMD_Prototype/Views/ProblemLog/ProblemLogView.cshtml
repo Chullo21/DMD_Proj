@@ -27,7 +27,7 @@
 <div>
     <div class="container-fluid">
         <div class="d-flex justify-content-between">
-            <button class="btn btn-primary d-flex" data-bs-toggle="modal" data-bs-target="#downloadmodal">
+            <button class="btn btn-primary d-flex" data-bs-toggle="modal" data-bs-target="#downloadmodal" id="exportplbtn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill my-auto" viewBox="0 0 16 16">
                     <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z" />
                 </svg>
@@ -69,6 +69,13 @@
             </div>
         </div>
     </div>
+
+    <script>
+        if ('@EN[1]' === 'VIEWER') {
+            document.getElementById('exportplbtn').disabled = true;
+        }
+    </script>
+
     <script>
         function ExportBtn(selection){
             $(function (){
@@ -278,9 +285,12 @@
                                     <button class="btn btn-primary" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus')">Update</button>
                                 }
 
-                                @if (!string.IsNullOrEmpty(item.PL.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN") && item.PL.Validation == "Valid" && (item.PL.PLSDStatus == "OPEN" || string.IsNullOrEmpty(item.PL.PLSDStatus)))
+                                @if (!string.IsNullOrEmpty(item.PL.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN"))
                                 {
-                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="InterimDocValidation('@item.PL.PLID', '@item.PL.PLIDStatus', '@item.PL.DocNo', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc')">Validate</button>
+                                    if (item.PL.PLIDStatus == "OPEN" || (item.PL.PLIDStatus == "CLOSED" && item.PL.PLSDStatus == "OPEN" && item.PL.StandardizedDoc != "No input"))
+                                    {
+                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="InterimDocValidation('@item.PL.PLID', '@item.PL.PLIDStatus', '@item.PL.DocNo', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc')">Validate</button>
+                                    }                             
                                 }
                             </div>
                         </td>
@@ -618,48 +628,6 @@
         </div>
     </div>
 </div>
-
-@*<div class="modal fade" data-bs-backdrop="static" id="plmodal">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content ">
-            <div class="modal-header bg-primary">
-                <div class="modal-title d-flex text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-bookmark-check-fill my-auto" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5zm8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z" />
-                    </svg>
-                    <p class="my-auto mx-2">Acknowledgement</p>
-                </div>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <div>
-                        <label class="form-label">Validated By</label>
-                        <input class="form-control" name="plName" value="@EN[0]" readonly/>
-                    </div>
-                    <div>
-                        <label class="form-label">Interim Status</label>
-                        <select class="form-select">
-                            <option>Open</option>
-                            <option>Open</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Standardized Status</label>
-                        <select class="form-select">
-                            <option>Open</option>
-                            <option>Open</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Remarks</label>
-                        <textarea class="form-control" style="max-height:150px; min-height:40px"></textarea>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>*@
 
 <script>
     $(document).ready(function () {

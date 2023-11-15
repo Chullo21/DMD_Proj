@@ -8,14 +8,16 @@
 }
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
 
 <div class="container-fluid row mx-0">   
     <div class="col-md-8 col-lg-4 mx-auto mb-md-2">       
         <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
             <div class="card-header text-center border-2 border-dark fs-3" style="background-color:#B5AD9A">
-                <p class="modal-title fs-5 fw-bold text-center">Documents Lists</p>
+                <p class="modal-title fs-5 fw-bold text-center">Documents Menu</p>
             </div>
-            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-evenly">
+            <div class="card-body w-100 h-100 d-flex flex-column align-items-center justify-content-evenly">
                 @if (EN[1] != "USER")
                 {
                     <div class="w-75 mx-auto h-auto">
@@ -25,7 +27,7 @@
                     <div class="modal fade" data-bs-backdrop="static" id="wsmodal">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
-                                <div class="modal-header bg-primary text-white ">
+                                <div class="modal-header bg-primary text-white">
                                     <div class="modal-title d-flex">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-file-binary-fill my-auto" viewBox="0 0 16 16">
                                             <path d="M5.526 9.273c-.542 0-.832.563-.832 1.612 0 .088.003.173.006.252l1.56-1.143c-.126-.474-.375-.72-.733-.72zm-.732 2.508c.126.472.372.718.732.718.54 0 .83-.563.83-1.614 0-.085-.003-.17-.006-.25l-1.556 1.146z" />
@@ -36,14 +38,17 @@
                                     <button class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <form class="d-flex mb-2" asp-controller="MTI" asp-action="UploadWS" enctype="multipart/form-data">
-                                        <div class="">
-                                            <input class="form-control" type="file" name="file" accept=".pdf" required/>
-                                        </div>
-                                        <div>
-                                            <input class="btn btn-primary mx-3" type="submit" value="Upload"/>
-                                        </div>
-                                    </form>
+                                    @if (EN[1] == "ORIGINATOR" || EN[1] == "ADMIN")
+                                    {
+                                        <form class="d-flex mb-2" asp-controller="MTI" asp-action="UploadWS" enctype="multipart/form-data">
+                                            <div class="">
+                                                <input class="form-control" type="file" name="file" accept=".pdf" required />
+                                            </div>
+                                            <div>
+                                                <input class="btn btn-primary mx-3" type="submit" value="Upload" />
+                                            </div>
+                                        </form>
+                                    }
                                     <iframe class="w-100" src="@Url.Action("ShowDoc", "MTI", new {docunumber = "", whichdoc = "WS"})" style="height:70vh"></iframe>
                                 </div>
                             </div>
@@ -51,231 +56,356 @@
                     </div>
                 }
                 <div class="w-75 mx-auto h-auto">
-                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="PNP">PNP HEAD MX</a>
+                    <a class="w-100 btn btn-primary border-2 border-dark position-relative" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="PNP">
+                        PNP HEAD MX
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @Html.Raw(Model.PNPCount)
+                        </span>
+                    </a>
                 </div>
                 <div class="w-75 mx-auto h-auto">
-                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="JLP">JLP</a>
+                    <a class="w-100 btn btn-primary border-2 border-dark position-relative" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="JLP">
+                        JLP
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @Html.Raw(Model.JLPCount)
+                        </span>
+                    </a>
                 </div>
                 <div class="w-75 mx-auto h-auto">
-                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="JTP">JTP</a>
+                    <a class="w-100 btn btn-primary border-2 border-dark position-relative" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="JTP">
+                        JTP
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @Html.Raw(Model.JTPCount)
+                        </span>
+                    </a>
                 </div>
                 <div class="w-75 mx-auto h-auto">
-                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="OLB">OLB</a>
+                    <a class="w-100 btn btn-primary border-2 border-dark position-relative" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="OLB">
+                        OLB
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @Html.Raw(Model.OLBCount)
+                        </span>
+                    </a>
                 </div>
                 <div class="w-75 mx-auto h-auto">
-                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="TERADYNE">TERADYNE</a>
+                    <a class="w-100 btn btn-primary border-2 border-dark position-relative" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="SWAP">
+                        SWAP
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @Html.Raw(Model.SWAPCount)
+                        </span>
+                    </a>
                 </div>
                 <div class="w-75 mx-auto h-auto">
-                    <a class="w-100 btn btn-primary border-2 border-dark" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="SPARES">SPARES</a>
+                    <a class="w-100 btn btn-primary border-2 border-dark position-relative" style="font-size:20px" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="SPARES">
+                        SPARES
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @Html.Raw(Model.SPARESCount)
+                        </span>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-10 col-lg-4 mb-md-2 mx-auto">       
-        <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
-            <div class="card-header border-2 border-dark fs-3" style="background-color:#B5AD9A">
-                <p class="modal-title fs-5 fw-bold text-center">Documents Statuses</p>
-            </div>
-            <div class="card-body flex-column">
-                <div class="card border-2 border-dark">
-                    <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                        <p class="card-title text-center fs-6 fw-bold text-white">Uploaded Documents</p>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-center fw-bold fs-1">@Model.ControlledVal</p>
-                    </div>
+    @if (EN[1] != "USER")
+    {
+        <div class="col-md-10 col-lg-4 mb-md-2 mx-auto">
+            <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
+                <div class="card-header border-2 border-dark fs-3" style="background-color:#B5AD9A">
+                    <p class="modal-title fs-5 fw-bold text-center">Documents Statuses</p>
                 </div>
-                <div class="card border-2 border-dark my-2">
-                    <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                        <p class="card-title text-center fs-6 fw-bold text-white">Interim Documents</p>
+                <div class="card-body flex-column">
+                    <div class="card border-2 border-dark">
+                        <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                            <p class="card-title text-center fs-6 fw-bold text-white">Uploaded Documents</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-center fw-bold fs-1">@Model.ControlledVal</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <p class="text-center fw-bold fs-1">@Model.InterimVal</p>
+                    <div class="card border-2 border-dark my-2">
+                        <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                            <p class="card-title text-center fs-6 fw-bold text-white">Interim Documents</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-center fw-bold fs-1">@Model.InterimVal</p>
+                        </div>
                     </div>
-                </div>
-                <div class="card border-2 border-dark">
-                    <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                        <p class="card-title text-center fs-6 fw-bold text-white">Obsolete Documents</p>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-center fw-bold fs-1">@Model.ObsoleteVal</p>
+                    <div class="card border-2 border-dark">
+                        <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                            <p class="card-title text-center fs-6 fw-bold text-white">Obsolete Documents</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-center fw-bold fs-1">@Model.ObsoleteVal</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="flex-column col-md-12 col-lg-4">
-        <div class="card border-2 border-dark mb-2" style="background-color:#E9E4E9">
-            <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                <p class="modal-title fs-5 fw-bold text-center">Problem Log Count</p>
+        <div class="flex-column col-md-12 col-lg-4">
+            <div class="card border-2 border-dark mb-2" style="background-color:#E9E4E9">
+                <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
+                    <p class="modal-title fs-5 fw-bold text-center">Problem Log Count</p>
+                </div>
+                <div class="">
+                    <canvas id="problemlognumber"></canvas>
+                </div>
             </div>
-            <div class="">
-                <canvas id="problemlognumber"></canvas>
+            <div class="card border-2 border-dark mb-md-5 mb-lg-0" style="background-color:#E9E4E9">
+                <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
+                    <p class="modal-title fs-5 fw-bold text-center">PL Open and Closed</p>
+                </div>
+                <div class="">
+                    <canvas id="ProblemLogOpenAndClosed"></canvas>
+                </div>
             </div>
         </div>
-        <div class="card border-2 border-dark mb-md-5 mb-lg-0" style="background-color:#E9E4E9">
-            <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                <p class="modal-title fs-5 fw-bold text-center">PL Open and Closed</p>
-            </div>
-            <div class="">
-                <canvas id="ProblemLogOpenAndClosed"></canvas>
+
+        <script>
+            function getMonthsToCurrent() {
+                const months = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
+
+                const currentMonth = new Date().getMonth();
+
+                const monthsToCurrent = months.slice(0, currentMonth + 1);
+
+                return monthsToCurrent;
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var months = getMonthsToCurrent();
+
+                var ctx = document.getElementById('ProblemLogOpenAndClosed');
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [
+                            {
+                                label: 'Open Interim',
+                                data: @Model.OpenIDPL,
+                                backgroundColor: '#ffa600',
+                                borderColor: 'black',
+                                borderWidth: 0.5,
+                                pointStyle: 'rect',
+                                stack: '0'
+                            },
+                            {
+                                label: 'Open Standardized',
+                                data: @Model.OpenSDPL,
+                                backgroundColor: '#ef5675',
+                                borderColor: 'black',
+                                borderWidth: 0.5,
+                                pointStyle: 'rect',
+                                stack: '1'
+                            },
+                            {
+                                label: 'Closed Interim',
+                                data: @Model.ClosedIDPL,
+                                backgroundColor: '#7a5195',
+                                borderColor: 'black',
+                                borderWidth: 0.5,
+                                pointStyle: 'rect',
+                                stack: '0'
+                            },
+                            {
+                                label: 'Closed Standardized',
+                                data: @Model.ClosedSDPL,
+                                backgroundColor: '#003f5c',
+                                borderColor: 'black',
+                                borderWidth: 0.5,
+                                pointStyle: 'rect',
+                                stack: '1'
+                            }
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {},
+                                ticks: {
+                                    color: 'black',
+                                    precision: 0
+                                },
+                                title: {
+                                    color: 'black',
+                                    display: true,
+                                    text: ''
+                                },
+                                stacked: true
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'black',
+                                },
+                                stacked: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    usePointStyle: true,
+                                },
+
+                            }
+                        }
+                    }
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var months = ["JLP", "JTP", "PNP", "OLB"];
+                var bgiv = '';
+                var bgv = '#F57653';
+
+                var ctx = document.getElementById('problemlognumber');
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [
+                            {
+                                label: 'Problem Log Count',
+                                data: [@Model.JLPVal, @Model.JTPVal, @Model.PNPVal, @Model.OLBVal],
+                                backgroundColor: '#ffa600',
+                                borderColor: 'black',
+                                borderWidth: .5,
+                                pointStyle: 'rect'
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {},
+                                ticks: {
+                                    color: 'black',
+                                    precision: 0,
+                                    max: Math.max(...[3, 6, 1, 2], ...[3, 6, 1, 2]) + 2,
+                                },
+                                title: {
+                                    color: 'black',
+                                    display: true,
+                                    text: ''
+                                },
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'black',
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    usePointStyle: true,
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    }
+    else
+    {
+        <div class="col-md-12 col-lg-8">
+            <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
+                <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
+                    <p class="modal-title fs-5 fw-bold text-center">Documents List</p>
+                </div>
+                <div class="card-body" style="min-height:500px; max-height:500px">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="myTable">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>
+                                        Product
+                                    </th>
+                                    <th>
+                                        Doc #
+                                    </th>
+                                    <th>
+                                        Description
+                                    </th>
+                                    <th>
+                                        Part #
+                                    </th>
+                                    <th>
+                                        Rev
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody @*id="useruibody"*@>
+                                @foreach(var doc in Model.AllDocs)
+                                {
+                                    <tr>
+                                        <td>
+                                            @doc.Product
+                                        </td>
+                                        <td>
+                                            @doc.DocumentNumber
+                                        </td>
+                                        <td>
+                                            @doc.AssemblyDesc
+                                        </td>
+                                        <td>
+                                            @doc.AssemblyPN
+                                        </td>
+                                        <td>
+                                            @doc.RevNo
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+
+        <script>
+            @*var userBod = document.getElementById('useruibody');*@
+
+            $('#myTable').DataTable({
+                searching: true,
+                lengthChange: false,
+                pageLength: 7,
+                order: [],
+                ordering: false
+            });
+
+            @*window.onload = function (){
+                $(function (){
+                    userBod.innerHTML = '';
+
+                    $.ajax({
+                        url: '@Url.Action("GetAllDocuments", "Home")',
+                        success: function (r) {
+                            r.r.forEach(function (doc) {
+                                userBod.innerHTML += CallAjax(doc.DocumentNumber, doc.AssemblyDesc, doc.AssemblyPN, doc.RevNo);
+                            });
+                        }
+                    });
+                });
+            }*@
+        </script>
+    }
 </div>
 
-<script>
-
-    function getMonthsToCurrent() {
-        const months = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-
-        const currentMonth = new Date().getMonth();
-
-        const monthsToCurrent = months.slice(0, currentMonth + 1);
-
-        return monthsToCurrent;
+@*<script>
+    function CallAjax(docno, desc, partno, rev)
+    {
+        return '<tr><td>' + docno + '</td><td>' + desc + '</td><td>' + partno + '</td><td>' + rev + '</td></tr>';
     }
-    
-    document.addEventListener('DOMContentLoaded', function () {
-        var months = getMonthsToCurrent();
+</script>*@
 
-        var ctx = document.getElementById('ProblemLogOpenAndClosed');
-        var chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: months,
-                datasets: [
-                    {
-                        label: 'Open Interim',
-                        data: @Model.OpenIDPL,
-                        backgroundColor: '#ffa600',
-                        borderColor: 'black',
-                        borderWidth: 0.5,
-                        pointStyle: 'rect',
-                        stack: '0'
-                    },
-                    {
-                        label: 'Open Standardized',
-                        data: @Model.OpenSDPL,
-                        backgroundColor: '#ef5675',
-                        borderColor: 'black',
-                        borderWidth: 0.5,
-                        pointStyle: 'rect',
-                        stack: '1'
-                    },
-                    {
-                        label: 'Closed Interim',
-                        data: @Model.ClosedIDPL,
-                        backgroundColor: '#7a5195',
-                        borderColor: 'black',
-                        borderWidth: 0.5,
-                        pointStyle: 'rect',
-                        stack: '0'
-                    },                   
-                    {
-                        label: 'Closed Standardized',
-                        data: @Model.ClosedSDPL,
-                        backgroundColor: '#003f5c',
-                        borderColor: 'black',
-                        borderWidth: 0.5,
-                        pointStyle: 'rect',
-                        stack: '1'
-                    }
-                ],
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {},
-                        ticks: {
-                            color: 'black',
-                            precision: 0
-                        },
-                        title: {
-                            color: 'black',
-                            display: true,
-                            text: ''
-                        },
-                        stacked: true
-                    },
-                    x: {
-                        ticks: {
-                            color: 'black',
-                        },
-                        stacked: true
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: true,
-                        },
-                        
-                    }
-                }
-            }
-        });
-    });
 
-    document.addEventListener('DOMContentLoaded', function () {
-        var months = ["JLP", "JTP", "PNP", "OLB"];
-        var bgiv = '';
-        var bgv = '#F57653';
-
-        var ctx = document.getElementById('problemlognumber');
-        var chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: months,
-                datasets: [
-                    {
-                        label: 'Problem Log Count',
-                        data: [@Model.JLPVal, @Model.JTPVal, @Model.PNPVal, @Model.OLBVal],
-                        backgroundColor: '#ffa600',
-                        borderColor: 'black',
-                        borderWidth: .5,
-                        pointStyle: 'rect'
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {},
-                        ticks: {
-                            color: 'black',
-                            precision: 0,
-                            max: Math.max(...[3, 6, 1, 2], ...[3, 6, 1, 2]) + 2,
-                        },
-                        title: {
-                            color: 'black',
-                            display: true,
-                            text: ''
-                        },
-                    },
-                    x: {
-                        ticks: {
-                            color: 'black',
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: true,
-                        }
-                    }
-                }
-            }
-        });
-    });
-</script>
 
 

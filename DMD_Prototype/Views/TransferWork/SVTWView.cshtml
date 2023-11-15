@@ -1,0 +1,103 @@
+﻿@model IEnumerable<DMD_Prototype.Controllers.SVSesViewModel>
+@{
+    ViewData["Title"] = "SVTWView";
+}
+
+<script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
+
+<div class="container">
+    <div>
+        <table class="table table-hover table-bordered" id="myTable">
+            <thead>
+                <tr>
+                    <th>
+                        Current Technician
+                    </th>
+                    <th>
+                        Requestor
+                    </th>
+                    <th>
+                        
+                    </th>
+                </tr>
+            </thead>
+            <tbody @*id="tablebody"*@>
+                @foreach(var line in Model)
+                {
+                    <tr>
+                        <td>
+                            @line.CurrentTech
+                        </td>
+                        <td>
+                            @line.Requestor
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmAction" onclick="reqId = '@line.ReqId'">Actions</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $('#myTable').DataTable({
+        searching: true,
+        lengthChange: false,
+        pageLength: 7,
+        order: [],
+        ordering: false
+    });
+
+    //var reqId = '';
+    //var tableBody = document.getElementById('tablebody');
+
+    //function UpdateRequests(){
+    //    tableBody.innerHTML = '';
+
+    //    $.ajax({
+    //        url: '@Url.Action("UpdateRequests", "TransferWork")',
+    //        success: function (r){
+    //            r.r.forEach(function (reqs){
+    //                tableBody.innerHTML += '<tr><td>' + reqs.CurrentTech + '</td><td>' + reqs.Requestor + '</td><td><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmAction" onclick="reqId = \' ' + reqs.ReqId + ' \' ">Actions</button></td></tr>';
+    //            });
+    //            console.log(r);
+    //        }
+    //    });
+    //}
+
+    //UpdateRequests();
+
+    //setInterval(UpdateRequests, 15000);
+
+    function ConfirmAction(){
+        window.location.href = '@Url.Action("ApproveSessionRequest", "TransferWork")' + '?RSID=' + reqId;
+    }
+
+    function RemoveRequest() {
+        window.location.href = '@Url.Action("RemoveSessionRequest", "TransferWork")' + '?RSID=' + reqId;
+    }
+
+</script>
+
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="confirmAction">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">               
+                Action
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure?
+            </div>
+            <div class="modal-footer">
+                <div class="d-flex justify-content-around w-100">
+                    <button class="btn btn-danger" onclick="RemoveRequest()">Remove request</button>
+                    <button class="btn btn-primary" onclick="ConfirmAction()">Approve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
