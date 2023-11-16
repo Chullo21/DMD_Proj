@@ -2,6 +2,7 @@
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using NuGet.Protocol;
 
 namespace DMD_Prototype.Controllers
 {
@@ -16,17 +17,41 @@ namespace DMD_Prototype.Controllers
             _Db = _context;
         }
 
-        public IActionResult UserTWView()
+        private List<SVSesViewModel> GetSVSes()
         {
-            return View(ishared.GetStartWork().Where(j => j.FinishDate == null).ToList());
+            List<SVSesViewModel> res = new();
+
+            Dictionary<string, string> docs = ishared.GetMTIs().Where(j => !j.ObsoleteStat).ToList().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
+            Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo));
+            Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
+            Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
+
+            foreach (var s in sw)
+            {
+                SVSesViewModel vm = new();
+
+                vm.DocNo = s.Value.Item2;
+                vm.Desc = docs.FirstOrDefault(j => j.Key == s.Value.Item2).Value;
+
+                string session = s.Value.Item3;
+                vm.Module = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item1;
+                vm.SerialNo = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item2;
+
+                vm.CurrentTech = accounts.FirstOrDefault(j => j.Key == s.Value.Item1).Value;
+
+                vm.SWID = s.Key;
+
+                res.Add(vm);
+            }
+
+            return res;
+
         }
 
-        //public ContentResult UpdateSessions()
-        //{
-        //    List<StartWorkModel> sessions = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList();
-
-        //    return Content(JsonConvert.SerializeObject(new {r = sessions}), "application/json");
-        //}
+        public IActionResult UserTWView()
+        {
+            return View(GetSVSes());
+        }
 
         public IActionResult TakeSession(string id, string userId)
         {
@@ -41,12 +66,12 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult SVTWView()
         {
-
             List<RequestSessionModel> reqs = ishared.GetRS();
 
+            Dictionary<string, string> docs = ishared.GetMTIs().Where(j => !j.ObsoleteStat).ToList().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
+            Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo));
             Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
-            Dictionary<string, string> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => j.UserID);
-
+            Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
             List<SVSesViewModel> res = new();
 
             foreach (var req in reqs)
@@ -55,8 +80,12 @@ namespace DMD_Prototype.Controllers
                 vm.ReqId = req.TakeSessionID;
                 vm.UserId = req.UserId;
                 vm.SWID = req.SWID;
-                vm.CurrentTech = accounts.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value).Value;
+                vm.CurrentTech = accounts.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item1).Value;
                 vm.Requestor = accounts.FirstOrDefault(j => j.Key == req.UserId).Value;
+                vm.DocNo = sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item2;
+                vm.Desc = docs.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item2).Value;
+                vm.Module = modules.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item3).Value.Item1;
+                vm.SerialNo = modules.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item3).Value.Item2;
 
                 res.Add(vm);
             }
@@ -64,33 +93,12 @@ namespace DMD_Prototype.Controllers
             return View(res);
         }
 
-        //public ContentResult UpdateRequests()
-        //{
-        //    List<RequestSessionModel> reqs = ishared.GetRS();
-
-        //    Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
-        //    Dictionary<string, string> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => j.UserID);
-
-        //    List<SVSesViewModel> res = new();
-
-        //    foreach(var req in reqs)
-        //    {
-        //        SVSesViewModel vm = new();
-        //        vm.ReqId = req.TakeSessionID;
-        //        vm.UserId = req.UserId;
-        //        vm.SWID = req.SWID;
-        //        vm.CurrentTech = accounts.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value).Value;
-        //        vm.Requestor = accounts.FirstOrDefault(j => j.Key == req.UserId).Value;
-
-        //        res.Add(vm);
-        //    }
-
-        //    return Content(JsonConvert.SerializeObject(new {r = res}), "application/json");
-        //}
-
         public IActionResult ApproveSessionRequest(int RSID)
         {
+
             RequestSessionModel rs = ishared.GetRS().FirstOrDefault(j => j.TakeSessionID == RSID);
+
+            CheckIfTechIsCurrentlyWorking(rs.UserId);
 
             List<RequestSessionModel> rsList = ishared.GetRS().Where(j => j.SWID == rs.SWID).ToList();
 
@@ -113,14 +121,34 @@ namespace DMD_Prototype.Controllers
 
             return RedirectToAction("SVTWView", "TransferWork");
         }
+
+        public IActionResult TWPartial()
+        {
+            return PartialView("_TWPartial", GetSVSes());
+        }
+
+        private void CheckIfTechIsCurrentlyWorking(string userId)
+        {
+            StartWorkModel sw = ishared.GetStartWork().FirstOrDefault(j => j.FinishDate == null && j.UserID == userId);
+
+            if (sw != null)
+            {
+                sw.UserID = "";
+                _Db.StartWorkDb.Update(sw);
+            }
+        }
     }
 
     public class SVSesViewModel
     {
         public int ReqId { get; set; }
-        public string UserId { get; set; }
-        public string SWID { get; set; }
-        public string CurrentTech { get; set; }
-        public string Requestor { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public string SWID { get; set; } = string.Empty;
+        public string DocNo { get; set; } = string.Empty;
+        public string Desc { get; set; } = string.Empty;
+        public string Module { get; set; } = string.Empty;
+        public string SerialNo { get; set; } = string.Empty;
+        public string CurrentTech { get; set; } = string.Empty;
+        public string? Requestor { get; set; }
     }
 }

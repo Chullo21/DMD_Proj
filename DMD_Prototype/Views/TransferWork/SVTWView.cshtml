@@ -9,8 +9,20 @@
 <div class="container">
     <div>
         <table class="table table-hover table-bordered" id="myTable">
-            <thead>
+            <thead class="table-primary text-white text-center">
                 <tr>
+                    <th>
+                        Doc#
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                    <th>
+                        Module
+                    </th>
+                    <th>
+                        Serial No
+                    </th>
                     <th>
                         Current Technician
                     </th>
@@ -18,7 +30,7 @@
                         Requestor
                     </th>
                     <th>
-                        
+
                     </th>
                 </tr>
             </thead>
@@ -26,6 +38,18 @@
                 @foreach(var line in Model)
                 {
                     <tr>
+                        <td>
+                            @line.DocNo
+                        </td>
+                        <td>
+                            @line.Desc
+                        </td>
+                        <td>
+                            @line.Module
+                        </td>
+                        <td>
+                            @line.SerialNo
+                        </td>
                         <td>
                             @line.CurrentTech
                         </td>

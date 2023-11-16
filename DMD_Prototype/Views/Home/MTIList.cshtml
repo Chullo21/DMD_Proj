@@ -11,7 +11,7 @@
     string actionLength = "width: 40%";
     TempData.Keep();
 
-    if (accData[1] == "USER")
+    if (accData[1] != "ADMIN")
     {
         viewType = "WORK";
         viewColorType = "btn-warning";
@@ -94,8 +94,8 @@
                             @item.DateCreated.ToShortDateString()
                         </td>
                         <td>
-                            <div class="d-flex text-nowrap justify-content-around">
-                                <a class="btn @viewColorType d-flex" asp-controller="MTI" asp-action="MTIView" asp-route-docuNumber="@item.DocumentNumber">
+                            <div class="w-100 d-flex text-nowrap justify-content-around">
+                                <a class="btn @viewColorType d-flex btn-sm mx-1" asp-controller="MTI" asp-action="MTIView" asp-route-docuNumber="@item.DocumentNumber">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-binoculars-fill my-auto " viewBox="0 0 16 16">
                                         <path d="M4.5 1A1.5 1.5 0 0 0 3 2.5V3h4v-.5A1.5 1.5 0 0 0 5.5 1h-1zM7 4v1h2V4h4v.882a.5.5 0 0 0 .276.447l.895.447A1.5 1.5 0 0 1 15 7.118V13H9v-1.5a.5.5 0 0 1 .146-.354l.854-.853V9.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v.793l.854.853A.5.5 0 0 1 7 11.5V13H1V7.118a1.5 1.5 0 0 1 .83-1.342l.894-.447A.5.5 0 0 0 3 4.882V4h4zM1 14v.5A1.5 1.5 0 0 0 2.5 16h3A1.5 1.5 0 0 0 7 14.5V14H1zm8 0v.5a1.5 1.5 0 0 0 1.5 1.5h3a1.5 1.5 0 0 0 1.5-1.5V14H9zm4-11H9v-.5A1.5 1.5 0 0 1 10.5 1h1A1.5 1.5 0 0 1 13 2.5V3z" />
                                     </svg>
@@ -103,15 +103,15 @@
                                 </a>
 
                                 @if (accData[1] == "ADMIN" || (accData[1] == "ORIGINATOR" && item.OriginatorName == accData[2]))
-                                {                                   
-                                    <button class="btn btn-success d-flex" data-bs-toggle="modal" data-bs-target="#editDetModal" onclick="SetDets('@item.DocumentNumber', '@item.AssemblyPN', '@item.AssemblyDesc', '@item.RevNo', '@item.AfterTravLog', '@item.LogsheetDocNo', '@item.LogsheetRevNo', '@item.DocType')">
+                                {
+                                    <button class="btn btn-success d-flex btn-sm mx-1" data-bs-toggle="modal" data-bs-target="#editDetModal" onclick="SetDets('@item.DocumentNumber', '@item.AssemblyPN', '@item.AssemblyDesc', '@item.RevNo', '@item.AfterTravLog', '@item.LogsheetDocNo', '@item.LogsheetRevNo', '@item.DocType')">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square my-auto" viewBox="0 0 16 16">
                                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                             <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
                                         </svg>
                                         <p class="my-auto mx-1">Edit Details</p>
                                     </button>
-                                    <a class="btn btn-secondary d-flex" asp-controller="MTI" asp-action="EditDocumentView" asp-route-docuNo="@item.DocumentNumber">
+                                    <a class="btn btn-secondary d-flex btn-sm mx-1" asp-controller="MTI" asp-action="EditDocumentView" asp-route-docuNo="@item.DocumentNumber">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-diff-fill my-auto" viewBox="0 0 16 16">
                                             <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM8 6a.5.5 0 0 1 .5.5V8H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V9H6a.5.5 0 0 1 0-1h1.5V6.5A.5.5 0 0 1 8 6zm-2.5 6.5A.5.5 0 0 1 6 12h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5z" />
                                         </svg>
@@ -121,7 +121,7 @@
 
                                 @if (accData[1] == "ADMIN")
                                 {
-                                    <button type="button" class="btn btn-warning d-flex" data-bs-toggle="modal" data-bs-target="#changeownermodal" onclick="OrigName('@item.OriginatorName', '@item.DocumentNumber')">
+                                    <button type="button" class="btn btn-warning d-flex mx-1" data-bs-toggle="modal" data-bs-target="#changeownermodal" onclick="OrigName('@item.OriginatorName', '@item.DocumentNumber')">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill-gear my-auto" viewBox="0 0 16 16">
                                             <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148ZM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z" />
                                         </svg>

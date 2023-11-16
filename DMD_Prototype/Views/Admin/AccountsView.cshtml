@@ -4,12 +4,27 @@
     ViewData["Title"] = "DMD Accounts";
 }
 
+@section scripts {
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
+    <script>
+        $(document).ready(function () {
+            $('#myTable').DataTable({
+                searching: true,
+                lengthChange: false,
+                pageLength: 7,
+                order: [],
+                ordering: false
+            });
+        });
+    </script>
+}
 
 <div class="container">
     <div class="w-100 d-flex justify-content-end my-2">
         <button class="btn btn-secondary" data-bs-target="#createuser" data-bs-toggle="modal">Create User</button>
     </div>
-    <table class="table table-bordered border-secondary border-1 table-hover text-center">
+    <table class="table table-bordered border-secondary border-1 table-hover text-center" id="myTable">
         <thead class="table-primary">
             <tr>
                 <th>

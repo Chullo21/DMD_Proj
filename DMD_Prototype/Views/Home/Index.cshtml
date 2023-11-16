@@ -340,6 +340,12 @@
                                     <th>
                                         Rev
                                     </th>
+                                    <th>
+                                        
+                                    </th>
+                                    <th>
+
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody @*id="useruibody"*@>
@@ -360,6 +366,12 @@
                                         </td>
                                         <td>
                                             @doc.RevNo
+                                        </td>
+                                        <td>
+                                            @doc.DocType
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-primary" asp-controller="MTI" asp-action="MTIView" asp-route-docuNumber="@doc.DocumentNumber">Go</a>
                                         </td>
                                     </tr>
                                 }

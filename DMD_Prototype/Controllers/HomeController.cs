@@ -3,6 +3,7 @@ using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 
 namespace DMD_Prototype.Controllers
 {
@@ -92,21 +93,39 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult ShowTravelers()
         {
-            List<StartWorkModel> models = new List<StartWorkModel>();
+            Dictionary<string, (string, string)> mtis = ishare.GetMTIs().Where(j => !j.ObsoleteStat).ToDictionary(j => j.DocumentNumber, j => (j.AssemblyDesc, j.AfterTravLog));
+            Dictionary<string, (string, string)> module = ishare.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo));
+            Dictionary<string, (string, string, string, string, string)> sw = ishare.GetStartWork().ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.Value.ToShortDateString(), j.UserID, j.DocNo, j.SWID.ToString()));
+            Dictionary<string, string> accs = ishare.GetAccounts().Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
 
-            foreach (var sw in ishare.GetStartWork())
+            TravelerViewModel res = new();
+            List<TravDets> dets = new();
+
+            foreach (var work in sw)
             {
-                sw.UserID = ishare.GetAccounts().FirstOrDefault(j => j.UserID == sw.UserID).AccName;
-                models.Add(sw);
+                string stat = "";
+                if (work.Value.Item2 != null) stat = "Done"; else if (work.Value.Item3 == null) stat = "Pending"; else stat = "On-Going";
+
+                TravDets trav = new();
+                trav.Desc = mtis.FirstOrDefault(j => j.Key == work.Value.Item4).Value.Item1;
+                trav.DocNo = work.Value.Item4;
+                trav.StartDate = work.Value.Item1;
+                trav.FinishDate = work.Value.Item2;
+                trav.Status = stat;
+                trav.Technician = accs.FirstOrDefault(j => j.Key == work.Value.Item3).Value;
+                trav.SerialNo = module.FirstOrDefault(j => j.Key == work.Key).Value.Item2;
+                trav.Module = module.FirstOrDefault(j => j.Key == work.Key).Value.Item1;
+                trav.SessionID = work.Key;
+                trav.SWID = work.Value.Item5;
+                trav.LogType = mtis.FirstOrDefault(j => j.Key == work.Value.Item4).Value.Item2;
+
+                dets.Add(trav);
             }
 
-            TravelerViewModel model = new TravelerViewModel();
-            {
-                model.Traveler = models;
-                model.Users = ishare.GetAccounts().Where(j => j.Role == "USER").Select(j => j.AccName).ToList();
-            }
+            res.Travs = dets;
+            res.Users = ishare.GetAccounts().Where(j => j.Role == "USER").Select(j => j.AccName).ToList();
 
-            return View(model);
+            return View(res);
         }
 
         public ContentResult GetAllDocuments()
@@ -115,6 +134,13 @@ namespace DMD_Prototype.Controllers
             List<MTIModel> docs = ishare.GetMTIs().Where(j => !j.ObsoleteStat).ToList();
 
             return Content(JsonConvert.SerializeObject(new {r = docs}), "application/json");
+        }
+
+        public ContentResult GetRSCount()
+        {
+            int rsCount = ishare.GetRS().Count();
+
+            return Content(JsonConvert.SerializeObject(new {r = rsCount}), "application/json");
         }
 
         private int[] DataPerMonthGetter(List<ProblemLogModel> list)
@@ -131,8 +157,8 @@ namespace DMD_Prototype.Controllers
 
         private IndexModel DashboardDetGetter()
         {
-            List<MTIModel> mtis = ishare.GetMTIs();
-            List<ProblemLogModel> pls = ishare.GetProblemLogs();
+            IEnumerable<MTIModel> mtis = ishare.GetMTIs();
+            IEnumerable<ProblemLogModel> pls = ishare.GetProblemLogs();
 
             IndexModel mod = new IndexModel();
             {
@@ -158,7 +184,7 @@ namespace DMD_Prototype.Controllers
                 mod.SWAPCount = mtis.Count(j => j.Product == "SWAP" && !j.ObsoleteStat);
                 mod.SPARESCount = mtis.Count(j => j.Product == "SPARES" && !j.ObsoleteStat);
 
-                mod.AllDocs = mtis.Where(j => !j.ObsoleteStat).ToList();
+                mod.AllDocs = mtis.Where(j => !j.ObsoleteStat).ToList();               
             }
 
             return mod;
@@ -187,18 +213,34 @@ namespace DMD_Prototype.Controllers
         public int SWAPCount { get; set; }
         public int SPARESCount { get; set; }
 
-        public List<MTIModel>? AllDocs { get; set; }
+        public IEnumerable<MTIModel>? AllDocs { get; set; }
     }
 
     public class MTIListModel
     {
-        public List<MTIModel>? list { get; set;}
-        public List<string>? Originators { get; set; }
+        public IEnumerable<MTIModel>? list { get; set;}
+        public IEnumerable<string>? Originators { get; set; }
+    }
+
+    public class TravDets
+    {
+        public string Desc { get; set; } = string.Empty;
+        public string DocNo { get; set; } = string.Empty;
+        public string StartDate { get; set; } = string.Empty;
+        public string FinishDate { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string Technician { get; set; } = string.Empty;
+        public string SerialNo { get; set; } = string.Empty;
+        public string Module { get; set; } = string.Empty;
+        public string SessionID { get; set; } = string.Empty;
+        public string LogType { get; set; } = string.Empty;
+        public string SWID { get; set; } = string.Empty;
     }
 
     public class TravelerViewModel
     {
-        public List<StartWorkModel> Traveler { get; set; }
-        public List<string> Users { get; set; }
+        public IEnumerable<TravDets> Travs { get; set; }
+
+        public IEnumerable<string> Users { get; set; }
     }
 }

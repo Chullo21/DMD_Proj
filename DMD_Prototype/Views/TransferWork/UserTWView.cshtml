@@ -1,6 +1,6 @@
-﻿@model IEnumerable<StartWorkModel>
+﻿@model IEnumerable<DMD_Prototype.Controllers.SVSesViewModel>
 @{
-    ViewData["Title"] = "UserTWView";
+    ViewData["Title"] = "Get Work";
 
     string[] EN = TempData["EN"] as string[];
     TempData.Keep();
@@ -18,11 +18,23 @@
                         Doc No
                     </th>
                     <th>
+                        Description
+                    </th>
+                    <th>
+                        Module
+                    </th>
+                    <th>
+                        Serial Number
+                    </th>
+                    <th>
+                        Current Technician
+                    </th>
+                    <th>
                         Action
                     </th>
                 </tr>
             </thead>
-            <tbody id="tablebody">
+            <tbody id="tablebody" class="text-center">
                 @foreach (var line in Model)
                 {
                     <tr>
@@ -30,7 +42,22 @@
                             @line.DocNo
                         </td>
                         <td>
-                            <button class="btn btn-primary" onclick="TakeWork('@line.SWID')">Take</button>
+                            @line.Desc
+                        </td>
+                        <td>
+                            @line.Module
+                        </td>
+                        <td>
+                            @line.SerialNo
+                        </td>
+                        <td>
+                            @line.CurrentTech
+                        </td>
+                        <td>
+                            @if(EN[1] == "USER")
+                            {
+                                <button class="btn btn-primary w-100" onclick="TakeWork('@line.SWID')">Take</button>
+                            }
                         </td>
                     </tr>
                 }
@@ -40,10 +67,7 @@
 </div>
 
 <script>
-    //var intervalStopper = false;
-    //var idGetter = '';
-    //var tabBody = document.getElementById('tablebody');
-
+    var idGetter = '';
     $('#myTable').DataTable({
         searching: true,
         lengthChange: false,
@@ -52,50 +76,30 @@
         ordering: false
     });
     
-    //function UpdateList(){
-   
-    //    tabBody.innerHTML = '';
-
-    //    $(function (){
-    //        $.ajax({
-    //            url: '@Url.Action("UpdateSessions", "TransferWork")',
-    //            success: function (r){
-    //                r.r.forEach(function(entry){
-    //                    tabBody.innerHTML += '<tr><td>' + entry.DocNo + '</td><td><button class="btn btn-primary" onclick="TakeWork(\'' + entry.SWID + '\')">Take</button></td></tr>';
-                        
-    //                });
-    //            },
-    //            error: function (r){
-    //                console.log(r);
-    //            }
-    //        });         
-    //    });
-    //}
-
-    //UpdateList();
-    //setInterval(UpdateList, 15000);
-
     function TakeWork(str)
     {
-        //intervalStopper = true;
+        //console.log(str);
+        //document.getElementById('idGetter').value = str;
         idGetter = str;
         $('#confirmAction').modal('show');
     }
 
     function ConfirmAction(){
-        window.location.href = '@Url.Action("TakeSession", "TransferWork")' + '?id=' + idGetter + '&userId=' + '@EN[2]';
+        console.log($('#idGetter').val());
+        window.location.href = '@Url.Action("TakeSession", "TransferWork")' + '?id=' +idGetter + '&userId=' + '@EN[2]';
     }
 
 </script>
 
-<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="confirmAction">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
+<div class="modal fade border-2 border-dark" data-bs-backdrop="static" data-bs-keyboard="false" id="confirmAction">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border border-dark">
+            <div class="modal-header bg-primary fs-5 fw-bold text-white">
                 Confirm
             </div>
             <div class="modal-body">
                 Are you sure?
+                @*<input value="" id="idGetter"/>*@
             </div>
             <div class="modal-footer">
                 <div class="d-flex justify-content-between w-100">
