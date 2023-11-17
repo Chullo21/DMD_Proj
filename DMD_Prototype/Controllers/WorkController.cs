@@ -116,17 +116,25 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public ContentResult ValidateModule(string module, string serialNo)
+        public ContentResult ValidateModule(string module, string serialNo, string workOrder)
         {
             string response = "go";
 
-            if (ishared.GetModules().FirstOrDefault(j => j.SerialNo == serialNo || j.Module == module) != null)
+            if (ishared.GetModules().Any(j => j.Module == module && j.WorkOrder != workOrder))
             {
-                response = "stop";
+                return Content(JsonConvert.SerializeObject(new { response = "m" }), "application/json");
             }
 
-            string jsonContent = JsonConvert.SerializeObject(new { response = response});
-            return Content(jsonContent, "application/json");
+            IEnumerable<ModuleModel> wO = ishared.GetModules().Where(j => j.WorkOrder == workOrder);
+
+            Dictionary<string, string> modules = wO.Where(j => j.Module == module).ToDictionary(j => j.Module, j => j.SerialNo);
+
+            if (modules.Any(j => j.Value == serialNo))
+            {
+                response = "s";
+            }
+
+            return Content(JsonConvert.SerializeObject(new { response = response }), "application/json");
         }
 
         public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo, string module)

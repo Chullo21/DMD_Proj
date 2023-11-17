@@ -59,6 +59,7 @@ namespace DMD_Prototype.Controllers
             tempMTI.AfterTravLog = mti.AfterTravLog;
             tempMTI.LogsheetDocNo = mti.LogsheetDocNo;
             tempMTI.LogsheetRevNo = mti.LogsheetRevNo;
+            tempMTI.ObsoleteStat = mti.ObsoleteStat;
 
             if (ModelState.IsValid)
             {
@@ -129,6 +130,7 @@ namespace DMD_Prototype.Controllers
                 mModel.AfterTravlog = mti.AfterTravLog;
                 mModel.Product = mti.Product;
                 mModel.DocType = mti.DocType;
+                mModel.ObsoleteStat = mti.ObsoleteStat;
             }
 
             return View(mModel);
@@ -174,7 +176,7 @@ namespace DMD_Prototype.Controllers
         public IActionResult CreateMTI(string documentnumber, string assynumber, string assydesc, string revnumber, 
             IFormFile? assemblydrawing, IFormFile? billsofmaterial, IFormFile? schematicdiagram, IFormFile mpti,
             List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo, 
-            string product, string doctype, string originator, IFormFile TravelerFile, string afterTrav, string? docctrlno, string? revnono)
+            string product, string doctype, string originator, IFormFile TravelerFile, string afterTrav, string? logsheetDocNo, string? logsheetRevNo)
         {
 
             MTIModel mti = new MTIModel();
@@ -187,8 +189,8 @@ namespace DMD_Prototype.Controllers
                 mti.DocType = doctype;
                 mti.OriginatorName = ishare.GetAccounts().FirstOrDefault(j => j.AccName == originator).UserID;
                 mti.AfterTravLog = afterTrav;
-                mti.LogsheetDocNo = docctrlno;
-                mti.LogsheetRevNo = revnono;
+                mti.LogsheetDocNo = logsheetDocNo;
+                mti.LogsheetRevNo = logsheetRevNo;
             }
 
             if (ModelState.IsValid)
@@ -348,9 +350,10 @@ namespace DMD_Prototype.Controllers
         public List<string>? Memo { get; set; }
         public bool WorkingStat { get; set; } = false;
         public string? SessionID { get; set; }
-        public string AfterTravlog { get; set; }
-        public string Product { get; set; }
-        public string DocType { get; set; }
+        public string AfterTravlog { get; set; } = string.Empty;
+        public string Product { get; set; } = string.Empty;
+        public string DocType { get; set; } = string.Empty;
+        public bool ObsoleteStat { get; set; } = false;
 
     }
 

@@ -22,7 +22,7 @@ namespace DMD_Prototype.Controllers
             List<SVSesViewModel> res = new();
 
             Dictionary<string, string> docs = ishared.GetMTIs().Where(j => !j.ObsoleteStat).ToList().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
-            Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo));
+            Dictionary<string, (string, string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo, j.WorkOrder));
             Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
             Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
 
@@ -36,6 +36,7 @@ namespace DMD_Prototype.Controllers
                 string session = s.Value.Item3;
                 vm.Module = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item1;
                 vm.SerialNo = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item2;
+                vm.WorkOrder = modules.FirstOrDefault(j =>  j.Key == s.Value.Item3).Value.Item3;
 
                 vm.CurrentTech = accounts.FirstOrDefault(j => j.Key == s.Value.Item1).Value;
 
@@ -69,7 +70,7 @@ namespace DMD_Prototype.Controllers
             List<RequestSessionModel> reqs = ishared.GetRS();
 
             Dictionary<string, string> docs = ishared.GetMTIs().Where(j => !j.ObsoleteStat).ToList().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
-            Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo));
+            Dictionary<string, (string, string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo, j.WorkOrder));
             Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
             Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
             List<SVSesViewModel> res = new();
@@ -84,8 +85,12 @@ namespace DMD_Prototype.Controllers
                 vm.Requestor = accounts.FirstOrDefault(j => j.Key == req.UserId).Value;
                 vm.DocNo = sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item2;
                 vm.Desc = docs.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item2).Value;
-                vm.Module = modules.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item3).Value.Item1;
-                vm.SerialNo = modules.FirstOrDefault(j => j.Key == sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item3).Value.Item2;
+
+                string sessionGetter = sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item3;
+
+                vm.Module = modules.FirstOrDefault(j => j.Key == sessionGetter).Value.Item1;
+                vm.SerialNo = modules.FirstOrDefault(j => j.Key == sessionGetter).Value.Item2;
+                vm.WorkOrder = modules.FirstOrDefault(j => j.Key == sessionGetter).Value.Item3;
 
                 res.Add(vm);
             }
@@ -127,6 +132,19 @@ namespace DMD_Prototype.Controllers
             return PartialView("_TWPartial", GetSVSes());
         }
 
+        public IActionResult RemoveSessionRequest(string RSID)
+        {
+            RequestSessionModel rsm = ishared.GetRS().FirstOrDefault(j => j.TakeSessionID == int.Parse(RSID));
+
+            if (ModelState.IsValid)
+            {
+                _Db.RSDb.Remove(rsm);
+                _Db.SaveChanges();
+            }
+
+            return RedirectToAction("SVTWView");
+        }
+
         private void CheckIfTechIsCurrentlyWorking(string userId)
         {
             StartWorkModel sw = ishared.GetStartWork().FirstOrDefault(j => j.FinishDate == null && j.UserID == userId);
@@ -146,6 +164,7 @@ namespace DMD_Prototype.Controllers
         public string SWID { get; set; } = string.Empty;
         public string DocNo { get; set; } = string.Empty;
         public string Desc { get; set; } = string.Empty;
+        public string WorkOrder { get; set; } = string.Empty;
         public string Module { get; set; } = string.Empty;
         public string SerialNo { get; set; } = string.Empty;
         public string CurrentTech { get; set; } = string.Empty;

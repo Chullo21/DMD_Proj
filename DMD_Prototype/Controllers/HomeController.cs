@@ -95,7 +95,7 @@ namespace DMD_Prototype.Controllers
         {
             Dictionary<string, (string, string)> mtis = ishare.GetMTIs().Where(j => !j.ObsoleteStat).ToDictionary(j => j.DocumentNumber, j => (j.AssemblyDesc, j.AfterTravLog));
             Dictionary<string, (string, string)> module = ishare.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo));
-            Dictionary<string, (string, string, string, string, string)> sw = ishare.GetStartWork().ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.Value.ToShortDateString(), j.UserID, j.DocNo, j.SWID.ToString()));
+            Dictionary<string, (string, string?, string?, string, string)> sw = ishare.GetStartWork().ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.HasValue ? j.FinishDate.Value.ToShortDateString() : "NF", j.UserID, j.DocNo, j.SWID.ToString()));
             Dictionary<string, string> accs = ishare.GetAccounts().Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
 
             TravelerViewModel res = new();
@@ -104,7 +104,7 @@ namespace DMD_Prototype.Controllers
             foreach (var work in sw)
             {
                 string stat = "";
-                if (work.Value.Item2 != null) stat = "Done"; else if (work.Value.Item3 == null) stat = "Pending"; else stat = "On-Going";
+                if (work.Value.Item2 != "NF") stat = "Done"; else if (work.Value.Item3 == null) stat = "Pending"; else stat = "On-Going";
 
                 TravDets trav = new();
                 trav.Desc = mtis.FirstOrDefault(j => j.Key == work.Value.Item4).Value.Item1;

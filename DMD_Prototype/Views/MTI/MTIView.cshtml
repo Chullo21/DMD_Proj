@@ -64,7 +64,7 @@
                     }
                 </div>
                 <div class="col-5 d-flex justify-content-center align-self-center border-3 border-dark bg-dark ">
-                    <marquee class="border-3 border-dark bg-dark text-white">Please follow the steps of your MPI/MTI alongside your traveler, have a great day!.</marquee>
+                    <marquee id="marq" class="border-3 border-dark bg-dark text-white">Please follow the steps of your MPI/MTI alongside your traveler, have a great day!.</marquee>
                 </div>
                 <div class="col-5 d-flex justify-content-around">
                     <div class="align-self-center">
@@ -86,16 +86,31 @@
                                 }
                                 else
                                 {
-                                    <button class="btn btn-success" type="button" data-bs-target="#confirmStart" data-bs-toggle="modal">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-skip-start-circle-fill" viewBox="0 0 16 16">
-                                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM9.71 5.093 7 7.028V5.5a.5.5 0 0 0-1 0v5a.5.5 0 0 0 1 0V8.972l2.71 1.935a.5.5 0 0 0 .79-.407v-5a.5.5 0 0 0-.79-.407z" />
-                                            </svg>
-                                            <div class="mx-2">
-                                                Start
+                                    if (!Model.ObsoleteStat)
+                                    {
+                                        <button class="btn btn-success" type="button" data-bs-target="#confirmStart" data-bs-toggle="modal">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-skip-start-circle-fill" viewBox="0 0 16 16">
+                                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM9.71 5.093 7 7.028V5.5a.5.5 0 0 0-1 0v5a.5.5 0 0 0 1 0V8.972l2.71 1.935a.5.5 0 0 0 .79-.407v-5a.5.5 0 0 0-.79-.407z" />
+                                                </svg>
+                                                <div class="mx-2">
+                                                    Start
+                                                </div>
                                             </div>
-                                        </div>
-                                    </button>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-danger fw-bold my-auto">
+                                            This is an obsolete document.
+                                        </p>
+
+                                        <script>
+                                            var marquee = document.getElementById('marq');
+                                            marquee.innerHTML = 'This is an obsolete document, please contact your originator for further assistance.';
+                                            marquee.style.color = 'red';
+                                        </script>
+                                    }
                                 }
                             }
                         }
@@ -300,13 +315,13 @@
                             <input class="form-control" name="wOrder" id="workorder" required />
                         </div>
                         <div>
-                            <label class="form-label">Serial No:</label>
-                            <input class="form-control" name="serialNo" id="serialno" required />
-                        </div>
-                        <div>
                             <label class="form-label">Module:</label>
                             <input class="form-control" name="module" id="module" required />
                         </div>
+                        <div>
+                            <label class="form-label">Serial No:</label>
+                            <input class="form-control" name="serialNo" id="serialno" required />
+                        </div>                       
                     </div>
                     <div class="modal-footer">
                         <div class="d-flex justify-content-between w-100">
@@ -334,14 +349,23 @@
 
                 $.ajax({
                     url: '@Url.Action("ValidateModule", "Work")',
-                    data: {module: Module, serialNo: serialNo},
+                    data: {module: Module, serialNo: serialNo, workOrder: workOrder},
                     success: function (response){
+
                         if (response.response === 'go')
                         {
                             window.location.href = '@Url.Action("StartWork", "Work")' + '?docno=' + '@Model.DocumentNumber' + '&EN=' + '@EN[0]' + '&wOrder=' + workOrder + '&serialNo=' + serialNo + '&module=' + Module;
                         }
                         else{
-                            alert('Module already exist, are you trying to continue a pending work? Go to "Pending Travelers" instead.');
+                            var err = '';
+                            if (response.response === 's'){
+                                err = 'Serial Number';
+                            }
+                            else{
+                                err = 'Module';
+                            }
+
+                            alert( err + ' already exist, are you trying to continue a pending work? Go to "Pending Travelers" instead.');
                             $('#workorder').val('');
                             $('#serialno').val('');
                             $('#module').val('');
