@@ -7,10 +7,6 @@
 
 }
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
-
 <div class="container-fluid row mx-0">   
     <div class="col-md-8 col-lg-4 mx-auto mb-md-2">       
         <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
@@ -383,7 +379,6 @@
         </div>
 
         <script>
-            @*var userBod = document.getElementById('useruibody');*@
 
             $('#myTable').DataTable({
                 searching: true,
@@ -393,30 +388,9 @@
                 ordering: false
             });
 
-            @*window.onload = function (){
-                $(function (){
-                    userBod.innerHTML = '';
-
-                    $.ajax({
-                        url: '@Url.Action("GetAllDocuments", "Home")',
-                        success: function (r) {
-                            r.r.forEach(function (doc) {
-                                userBod.innerHTML += CallAjax(doc.DocumentNumber, doc.AssemblyDesc, doc.AssemblyPN, doc.RevNo);
-                            });
-                        }
-                    });
-                });
-            }*@
         </script>
     }
 </div>
-
-@*<script>
-    function CallAjax(docno, desc, partno, rev)
-    {
-        return '<tr><td>' + docno + '</td><td>' + desc + '</td><td>' + partno + '</td><td>' + rev + '</td></tr>';
-    }
-</script>*@
 
 
 

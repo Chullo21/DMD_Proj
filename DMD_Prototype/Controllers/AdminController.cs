@@ -2,42 +2,38 @@
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using NuGet.Protocol;
 
 namespace DMD_Prototype.Controllers
 {
     public class AdminController : Controller
     {
         private readonly AppDbContext _Db;
-        private readonly List<AccountModel> _accounts = new List<AccountModel>();
-        private readonly List<StartWorkModel> _swModel;
-        public AdminController(AppDbContext dataBase)
+        private readonly ISharedFunct ishare;
+        public AdminController(AppDbContext dataBase, ISharedFunct shared)
         {
             _Db = dataBase;
-            _accounts = _Db.AccountDb.ToList();
-            _swModel = _Db.StartWorkDb.ToList();
+            ishare = shared;
         }
 
         public ContentResult ShowTravelers()
         {
-            string res = JsonConvert.SerializeObject(_swModel);
+            string res = JsonConvert.SerializeObject(ishare.GetStartWork());
             return Content(res, "application/json");
         }
 
         public IActionResult AdminView()
         {
-            return View(_accounts);
+            return View(ishare.GetUA());
         }
 
         public IActionResult AccountsView()
         {
-            return View(_accounts);
+            return View(ishare.GetAccounts());
         }
 
         public IActionResult CreateAccount(string accname, string email, string sec, 
             string dom, string username, string password, string role)
         {
-
             if (ModelState.IsValid)
             {
                 Guid newGuid = Guid.NewGuid();
@@ -94,6 +90,41 @@ namespace DMD_Prototype.Controllers
             }
 
             return RedirectToAction("AccountsView");
+        }
+
+        public ContentResult GetObsoleteDocs()
+        {
+            List<MTIModel> mtis = ishare.GetMTIs().Where(j => j.ObsoleteStat).ToList();
+
+            return Content(JsonConvert.SerializeObject(new { docs = mtis, check = mtis.Count}), "application/json");
+        }
+
+        public ContentResult DeleteObsoleteDocs(string adminName)
+        {
+            List<MTIModel> mtis = ishare.GetMTIs().Where(j => j.ObsoleteStat).ToList();
+
+            string res = "bad";
+
+            if (mtis.Count > 0)
+            {
+                res = "good";
+
+                foreach (var mti in mtis)
+                {
+                    string directory = Path.Combine(ishare.GetPath("mainDir"), mti.DocumentNumber);
+                    if (Directory.Exists(directory))
+                    {
+                        Directory.Delete(directory, true);
+                    }
+
+                    _Db.MTIDb.Remove(mti);
+                }
+
+                ishare.RecordOriginatorAction($"{adminName}, have cleared/deleted all obsolete documents.", adminName, DateTime.Now);
+                _Db.SaveChanges();
+            }           
+
+            return Content(JsonConvert.SerializeObject(new {r = res}), "applicaiton/json");
         }
 
     }

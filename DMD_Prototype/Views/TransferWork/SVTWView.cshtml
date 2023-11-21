@@ -3,9 +3,6 @@
     ViewData["Title"] = "SVTWView";
 }
 
-<script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
-
 <div class="container-fluid">
     <div>
         <table class="table table-hover table-bordered" id="myTable">
@@ -79,27 +76,6 @@
         order: [],
         ordering: false
     });
-
-    //var reqId = '';
-    //var tableBody = document.getElementById('tablebody');
-
-    //function UpdateRequests(){
-    //    tableBody.innerHTML = '';
-
-    //    $.ajax({
-    //        url: '@Url.Action("UpdateRequests", "TransferWork")',
-    //        success: function (r){
-    //            r.r.forEach(function (reqs){
-    //                tableBody.innerHTML += '<tr><td>' + reqs.CurrentTech + '</td><td>' + reqs.Requestor + '</td><td><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmAction" onclick="reqId = \' ' + reqs.ReqId + ' \' ">Actions</button></td></tr>';
-    //            });
-    //            console.log(r);
-    //        }
-    //    });
-    //}
-
-    //UpdateRequests();
-
-    //setInterval(UpdateRequests, 15000);
 
     function ConfirmAction(){
         window.location.href = '@Url.Action("ApproveSessionRequest", "TransferWork")' + '?RSID=' + reqId;

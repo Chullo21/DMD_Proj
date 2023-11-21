@@ -5,6 +5,7 @@ using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OfficeOpenXml;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Metrics;
 using System.Reflection;
 
@@ -141,17 +142,18 @@ namespace DMD_Prototype.Controllers
         public IActionResult InterimDocValidation(int plID, string PLIDStatus, string PLRemarks, string validator)
         {
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plID);
+            string validation = "";
 
             switch (PLIDStatus)
             {
                 case "OPEN":
                     {
-                        pl.IDStatus = "DENIED";
+                        validation = "DENIED";
                         break;
                     }
                 case "CLOSED":
                     {
-                        pl.IDStatus = "CLOSED";
+                        validation = "CLOSED";
                         break;
                     }
                 default:
@@ -161,11 +163,12 @@ namespace DMD_Prototype.Controllers
             }
 
             pl.Validator = validator;
-            pl.PLIDStatus = PLIDStatus;
+            pl.PLIDStatus = validation;
             pl.PLRemarks = PLRemarks;
 
             if (ModelState.IsValid)
             {
+                ishare.RecordOriginatorAction($"{validator}, validated interim doc with problem log Id of {plID} as {validation}.", validator, DateTime.Now);
                 _Db.PLDb.Update(pl);
                 _Db.SaveChanges();
             }
@@ -176,17 +179,18 @@ namespace DMD_Prototype.Controllers
         public IActionResult PermanentDocValidation(int plId, string plStatus, string plRemarks, string validator)
         {
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plId);
+            string validation = "";
 
             switch (plStatus)
             {
                 case "OPEN":
                     {
-                        pl.SDStatus = "DENIED";
+                        validation = "DENIED";
                         break;
                     }
                 case "CLOSED":
                     {
-                        pl.SDStatus = "CLOSED";
+                        validation = "CLOSED";
                         break;
                     }
                 default:
@@ -195,12 +199,13 @@ namespace DMD_Prototype.Controllers
                     }
             }
 
-            pl.PLSDStatus = plStatus;
+            pl.PLSDStatus = validation;
             pl.Validator = validator;
             pl.PLRemarks = plRemarks;
 
             if (ModelState.IsValid)
             {
+                ishare.RecordOriginatorAction($"{validator}, validated permanent doc with problem log Id of {plId} as {validation}.", validator, DateTime.Now);
                 _Db.PLDb.Update(pl);
                 _Db.SaveChanges();
             }
@@ -208,7 +213,7 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("ProblemLogView");
         }
 
-        public IActionResult EditPLValidation(int plid, string rc, string ca, string? interimdoc, string standardizeddoc)
+        public IActionResult EditPLValidation(int plid, string rc, string ca, string? interimdoc, string standardizeddoc, string user)
         {
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plid);
 
@@ -220,9 +225,9 @@ namespace DMD_Prototype.Controllers
             {
                 pl.InterimDoc = interimdoc;
             }
-
             if (ModelState.IsValid)
             {
+                ishare.RecordOriginatorAction($"{user}, edited/updated problem log with PLID of {pl.PLNo}", user, DateTime.Now);
                 _Db.PLDb.Update(pl);
                 _Db.SaveChanges();
             }
@@ -287,6 +292,7 @@ namespace DMD_Prototype.Controllers
 
             if (ModelState.IsValid)
             {
+                ishare.RecordOriginatorAction($"{fromView.Validator}, validated problem log with PLID of {fromView.PLNo} as {fromView.Validation}.", fromView.Validator, DateTime.Now);
                 _Db.PLDb.Update(pl);
                 _Db.SaveChanges();
             }

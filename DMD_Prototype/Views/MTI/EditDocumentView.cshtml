@@ -1,6 +1,10 @@
 ﻿@model MTIModel
 
 @{
+
+    string[] EN = TempData["EN"] as string[];
+    TempData.Keep();
+
     ViewData["Title"] = "Edit Engineering Documents";
 
     List<string>? opls = ViewBag.opl as List<string>;
@@ -22,7 +26,7 @@
 
 </style>
 
-<form asp-controller="MTI" asp-action="EditDocument" enctype="multipart/form-data">
+<form asp-controller="MTI" asp-action="EditDocument" asp-route-user="@EN[0]" enctype="multipart/form-data">
     <div class="card mb-2">
         <div class="card-body d-flex">
             <div class="row w-100 justify-content-lg-around">
@@ -314,8 +318,6 @@
     </div>
 </form>
 
-
-
 <script>
     function ToggleBackgroundColor(button, dir, div) {
         if (button.classList.contains('btn-original')) {
@@ -365,13 +367,6 @@
 </div>
 
 <script>
-    //$(function () {
-    //    $('#viewPdf').click(function (e) {
-    //        $('#deviationModal').modal('hide');
-    //        $('#showPdf').modal('show');
-    //    });
-    //});
-
     function OpenPDF(path)
     {
         $('#deviationModal').modal('hide');

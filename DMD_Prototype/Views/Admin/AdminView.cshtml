@@ -1,33 +1,194 @@
-﻿
+﻿@model IEnumerable<UserActionModel>
 @{
     ViewData["Title"] = "Admin Lounge";
+    string[] EN = TempData["EN"] as string[];
+    TempData.Keep();
 }
 
-@section scripts {
-    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
-    <script>
-        $(document).ready(function () {
-            $('#travtable').DataTable({
-                searching: true,
-                lengthChange: false,
-                pageLength: 7,
-                order: [],
-                ordering: false
-            });
+<script>
+    $(document).ready(function () {
+        $('#actionsTable').DataTable({
+            searching: true,
+            lengthChange: false,
+            pageLength: 7,
+            order: [],
+            ordering: false
         });
-    </script>
-}
+    });
+</script>
 
-<div class="w-100 d-flex">
-    <div class="w-25 bg-dark border-dark border-2 align-self-center">
+<div class="loader" id="loadingIcon"></div>
+<div class="container-fluid d-flex">
+    <div class="w-25 bg-dark border-dark border-2 align-self-center mx-3">
         <marquee class="text-white">
-            Welcome to Admin Lounge, please contact the developer if you have concerns or feedback. Thank you and have a great day! 
+            Welcome to Admin Lounge, please contact the developer if you have concerns or feedback. Thank you and have a great day!
         </marquee>
     </div>
-    <div>
-        <a class="btn btn-primary mx-1" asp-controller="Admin" asp-action="AccountsView">Accounts</a>
+    <div class="d-flex justify-content-start">
+        <button class="btn btn-danger btn-sm d-flex" data-bs-toggle="modal" data-bs-target="#deleteobsoletedocsmodal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-dash-fill my-auto mx-1" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5zM6 6a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1H6z" />
+            </svg>
+            <p class="my-auto">Obsolete Docs</p>
+        </button>
+        @*<button class="btn btn-warning btn-sm mx-3">Originator Actions</button>*@
+        <a class="btn btn-primary mx-1 d-flex" asp-controller="Admin" asp-action="AccountsView">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-rolodex my-auto mx-1" viewBox="0 0 16 16">
+                <path d="M8 9.05a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                <path d="M1 1a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h.5a.5.5 0 0 0 .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h.5a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H6.707L6 1.293A1 1 0 0 0 5.293 1H1Zm0 1h4.293L6 2.707A1 1 0 0 0 6.707 3H15v10h-.085a1.5 1.5 0 0 0-2.4-.63C11.885 11.223 10.554 10 8 10c-2.555 0-3.886 1.224-4.514 2.37a1.5 1.5 0 0 0-2.4.63H1V2Z" />
+            </svg>
+            <p class="my-auto">Accounts</p>
+        </a>
     </div>
-    
 </div>
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-2 border-dark fs-3 text-white bg-primary">
+                    <p class="modal-title fs-5 fw-bold text-center">Actions</p>
+                </div>
+                <div class="card-body" style="height:450px">
+                   <div class="table-responsive">
+                       <table class="table table-hover table-striped" id="actionsTable">
+                           <thead class="table-primary text-center">
+                               <tr>
+                                   <th class="w-25">
+                                       Date
+                                   </th>
+                                   <th>
+                                       Action
+                                   </th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                               @foreach(var entry in Model.OrderByDescending(j => j.Date))
+                                {
+                                    <tr>
+                                        <td>
+                                            @entry.Date
+                                        </td>
+                                        <td>
+                                            @entry.Action
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                       </table>
+                   </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" id="deleteobsoletedocsmodal">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-primary fs-5 fw-bold text-white">
+                Delete Obsolete Docs
+            </div>
+            <div class="modal-body text-center">
+                Continue to see list of obsolete documents
+            </div>
+            <div class="modal-footer">
+                <div class="w-100 d-flex justify-content-between">
+                    <button class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger" onclick="ShowObsoletes()">See Documents</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" id="showObsoletes">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary fs-5 fw-bold text-white">
+                All Obsolete Documents
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>
+                                    Document No.
+                                </th>
+                                <th>
+                                    Description
+                                </th>
+                                <th>
+                                    Document type
+                                </th>
+                                <th>
+                                    Obsolete status
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="obtable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="d-flex justify-content-between w-100">
+                    <button class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-warning" onclick="DeleteObsoletes()">Proceed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function DeleteObsoletes() {
+        $('#deleteobsoletedocsmodal').modal('hide');
+        $('#showObsoletes').modal('hide');
+        $('#loadingIcon').show();
+
+        $.ajax({
+            url: '@Url.Action("DeleteObsoleteDocs", "Admin")',
+            data: {adminName: '@EN[0]'},
+            success: function (r) {
+
+                $('#loadingIcon').hide();
+            }
+        });
+    }
+
+    function ShowObsoletes() {
+        $('#deleteobsoletedocsmodal').modal('hide');
+        $('#loadingIcon').show();
+
+        $.ajax({
+            url: '@Url.Action("GetObsoleteDocs", "Admin")',
+            success: function (r) {
+                if (r.check > 0) {
+                    r.docs.forEach(function (doc) {
+                        var status = 'Not Obsolete';
+                        var statColorSetter = 'bg-danger';
+
+                        if (doc.ObsoleteStat === true) {
+                            status = 'Obsolete';
+                            statColorSetter = 'bg-success';
+                        }
+
+                        document.getElementById('obtable').innerHTML += '<tr><td>' + doc.DocumentNumber + '</td><td>' + doc.AssemblyDesc + '</td><td>' + doc.DocType + '</td><td class="' + statColorSetter + '">' + status + '</td></tr>';
+                    });
+
+                    $('#showObsoletes').modal('show');
+                }
+                else {
+                    alert('There are no obsolete documents.');
+                }
+
+                $('#loadingIcon').hide();
+            }
+        });
+    }
+</script>
+
+
 

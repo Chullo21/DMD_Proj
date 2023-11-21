@@ -49,7 +49,7 @@ namespace DMD_Prototype.Controllers
             return Json(null);
         }
 
-        public IActionResult EditDocumentDetails(MTIModel mti)
+        public IActionResult EditDocumentDetails(MTIModel mti, string user)
         {
             MTIModel tempMTI = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == mti.DocumentNumber);
 
@@ -63,6 +63,10 @@ namespace DMD_Prototype.Controllers
 
             if (ModelState.IsValid)
             {
+                string message = $"{user}, updated details of engineering Document with Doc Number of {mti.DocumentNumber}.";
+                if (mti.ObsoleteStat) message = $"{user}, marked {mti.DocumentNumber} as obsolete.";
+
+                ishare.RecordOriginatorAction(message, user, DateTime.Now);
                 _Db.MTIDb.Update(tempMTI);
                 _Db.SaveChanges();
             }
@@ -71,10 +75,12 @@ namespace DMD_Prototype.Controllers
         }
 
         public IActionResult EditDocument(string docuno,IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
-            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile, List<string> DirsTobeDeleted, char mtpistatus)
+            List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile, List<string> DirsTobeDeleted, char mtpistatus,
+            string user)
         {
 
             var fromDb = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuno);
+            string docs = GetDocNames(mpti != null, drawing != null, bom != null, schema != null, opl.Count, prco.Count, derogation.Count, memo.Count);
 
             MTIModel mod = new MTIModel();
             {
@@ -91,6 +97,8 @@ namespace DMD_Prototype.Controllers
                 CopyMultipleDocs(opl, prco, derogation, memo);
 
                 _Db.MTIDb.Update(mod);
+
+                ishare.RecordOriginatorAction($"{user}, updated the following engineering documents {docs} with Doc Number of {docuno}.", user, DateTime.Now);
                 _Db.SaveChanges();
             }
 
@@ -153,6 +161,30 @@ namespace DMD_Prototype.Controllers
             }
         }
 
+        private string GetDocNames(bool mpti, bool drawing, bool bom, bool schema, int opl, int prco, int derogation, int memo)
+        {
+            string res = "";
+            List<string> listRes = new List<string>();
+
+            if (mpti) listRes.Add("MPI/MTI");
+            if (drawing) listRes.Add("Assembly Drawing");
+            if (bom) listRes.Add("BOM");
+            if (schema) listRes.Add("Schematic Diagram");
+            if (opl > 0) listRes.Add("OPL");
+            if (prco > 0) listRes.Add("PRCO");
+            if (derogation > 0) listRes.Add("Derogation");
+            if (memo > 0) listRes.Add("Engineering Memo");
+
+            foreach (string entry in listRes)
+            {
+                if (res.EndsWith(',')) res += $" {entry},"; else res += entry + ",";
+            }
+
+            if (res.EndsWith(',')) res = res.Substring(0, res.Length - 1);
+
+            return res;
+        }
+
         private List<string>? DeviationDocNames(string DocName, string docNo)
         {
             List<string>? listOfDocs = new List<string>();
@@ -200,6 +232,7 @@ namespace DMD_Prototype.Controllers
                 CreateNewFolder(documentnumber);
                 CopyNoneMultipleDocs(mpti, assemblydrawing, billsofmaterial, schematicdiagram, TravelerFile);
                 CopyMultipleDocs(onepointlesson, prco, derogation, engineeringmemo);
+                ishare.RecordOriginatorAction($"{originator}, uploaded engineering doc/s with Doc Number of {documentnumber}.", originator, DateTime.Now);
 
                 _Db.MTIDb.Add(mti);
                 _Db.SaveChanges();

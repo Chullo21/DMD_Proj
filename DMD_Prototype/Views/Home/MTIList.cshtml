@@ -76,7 +76,16 @@
             <tbody>
                 @foreach (var item in Model.list)
                 {
-                    <tr>
+                    @if(item.ObsoleteStat && accData[1] == "USER")
+                    {
+                        continue;
+                    }
+
+                    string obsolete = "";
+
+                    if (item.ObsoleteStat) obsolete = "table-danger";
+
+                    <tr class="@obsolete">
                         <td>
                             @Html.DisplayFor(modelItem => item.DocumentNumber)
                         </td>
@@ -131,6 +140,7 @@
                                 <script>
                                     function SetDets(doc, assypn, assydesc, rev, after, logDoc, logRev, dtype, obstat)
                                     {
+                                        console.log(obstat);
                                         if (after === 'T')
                                         {
                                             document.getElementById('editDetLogType').innerHTML = 'Test Equipment Log';
@@ -159,7 +169,7 @@
 
                                         var ob = document.getElementById('obsoleteId');
 
-                                        if (obstat){
+                                        if (obstat === 'True'){
                                             ob.value = 'true';
                                             ob.innerHTML = 'Yes';
                                         }
@@ -252,7 +262,7 @@
                 </div>               
                 <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form asp-controller="MTI" asp-action="EditDocumentDetails">
+            <form asp-controller="MTI" asp-action="EditDocumentDetails" asp-route-user="@accData[0]">
             <input name="DocType" value="" id="editDetDocType" hidden required/>
                 <div class="modal-body row">
                     <div class="col-6">
@@ -327,18 +337,14 @@
     </div>
 </div>
 
-@section scripts {
-    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
-    <script>
-        $(document).ready(function () {
-            $('#myTable').DataTable({
-                searching: true,
-                lengthChange: false,
-                pageLength: 7,
-                order: [],
-                ordering: false
-            });
+<script>
+    $(document).ready(function () {
+        $('#myTable').DataTable({
+            searching: true,
+            lengthChange: false,
+            pageLength: 7,
+            order: [],
+            ordering: false
         });
-    </script>
-}
+    });
+</script>

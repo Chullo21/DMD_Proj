@@ -8,22 +8,17 @@
     string containerType = (EN[1] == "ADMIN") ? "container-fluid" : "container";
 }
 
-@section scripts {
-    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
-    <script>
-        $(document).ready(function () {
-            $('#travtable').DataTable({
-                searching: true,
-                lengthChange: false,
-                pageLength: 7,
-                order: [],
-                ordering: false
-            });
+<script>
+    $(document).ready(function () {
+        $('#travtable').DataTable({
+            searching: true,
+            lengthChange: false,
+            pageLength: 7,
+            order: [],
+            ordering: false
         });
-    </script>
-}
-
+    });
+</script>
 
 <div class="container-fluid">
     <div class="table-responsive">

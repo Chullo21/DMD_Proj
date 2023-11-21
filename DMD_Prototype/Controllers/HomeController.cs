@@ -60,9 +60,9 @@ namespace DMD_Prototype.Controllers
         {
             switch (option)
             {
-                case "Accounts":
+                case "Admin":
                     {
-                        return RedirectToAction("AccountsView", "Admin");
+                        return RedirectToAction("AdminView", "Admin");
                     }
                 case "Logout":
                     {

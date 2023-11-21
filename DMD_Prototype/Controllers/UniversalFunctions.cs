@@ -23,6 +23,10 @@ namespace DMD_Prototype.Controllers
         public List<ModuleModel> GetModules();
 
         public List<RequestSessionModel> GetRS();
+
+        public void RecordOriginatorAction(string action, string originator, DateTime date);
+
+        public IEnumerable<UserActionModel> GetUA();
     }
 
     public class UniversalFunctions : Controller, ISharedFunct
@@ -56,6 +60,16 @@ namespace DMD_Prototype.Controllers
         private readonly string prcoName = "PRCO.pdf";
         private readonly string derogationName = "Derogation.pdf";
         private readonly string memoName = "EngineeringMemo.pdf";
+
+        public IEnumerable<UserActionModel> GetUA()
+        {
+            return _Db.UADb;
+        }
+
+        public void RecordOriginatorAction(string action, string originator, DateTime date)
+        {
+            _Db.UADb.Add(new UserActionModel().CreateAction(action, originator, date)); 
+        }
 
         public List<RequestSessionModel> GetRS()
         {

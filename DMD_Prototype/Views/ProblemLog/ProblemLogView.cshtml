@@ -9,21 +9,17 @@
     string sdtcd;
 }
 
-@section scripts {
-    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
-    <script>
-        $(document).ready(function () {
-            $('#plTable').DataTable({
-                searching: true,
-                lengthChange: false,
-                pageLength: 10,
-                order: [],
-                ordering: false
-            });
+<script>
+    $(document).ready(function () {
+        $('#plTable').DataTable({
+            searching: true,
+            lengthChange: false,
+            pageLength: 10,
+            order: [],
+            ordering: false
         });
-    </script>
-}
+    });
+</script>
 <div>
     <div class="container-fluid">
         <div class="d-flex justify-content-between">
@@ -589,7 +585,7 @@
 <div class="modal fade" data-bs-backdrop="static" id="editplvalidationmodal">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <form asp-controller="ProblemLog" asp-action="EditPLValidation">
+            <form asp-controller="ProblemLog" asp-action="EditPLValidation" asp-route-user="@EN[0]">
                 <input id="editplid" name="plid" hidden/>
                 <div class="modal-header bg-primary text-white">
                     <div class="modal-title d-flex">

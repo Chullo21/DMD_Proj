@@ -6,9 +6,6 @@
     TempData.Keep();
 }
 
-<script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" />
-
 <div class="container-fluid">
     <div class="table-responsive">
         <table class="table table-bordered table-hover" id="myTable">
@@ -84,8 +81,6 @@
     
     function TakeWork(str)
     {
-        //console.log(str);
-        //document.getElementById('idGetter').value = str;
         idGetter = str;
         $('#confirmAction').modal('show');
     }
@@ -105,7 +100,6 @@
             </div>
             <div class="modal-body">
                 Are you sure?
-                @*<input value="" id="idGetter"/>*@
             </div>
             <div class="modal-footer">
                 <div class="d-flex justify-content-between w-100">
