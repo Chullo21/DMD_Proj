@@ -91,17 +91,6 @@
 
                                 </span>
                             </a>
-
-                            <script>
-                                window.onload = function (){
-                                    $.ajax({
-                                        url: '@Url.Action("GetRSCount", "Home")',
-                                        success: function (r){
-                                            document.getElementById('rsCount').innerHTML = r.r;
-                                        }
-                                    });
-                                }
-                            </script>
                         }
                         <div class="col">          
                             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#searchDoc">
@@ -199,6 +188,15 @@
     </div>
 
     <script>
+        window.onload = function () {
+            $.ajax({
+                url: '@Url.Action("GetRSCount", "Home")',
+                success: function (r) {
+                    document.getElementById('rsCount').innerHTML = r.r;
+                }
+            });
+        }
+
         $(function (){
             $('#searchForm').submit(function (e){
                 e.preventDefault();

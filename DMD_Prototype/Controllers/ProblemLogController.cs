@@ -163,8 +163,9 @@ namespace DMD_Prototype.Controllers
             }
 
             pl.Validator = validator;
-            pl.PLIDStatus = validation;
+            pl.PLIDStatus = PLIDStatus;
             pl.PLRemarks = PLRemarks;
+            pl.IDStatus = validation;
 
             if (ModelState.IsValid)
             {
@@ -199,9 +200,10 @@ namespace DMD_Prototype.Controllers
                     }
             }
 
-            pl.PLSDStatus = validation;
+            pl.PLSDStatus = plStatus;
             pl.Validator = validator;
             pl.PLRemarks = plRemarks;
+            pl.PLSDStatus = validation;
 
             if (ModelState.IsValid)
             {
@@ -213,18 +215,26 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("ProblemLogView");
         }
 
-        public IActionResult EditPLValidation(int plid, string rc, string ca, string? interimdoc, string standardizeddoc, string user)
+        public IActionResult EditPLValidation(int plid, string rc, string ca, string? interimdoc, string? standardizeddoc, string user)
         {
             ProblemLogModel pl = _plModel.FirstOrDefault(j => j.PLID == plid);
 
             pl.RC = rc;
             pl.CA = ca;            
-            pl.StandardizedDoc = standardizeddoc;
+            
 
             if (pl.PLIDStatus != "CLOSED")
             {
                 pl.InterimDoc = interimdoc;
+                pl.IDStatus = "For Validation";
             }
+
+            if (pl.SDStatus != "CLOSED")
+            {
+                pl.StandardizedDoc = standardizeddoc;
+                pl.SDStatus = "For Validation";
+            }
+
             if (ModelState.IsValid)
             {
                 ishare.RecordOriginatorAction($"{user}, edited/updated problem log with PLID of {pl.PLNo}", user, DateTime.Now);
@@ -258,13 +268,9 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult SubmitPLValidation(ProblemLogModel fromView)
         {
-            string sdVal;
+            string sdVal = "";
 
-            if (fromView.Validation == "Invalid")
-            {
-                sdVal = "";
-            }
-            else
+            if (fromView.Validation == "Valid")
             {
                 sdVal = string.IsNullOrEmpty(fromView.StandardizedDoc) ? "No input" : fromView.StandardizedDoc;
             }
@@ -277,7 +283,7 @@ namespace DMD_Prototype.Controllers
                 pl.CA = fromView.CA;
                 pl.InterimDoc = fromView.InterimDoc;
                 pl.IDTCD = fromView.IDTCD;
-                pl.IDStatus = fromView.Validation == "Valid" ? "For Validation" : "";
+                pl.IDStatus = fromView.Validation == "Valid" ? "OPEN" : "";
                 pl.StandardizedDoc = sdVal;
                 pl.SDTCD = fromView.SDTCD;
                 pl.SDStatus = fromView.Validation == "Valid" ? "OPEN" : "";
@@ -292,7 +298,7 @@ namespace DMD_Prototype.Controllers
 
             if (ModelState.IsValid)
             {
-                ishare.RecordOriginatorAction($"{fromView.Validator}, validated problem log with PLID of {fromView.PLNo} as {fromView.Validation}.", fromView.Validator, DateTime.Now);
+                ishare.RecordOriginatorAction($"{fromView.Validator}, validated problem log with PLID of {pl.PLNo} as {pl.Validation}.", fromView.Validator, DateTime.Now);
                 _Db.PLDb.Update(pl);
                 _Db.SaveChanges();
             }

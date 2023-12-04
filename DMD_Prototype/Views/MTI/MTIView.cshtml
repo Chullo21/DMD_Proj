@@ -967,7 +967,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeproblog"></button>
                 </div>
                 <form asp-controller="Work" asp-action="SubmitProblemLog" asp-route-rDocNumber="@Model.DocumentNumber" id="probForm">
-                    <input value="@Model.DocumentNumber" id="plDocNo" name="docNo" hidden />
+                    @* <input value="@Model.DocumentNumber" id="plDocNo" name="docNo" hidden /> *@
                     <div class="modal-body">
                         <div class="d-flex mb-2">
                             <div class="w-25 d-flex justify-content-between mx-2">
@@ -1059,7 +1059,7 @@
 
                         $('#closeproblog').click();
 
-                        $('#aff').val('');
+                        // $('#aff').val('');
                         $('#pro').val('');
                         $('#doc').val('');
                         $('#de').val('');

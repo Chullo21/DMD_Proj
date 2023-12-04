@@ -14,7 +14,7 @@
         $('#plTable').DataTable({
             searching: true,
             lengthChange: false,
-            pageLength: 10,
+            pageLength: 8,
             order: [],
             ordering: false
         });
@@ -274,18 +274,22 @@
                             <div class="d-flex justify-content-between">
                                 @if (string.IsNullOrEmpty(item.PL.Validation) && (item.Owner == EN[2] || EN[1] == "ADMIN"))
                                 {
-                                    <button class="btn btn-primary" data-bs-toggle="modal" onclick="OpenValidatePL('@item.PL.PLID')">Validate</button>
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" onclick="OpenValidatePL('@item.PL.PLID')">Validate</button>
                                 }
                                 else if ((item.Owner == EN[2] || EN[1] == "ADMIN") && item.PL.Validation == "Valid" && item.PL.PLSDStatus != "CLOSED")
                                 {
-                                    <button class="btn btn-primary" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus')">Update</button>
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus')">Update</button>
                                 }
 
-                                @if (!string.IsNullOrEmpty(item.PL.Validation) && (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN"))
+                                <div class="mx-1">
+
+                                </div>
+
+                                @if (EN[1] == "PL_INTERVENOR" || EN[1] == "ADMIN")
                                 {
-                                    if (item.PL.PLIDStatus == "OPEN" || (item.PL.PLIDStatus == "CLOSED" && item.PL.PLSDStatus == "OPEN" && item.PL.StandardizedDoc != "No input"))
+                                    if (item.PL.PLIDStatus == "OPEN" || item.PL.PLSDStatus == "OPEN")
                                     {
-                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="InterimDocValidation('@item.PL.PLID', '@item.PL.PLIDStatus', '@item.PL.DocNo', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc')">Validate</button>
+                                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#ackmodal" onclick="InterimDocValidation('@item.PL.PLID', '@item.PL.PLIDStatus', '@item.PL.DocNo', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc')">Validate</button>
                                     }                             
                                 }
                             </div>
@@ -525,7 +529,7 @@
                 <div class="modal-body">
                     <div>
                         <div class="d-flex">
-                            <label class="form-label mx-2">Validated by:</label>
+                            <label class="form-label mx-2 my-auto">Validated by:</label>
                             <input class="form-control w-auto text-center" value="@EN[0]" id="validator" readonly required />
                         </div>
                         <div class="d-flex align-items-center my-2 text-nowrap">                          
@@ -651,7 +655,7 @@
 <div class="modal fade" data-bs-backdrop="static" id="validatemodal">
     <div class="modal-dialog modal-lg" style="max-height:600px">
         <div class="modal-content">
-            <form asp-controller="ProblemLog" asp-action="SubmitPLValidation">
+            <form asp-controller="ProblemLog" asp-action="SubmitPLValidation" asp-route-Validator="@EN[0]">
                 <input value="" id="plidVal" name="PLID" hidden/>
                 <div class="modal-header bg-primary text-white">
                     <div class="modal-title d-flex">

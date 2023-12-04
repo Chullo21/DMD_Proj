@@ -8,7 +8,7 @@
 }
 
 <div class="container-fluid row mx-0">   
-    <div class="col-md-8 col-lg-4 mx-auto mb-md-2">       
+    <div class="col-md-12 col-lg-4 mx-auto mb-md-2">       
         <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
             <div class="card-header text-center border-2 border-dark fs-3" style="background-color:#B5AD9A">
                 <p class="modal-title fs-5 fw-bold text-center">Documents Menu</p>
@@ -104,7 +104,7 @@
     </div>
     @if (EN[1] != "USER")
     {
-        <div class="col-md-10 col-lg-4 mb-md-2 mx-auto">
+        <div class="col-md-12 col-lg-4 mb-md-2 mx-auto">
             <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
                 <div class="card-header border-2 border-dark fs-3" style="background-color:#B5AD9A">
                     <p class="modal-title fs-5 fw-bold text-center">Documents Statuses</p>
@@ -138,25 +138,59 @@
             </div>
         </div>
         <div class="flex-column col-md-12 col-lg-4">
-            <div class="card border-2 border-dark mb-2" style="background-color:#E9E4E9">
+            <div class="card border-2 border-dark" style="background-color:#E9E4E9">
                 <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                    <p class="modal-title fs-5 fw-bold text-center">Problem Log Count</p>
+                    <p class="modal-title fs-5 fw-bold text-center">Problem Log</p>
                 </div>
-                <div class="">
-                    <canvas id="problemlognumber"></canvas>
-                </div>
-            </div>
-            <div class="card border-2 border-dark mb-md-5 mb-lg-0" style="background-color:#E9E4E9">
-                <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                    <p class="modal-title fs-5 fw-bold text-center">PL Open and Closed</p>
-                </div>
-                <div class="">
-                    <canvas id="ProblemLogOpenAndClosed"></canvas>
+                <div class="card-body">
+                    <div>
+                        <select class="form-select w-100 fw-bolder" onchange="SelectYear(this.value)" id="plYearSelector">
+                            <option>@DateTime.Now.Year</option>
+                            @for (int i = DateTime.Now.Year - 1; i >= 2022; i--)
+                            {
+                                <option>@i</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="card border-2 border-dark mb-2 mt-2" style="background-color:white">
+                        @* <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
+                    <p class="modal-title fs-6 text-center">Problem Log Count</p>
+                    </div> *@
+                        <div class="">
+                            <canvas id="problemlognumber"></canvas>
+                        </div>
+                    </div>
+                    <div class="card border-2 border-dark mb-md-5 mb-lg-0" style="background-color:white">
+                        @* <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
+                    <p class="modal-title fs-6 text-center">PL Open and Closed</p>
+                    </div> *@
+                        <div class="">
+                            <canvas id="ProblemLogOpenAndClosed"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <script>
+            function SelectYear(year) {
+                GetPLValues(year);
+            }
+
+            var openClosedPL = document.getElementById('ProblemLogOpenAndClosed');
+            var plCount = document.getElementById('problemlognumber');
+
+            var openidpl = '';
+            var closedidpl = '';
+            var opensdpl = '';
+            var closedsdpl = '';
+            var jtp = '';
+            var jlp = '';
+            var olb = '';
+            var pnp = '';
+            var swap = '';
+            var spares = '';
+
             function getMonthsToCurrent() {
                 const months = [
                     'January', 'February', 'March', 'April', 'May', 'June',
@@ -170,143 +204,172 @@
                 return monthsToCurrent;
             }
 
-            document.addEventListener('DOMContentLoaded', function () {
-                var months = getMonthsToCurrent();
+            var months = getMonthsToCurrent();
 
-                var ctx = document.getElementById('ProblemLogOpenAndClosed');
-                var chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: months,
-                        datasets: [
-                            {
-                                label: 'Open Interim',
-                                data: @Model.OpenIDPL,
-                                backgroundColor: '#ffa600',
-                                borderColor: 'black',
-                                borderWidth: 0.5,
-                                pointStyle: 'rect',
-                                stack: '0'
-                            },
-                            {
-                                label: 'Open Standardized',
-                                data: @Model.OpenSDPL,
-                                backgroundColor: '#ef5675',
-                                borderColor: 'black',
-                                borderWidth: 0.5,
-                                pointStyle: 'rect',
-                                stack: '1'
-                            },
-                            {
-                                label: 'Closed Interim',
-                                data: @Model.ClosedIDPL,
-                                backgroundColor: '#7a5195',
-                                borderColor: 'black',
-                                borderWidth: 0.5,
-                                pointStyle: 'rect',
-                                stack: '0'
-                            },
-                            {
-                                label: 'Closed Standardized',
-                                data: @Model.ClosedSDPL,
-                                backgroundColor: '#003f5c',
-                                borderColor: 'black',
-                                borderWidth: 0.5,
-                                pointStyle: 'rect',
-                                stack: '1'
-                            }
-                        ],
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {},
-                                ticks: {
-                                    color: 'black',
-                                    precision: 0
-                                },
-                                title: {
-                                    color: 'black',
-                                    display: true,
-                                    text: ''
-                                },
-                                stacked: true
-                            },
-                            x: {
-                                ticks: {
-                                    color: 'black',
-                                },
-                                stacked: true
-                            }
+            var openClosedChart = new Chart(openClosedPL, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Open Interim',
+                            data: openidpl,
+                            backgroundColor: '#ffa600',
+                            borderColor: 'black',
+                            borderWidth: 0.5,
+                            pointStyle: 'rect',
+                            stack: '0'
                         },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    usePointStyle: true,
-                                },
+                        {
+                            label: 'Open Standardized',
+                            data: opensdpl,
+                            backgroundColor: '#ef5675',
+                            borderColor: 'black',
+                            borderWidth: 0.5,
+                            pointStyle: 'rect',
+                            stack: '1'
+                        },
+                        {
+                            label: 'Closed Interim',
+                            data: closedidpl,
+                            backgroundColor: '#7a5195',
+                            borderColor: 'black',
+                            borderWidth: 0.5,
+                            pointStyle: 'rect',
+                            stack: '0'
+                        },
+                        {
+                            label: 'Closed Standardized',
+                            data: closedsdpl,
+                            backgroundColor: '#003f5c',
+                            borderColor: 'black',
+                            borderWidth: 0.5,
+                            pointStyle: 'rect',
+                            stack: '1'
+                        }
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {},
+                            ticks: {
+                                color: 'black',
+                                precision: 0
+                            },
+                            title: {
+                                color: 'black',
+                                display: true,
+                                text: ''
+                            },
+                            stacked: true
+                        },
+                        x: {
+                            ticks: {
+                                color: 'black',
+                            },
+                            stacked: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                            },
 
+                        }
+                    }
+                }
+            });
+
+            var products = ["JLP", "JTP", "PNP", "OLB", "SWAP", "SPARES"];
+            var bgiv = '';
+            var bgv = '#F57653';
+            
+            var plCountChart = new Chart(plCount, {
+                type: 'bar',
+                data: {
+                    labels: products,
+                    datasets: [
+                        {
+                            label: 'Problem Log Count',
+                            data: [jlp, jtp, pnp, olb, swap, spares],
+                            backgroundColor: '#ffa600',
+                            borderColor: 'black',
+                            borderWidth: .5,
+                            pointStyle: 'rect'
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {},
+                            ticks: {
+                                color: 'black',
+                                precision: 0,
+                                max: Math.max(...[3, 6, 1, 2], ...[3, 6, 1, 2]) + 2,
+                            },
+                            title: {
+                                color: 'black',
+                                display: true,
+                                text: ''
+                            },
+                        },
+                        x: {
+                            ticks: {
+                                color: 'black',
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
                             }
                         }
                     }
-                });
+                }
             });
 
-            document.addEventListener('DOMContentLoaded', function () {
-                var months = ["JLP", "JTP", "PNP", "OLB"];
-                var bgiv = '';
-                var bgv = '#F57653';
+            @* window.onload = function () {
+                GetPLValues('@DateTime.Now.Year');
+            } *@
 
-                var ctx = document.getElementById('problemlognumber');
-                var chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: months,
-                        datasets: [
-                            {
-                                label: 'Problem Log Count',
-                                data: [@Model.JLPVal, @Model.JTPVal, @Model.PNPVal, @Model.OLBVal],
-                                backgroundColor: '#ffa600',
-                                borderColor: 'black',
-                                borderWidth: .5,
-                                pointStyle: 'rect'
-                            },
-                        ],
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {},
-                                ticks: {
-                                    color: 'black',
-                                    precision: 0,
-                                    max: Math.max(...[3, 6, 1, 2], ...[3, 6, 1, 2]) + 2,
-                                },
-                                title: {
-                                    color: 'black',
-                                    display: true,
-                                    text: ''
-                                },
-                            },
-                            x: {
-                                ticks: {
-                                    color: 'black',
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    usePointStyle: true,
-                                }
-                            }
-                        }
+            GetPLValues('@DateTime.Now.Year');
+
+            function GetPLValues(year) {
+                $.ajax({
+                    url: '@Url.Action("GetPLDashboard", "Home")',
+                    data: { year: year },
+                    success: function (r) {
+
+                        openidpl = r.openIDPL;
+                        closedidpl = r.closedIDPL;
+                        opensdpl = r.openSDPL;
+                        closedsdpl = r.closedSDPL;
+                        jtp = r.jtp;
+                        jlp = r.jlp;
+                        olb = r.olb;
+                        pnp = r.pnp;
+                        swap = r.swap;
+                        spares = r.spares
+
+                        openClosedChart.data.datasets[0].data = openidpl;
+                        openClosedChart.data.datasets[1].data = opensdpl;
+                        openClosedChart.data.datasets[2].data = closedidpl;
+                        openClosedChart.data.datasets[3].data = closedsdpl;
+                        openClosedChart.update();
+
+                        plCountChart.data.datasets[0].data = [jlp, jtp, pnp, olb, swap, spares];
+                        plCountChart.update();
                     }
                 });
-            });
+            }
         </script>
     }
     else

@@ -138,7 +138,7 @@ namespace DMD_Prototype.Controllers
 
         public ContentResult GetRSCount()
         {
-            int rsCount = ishare.GetRS().Count();
+            int rsCount = ishare.GetRS().Count;
 
             return Content(JsonConvert.SerializeObject(new {r = rsCount}), "application/json");
         }
@@ -158,24 +158,14 @@ namespace DMD_Prototype.Controllers
         private IndexModel DashboardDetGetter()
         {
             IEnumerable<MTIModel> mtis = ishare.GetMTIs();
-            IEnumerable<ProblemLogModel> pls = ishare.GetProblemLogs();
+            IEnumerable<ProblemLogModel> pls = ishare.GetProblemLogs().Where(j => j.LogDate.Year == DateTime.Now.Year);
 
             IndexModel mod = new IndexModel();
             {
                 mod.ControlledVal =  mtis.Count();               
                 mod.ObsoleteVal = mtis.Count(j => j.ObsoleteStat);
-                mod.JTPVal = pls.Count(j => j.Product == "JTP" && j.Validation == "Valid");
-                mod.JLPVal = pls.Count(j => j.Product == "JLP" && j.Validation == "Valid");
-                mod.OLBVal = pls.Count(j => j.Product == "OLB" && j.Validation == "Valid");
-                mod.PNPVal = pls.Count(j => j.Product == "PNP" && j.Validation == "Valid");
 
                 mod.InterimVal = mtis.Count(j => j.MTPIStatus == 'i');
-
-                mod.OpenIDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLIDStatus == "OPEN" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
-                mod.ClosedIDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLIDStatus == "CLOSED" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
-
-                mod.OpenSDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "OPEN" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
-                mod.ClosedSDPL = JsonConvert.SerializeObject(DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "CLOSED" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList()));
 
                 mod.PNPCount = mtis.Count(j => j.Product == "PNP" && !j.ObsoleteStat);
                 mod.JLPCount = mtis.Count(j => j.Product == "JLP" && !j.ObsoleteStat);
@@ -189,23 +179,33 @@ namespace DMD_Prototype.Controllers
 
             return mod;
         }
+
+        public ContentResult GetPLDashboard(int year)
+        {
+            IEnumerable<ProblemLogModel> pls = ishare.GetProblemLogs().Where(j => j.LogDate.Year == year);
+
+            int JTPVal = pls.Count(j => j.Product == "JTP" && j.Validation == "Valid");
+            int JLPVal = pls.Count(j => j.Product == "JLP" && j.Validation == "Valid");
+            int OLBVal = pls.Count(j => j.Product == "OLB" && j.Validation == "Valid");
+            int PNPVal = pls.Count(j => j.Product == "PNP" && j.Validation == "Valid");
+            int SWAPVal = pls.Count(j => j.Product == "SWAP" && j.Validation == "Valid");
+            int SPARESVal = pls.Count(j => j.Product == "SPARES" && j.Validation == "Valid");
+
+            int[] openIDPL = DataPerMonthGetter(pls.Where(j => j.PLIDStatus == "OPEN" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList());
+            int[] closedIDPL = DataPerMonthGetter(pls.Where(j => j.PLIDStatus == "CLOSED" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList());
+
+            int[] openSDPL = DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "OPEN" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList());
+            int[] closedSDPL = DataPerMonthGetter(pls.Where(j => j.PLSDStatus == "CLOSED" && j.Validation == "Valid").OrderBy(j => j.LogDate).ToList());
+
+            return Content(JsonConvert.SerializeObject(new { openIDPL = openIDPL, closedIDPL = closedIDPL, openSDPL = openSDPL, closedSDPL = closedSDPL, jtp = JTPVal, jlp = JLPVal, olb = OLBVal, pnp = PNPVal, swap = SWAPVal, spares = SPARESVal }), "application/json");
+        }
     }
 
     public class IndexModel
     {
         public int ControlledVal { get; set; }
         public int InterimVal { get; set; }
-        public string OpenIDPL { get; set; }
-        public string ClosedIDPL { get; set; }
-        public string OpenSDPL { get; set; }
-        public string ClosedSDPL { get; set; }
         public int ObsoleteVal { get; set; }
-
-        public int JTPVal { get; set; }
-        public int JLPVal { get; set; }
-        public int PNPVal { get; set; }
-        public int OLBVal { get; set; }
-
         public int PNPCount { get; set; }
         public int JLPCount { get; set; }
         public int JTPCount { get; set; }
