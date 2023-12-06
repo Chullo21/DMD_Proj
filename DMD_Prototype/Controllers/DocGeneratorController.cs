@@ -1,54 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Office.Interop.Excel;
-using OfficeOpenXml;
+using DMDLibrary;
 using System.Reflection;
+using OfficeOpenXml;
 
 namespace DMD_Prototype.Controllers
 {
     public class DocGeneratorController : Controller
-    {        
-        public DocGeneratorController(ISharedFunct shared)
-        {
-            ishare = shared;
-        }
-
+    {
         private readonly ISharedFunct ishare;
+        private COMHandler comHandler;
 
-        private byte[] GetAndConvertExcelFile(string sessionId, string whichFile)
+        public DocGeneratorController(ISharedFunct ishare)
         {
-            string srcDir = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
-
-            string outputDir = Path.Combine(ishare.GetPath("tempDir"), "PDF.pdf");
-
-            Application excelApp = new Application();
-
-            excelApp.Visible = false;
-
-            Workbook workbook = excelApp.Workbooks.Open(srcDir);
-
-            workbook.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, outputDir);
-
-            workbook.Close(false);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
-            excelApp.Quit();
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
-
-            byte[] pdfInBytes = System.IO.File.ReadAllBytes(outputDir);
-
-            System.IO.File.Delete(outputDir);
-
-            return pdfInBytes;
+            this.ishare = ishare;
         }
 
         public IActionResult DownloadExcel(string sessionId, string whichFile)
         {
             string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
 
-            using(ExcelPackage package = new ExcelPackage(filePath))
-            {
-                string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                return File(package.GetAsByteArray(), contentType, $"{sessionId}_{whichFile}.xlsx");
-            }
+            return File(new COMHandler().DownloadExcel(filePath), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }
 
         public IActionResult DownloadTravelerTemplate(string docType)
@@ -64,12 +35,26 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult ViewExcelFile(string sessionId)
         {
-            return File(GetAndConvertExcelFile(sessionId, "userTravName"), "application/pdf");
+            string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath("userTravName"));
+            string tempPath = $"{new COMHandler().GetAndConvertExcelFile(filePath)}.pdf";
+
+            byte[] file = System.IO.File.ReadAllBytes(tempPath);
+
+            System.IO.File.Delete(tempPath);
+
+            return File(file, "application/pdf");
         }
 
         public IActionResult DownloadPdf(string sessionId, string whichFile)
         {
-            return File(GetAndConvertExcelFile(sessionId, whichFile), "application/pdf", $"{sessionId}.pdf");
+            string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
+            string tempPath = $"{new COMHandler().GetAndConvertExcelFile(filePath)}.pdf";
+
+            byte[] file = System.IO.File.ReadAllBytes(tempPath);
+
+            System.IO.File.Delete(tempPath);
+
+            return File(file, "application/pdf", $"{sessionId}.pdf");
         }
 
     }

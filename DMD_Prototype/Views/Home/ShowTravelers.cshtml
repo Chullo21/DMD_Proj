@@ -134,7 +134,11 @@
                                 @if (EN[1] == "ADMIN")
                                 {
                                     <a class="btn text-white btn-sm mx-1" style="background-color:cadetblue" asp-controller="DocGenerator" asp-action="DownloadExcel" asp-route-sessionId="@item.SessionID" asp-route-whichFile="userTravName">T</a>
-                                    <a class="btn text-white btn-sm mx-1" style="background-color:cadetblue" asp-controller="DocGenerator" asp-action="DownloadExcel" asp-route-sessionId="@item.SessionID" asp-route-whichFile="logName">L</a>
+
+                                    @if(item.Status == "Done" && item.LogType != "N")
+                                    {
+                                        <a class="btn text-white btn-sm mx-1" style="background-color:cadetblue" asp-controller="DocGenerator" asp-action="DownloadExcel" asp-route-sessionId="@item.SessionID" asp-route-whichFile="logName">L</a>
+                                    }
                                 }
                             </div>
                         </td>

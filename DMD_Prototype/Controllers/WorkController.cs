@@ -120,7 +120,9 @@ namespace DMD_Prototype.Controllers
         {
             string response = "go";
 
-            if (ishared.GetModules().Any(j => j.Module == module && j.WorkOrder != workOrder))
+            ModuleModel mod = ishared.GetModules().FirstOrDefault(j => j.Module == module && j.WorkOrder != workOrder);
+
+            if (mod != null)
             {
                 return Content(JsonConvert.SerializeObject(new { response = "m" }), "application/json");
             }
