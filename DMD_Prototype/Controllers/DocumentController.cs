@@ -100,15 +100,6 @@ namespace DMD_Prototype.Controllers
 
                 int row = 10;
 
-                //for (int i = 0; i < PN.Length; i++)
-                //{
-                //    ws.Cells[row, 1].Value = PN[i];
-                //    ws.Cells[row, 3].Value = Desc[i];
-                //    ws.Cells[row, 7].Value = Parameter[i];
-
-                //    row += 3;
-                //}
-
                 foreach(string entry in PN)
                 {
                     if (row >= 49)

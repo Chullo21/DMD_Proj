@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using DMDLibrary;
-using System.Reflection;
+﻿using DMDLibrary;
+using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
+using System.Reflection;
 
 namespace DMD_Prototype.Controllers
 {
     public class DocGeneratorController : Controller
     {
         private readonly ISharedFunct ishare;
-        private COMHandler comHandler;
 
         public DocGeneratorController(ISharedFunct ishare)
         {
@@ -31,6 +30,18 @@ namespace DMD_Prototype.Controllers
                 string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                 return File(package.GetAsByteArray(), contentType, $"{docType.ToLower()}_Template.xlsx");
             }
+        }
+
+        public IActionResult ViewTraveler(string docNo)
+        {
+            string filePath = Path.Combine(ishare.GetPath("mainDir"), docNo, ishare.GetPath("travName"));
+            string tempPath = $"{new COMHandler().GetAndConvertExcelFile(filePath)}.pdf";
+
+            byte[] file = System.IO.File.ReadAllBytes(tempPath);
+
+            System.IO.File.Delete(tempPath);
+
+            return File(file, "application/pdf");
         }
 
         public IActionResult ViewExcelFile(string sessionId)

@@ -39,6 +39,8 @@ namespace DMD_Prototype.Controllers
 
             if (acc != null)
             {
+                
+
                 string[] accData = { acc.AccName, acc.Role, acc.UserID };
 
                 TempData["EN"] = null;
@@ -50,9 +52,12 @@ namespace DMD_Prototype.Controllers
                     val = $"?userID={acc.UserID}" + $"&noPW={true}";
                     type = 'a';
                 }
+                else if (ishared.GetRS().Any(j => j.UserId == acc.UserID))
+                {
+                    type = 'd';
+                }
                 else
                 {
-                    //val = Path.Combine("Home", "Index");
                     type = 'b';
                 }
             }

@@ -10,10 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - ATS ENGINEERING</title>
     <link href="~/css/site.css" rel="stylesheet" />
-    <a href="~/lib/jquery/dist/jquery.min.map"></a>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/js/site.js"></script>
     <a href="~/lib/bootstrap/dist/css/bootstrap.min.css.map"></a>
     <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
     <a href="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map"></a>
@@ -83,6 +80,12 @@
                         }
                         else if (response.Type === 'b'){
                             window.location.href = '@Url.Action("Index", "Home")';
+                        }
+                        else if (response.Type === 'd'){
+                            $('#username').val('');
+                            $('#password').val('');
+                            $('#loadingIcon').hide();
+                            alert('You have requested for a session, please wait for a supervisor\'s approval');
                         }
                         else{
                             var f = document.getElementById('loginfailed');
