@@ -20,6 +20,7 @@
         });
     });
 </script>
+<div class="loader" id="loadingIcon"></div>
 <div>
     <div class="container-fluid">
         <div class="d-flex justify-content-between">
@@ -221,7 +222,7 @@
 
                     <tr class="border-1 border-dark @cellbg" data-bs-target="#plDetails" data-bs-toggle="modal" onclick="SetDets('@item.PL.PLNo', '@item.PL.LogDate', '@item.PL.WorkWeek', '@item.PL.AffectedDoc', '@item.PL.PNDN',
 '@item.PL.Desc', '@item.PL.Problem', '@item.PL.Reporter', '@item.PL.Category', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@idtcd', '@item.PL.IDStatus', '@item.PL.StandardizedDoc', '@sdtcd', '@item.PL.SDStatus',
-'@item.PL.Validator', '@item.PL.PLIDStatus', '@item.PL.PLSDStatus', '@item.PL.PLRemarks', '@item.PL.OwnerRemarks')">
+'@item.PL.Validator', '@item.PL.PLIDStatus', '@item.PL.PLSDStatus', '@item.PL.PLRemarks', '@item.PL.OwnerRemarks', '@item.PL.Validation')">
 
                         <td class="border-1 border-dark">
                             @Html.DisplayFor(modelItem => item.PL.PLNo)
@@ -280,7 +281,7 @@
                                 }
                                 else if ((item.Owner == EN[2] || EN[1] == "ADMIN") && item.PL.Validation == "Valid" && item.PL.PLSDStatus != "CLOSED")
                                 {
-                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus')">Update</button>
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus', '@item.PL.DocNo')">Update</button>
                                 }
 
                                 <div class="mx-1">
@@ -353,7 +354,7 @@
         
     }
 
-    function EditValidation(plid, val, rc, ca, id, sd, idStat) {
+    function EditValidation(plid, val, rc, ca, id, sd, idStat, docno) {
         $('#editplvalidationmodal').modal('show');
         $('#editplid').val(plid);
         $('#editrc').val(rc);
@@ -364,10 +365,13 @@
             $('#editinterim').val(id);           
         }
         else{
-            document.getElementById('editinterim').removeAttribute('required');
+            document.getElementById('editinterimdoc').removeAttribute('required');
             document.getElementById('editinterimDiv').style.display = 'none';
         }
-        
+
+        docNumber = docno;
+        console.log(docno);
+        console.log(docNumber);
     }
 
     function OpenValidatePL(plid) {
@@ -425,7 +429,7 @@
         }
     }
 
-    function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rcc, caa, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem, orem)
+    function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rcc, caa, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem, orem, validation)
     {
 
         document.getElementById('plno').innerHTML = pl;
@@ -466,6 +470,16 @@
         }
         else {
             document.getElementById('showdetValDiv').style.display = 'block';
+        }
+
+        if(validation === 'Invalid'){
+            document.getElementById('caandrc').setAttribute('hidden', '');       
+        }
+        else if(validation === ""){
+            document.getElementById('caandrc').setAttribute('hidden', '');
+        }
+        else{
+            document.getElementById('caandrc').removeAttribute('hidden');
         }
     }
 
@@ -624,7 +638,10 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <input class="btn btn-primary" type="submit" />
+                    <div class="w-100 d-flex justify-content-between">
+                        <button class="btn btn-warning" type="button" onclick="EditDoc()">Update Document</button>
+                        <input class="btn btn-primary" type="submit" />
+                    </div>
                 </div>
             </form>
         </div>
@@ -632,6 +649,10 @@
 </div>
 
 <script>
+    function EditDoc(){
+        window.location.href = '@Url.Action("EditDocumentView","MTI")' + '?docuNo=' + docNumber;
+    }
+
     $(document).ready(function () {
         $('#selectCat').change(function () {
             var selectedValue = $(this).val();
@@ -728,7 +749,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary">Submit</button>
+                    <button class="btn btn-primary" type="submit" onclick="document.getElementById('loadingIcon').style.display = 'block'; $('#validatemodal').modal('hide')">Submit</button>
                 </div>
             </form>
         </div>
@@ -744,7 +765,7 @@
             </div>
             <div class="modal-body">
                 <div>
-                    <div>
+                    <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead class="table-success">
                                 <tr>
@@ -791,11 +812,13 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="my-2 text-start">
-                        <label class="form-label fw-bold">Problem</label>
-                        <textarea id="prob" class="form-control border-dark" style="max-height:100px; min-height:50px" readonly></textarea>
+                    <div class="text-start w-100 mb-3">
+                        <label class="form-label fw-bold w-100 text-center">Problem</label>
+                        <div class="w-100 d-flex justify-content-center">
+                            <textarea id="prob" class="form-control border-dark w-75" style="max-height:100px; min-height:50px" readonly></textarea>
+                        </div>
                     </div>
-                    <div id="showdetCatDiv">
+                    <div id="showdetCatDiv" class="table-responsive">
                         <table class="table table-bordered">
                             <thead class="table-warning">
                                 <tr>
@@ -843,20 +866,21 @@
                         </table>
                     </div>
                     <div class="text-start my-2">
-                        <div class="d-flex w-100">
-                            <div class="w-50">
-                                <label class="form-label fw-bold">Root Cause</label>
+                        <div class="row" id="caandrc">
+                            <div class="col-6">
+                                <label class="form-label fw-bold w-100 text-center">Root Cause</label>
                                 <textarea id="rc" class="form-control border-dark" style="max-height:100px; min-height:50px" readonly></textarea>
                             </div>
-                            <div class="mx-2"></div>
-                            <div class="w-50">
-                                <label class="form-label fw-bold">Corrective Action</label>
+                            <div class="col-6">
+                                <label class="form-label fw-bold w-100 text-center">Corrective Action</label>
                                 <textarea id="ca" class="form-control border-dark" style="max-height:100px; min-height:50px" readonly></textarea>
                             </div>
                         </div>
                         <div>
-                            <label class="form-label fw-bold">Originator's Remarks</label>
-                            <textarea id="oRem" class="form-control border-dark" style="max-height:100px; min-height:50px" readonly></textarea>
+                            <label class="form-label fw-bold w-100 text-center">Originator's Remarks</label>
+                            <div class="d-flex w-100 justify-content-center">
+                                <textarea id="oRem" class="form-control border-dark w-75" style="max-height:100px; min-height:50px" readonly></textarea>
+                            </div>
                         </div>
                     </div>
                     <div id="showdetValDiv">

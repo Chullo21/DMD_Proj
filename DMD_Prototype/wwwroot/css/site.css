@@ -29,16 +29,16 @@ body {
     position: fixed;
     bottom: 0;
     width: 100%;
-    height: 4%;
+    height: 3vh;
     background-color: blue;
     border-top: 2px solid;
 }
 
-.header-nav {
-    position: fixed;
+/*.header-nav {
+    position: sticky;
     top: 0;
     width: 100%;
-}
+}*/
 
 .loginbg {
     background-image: url('../pimesbg6.jpg');

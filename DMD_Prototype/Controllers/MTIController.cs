@@ -1,10 +1,7 @@
 ﻿using DMD_Prototype.Data;
-using DMD_Prototype.Data;
 using Microsoft.AspNetCore.Mvc;
 using DMD_Prototype.Models;
-using OfficeOpenXml;
 using Microsoft.CodeAnalysis;
-using System.Linq;
 using Newtonsoft.Json;
 
 namespace DMD_Prototype.Controllers
@@ -76,7 +73,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult EditDocument(string docuno,IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
             List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile, List<string> DirsTobeDeleted, char mtpistatus,
-            string user)
+            string user, string revNo)
         {
 
             var fromDb = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuno);
@@ -86,6 +83,7 @@ namespace DMD_Prototype.Controllers
             {
                 mod = fromDb;
                 mod.MTPIStatus = mtpistatus;
+                mod.RevNo = revNo;
             }
 
             if (ModelState.IsValid)
@@ -190,11 +188,14 @@ namespace DMD_Prototype.Controllers
             List<string>? listOfDocs = new List<string>();
             string folderPath = Path.Combine(ishare.GetPath("mainDir"), docNo);
 
-            foreach (string docs in Directory.GetFiles(folderPath))
+            if (Directory.GetFiles(folderPath).Count() > 0)
             {
-                string FileNameOnly = Path.GetFileNameWithoutExtension(docs);
-                
-                if (docs.Contains(Path.GetFileNameWithoutExtension(DocName))) listOfDocs.Add(FileNameOnly);
+                foreach (string docs in Directory.GetFiles(folderPath))
+                {
+                    string FileNameOnly = Path.GetFileNameWithoutExtension(docs);
+
+                    if (docs.Contains(Path.GetFileNameWithoutExtension(DocName))) listOfDocs.Add(FileNameOnly);
+                }
             }
 
             return listOfDocs;
@@ -213,7 +214,7 @@ namespace DMD_Prototype.Controllers
 
             MTIModel mti = new MTIModel();
             {
-                mti.DocumentNumber = documentnumber;
+                mti.DocumentNumber = documentnumber.ToUpper();
                 mti.AssemblyPN = assynumber;
                 mti.AssemblyDesc = assydesc;
                 mti.RevNo = revnumber;

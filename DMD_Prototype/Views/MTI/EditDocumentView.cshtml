@@ -47,7 +47,7 @@
                     </div>
                     <div class="d-sm-flex d-lg-flex col-sm-12 col-lg-6">
                         <label class="form-label text-nowrap my-auto mx-2">Revision #:</label>
-                        <input class="form-control" value="@Model.RevNo" readonly />
+                        <input class="form-control" value="@Model.RevNo" id="revNo" name="revNo" readonly />
                     </div>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                             <div class="flex-column">                              
                                 <div class="d-flex">
                                     <label class="w-100 text-nowrap mt-auto">MPI/MTI: </label>
-                                    <select class="form-select" name="mtpistatus">
+                                    <select class="form-select" name="mtpistatus" onchange="DocStatChange(this.value)">
                                         @{
                                             string currentStatus = Model.MTPIStatus == 'c' ? "Controlled" : "Interim";
 
@@ -165,6 +165,22 @@
     </div>
 
     <script>
+        window.onload = DocStatChange('@Model.MTPIStatus');
+
+        function DocStatChange(str) {
+            var RevNo = document.getElementById('revNo');
+            if (str === 'c'){
+                RevNo.setAttribute('required', '');
+                RevNo.removeAttribute('readonly');
+                RevNo.placeholder = RevNo.value;
+                RevNo.value = '';               
+            }
+            else{
+                RevNo.setAttribute('readonly', '');
+                RevNo.value = '@Model.RevNo';
+            }
+        }
+
         function SelectWhichDev(dev)
         {
             switch (dev)
@@ -235,15 +251,15 @@
                                 {
                                     string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                                    <div class="d-flex justify-content-between my-2">
-                                        <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
-                                            @{
+                                        <div class="d-flex justify-content-between my-2">
+                                            <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
+                                                @{
                                                 Write(counter.ToString());
-                                            }
-                                        </button>
+                                                }
+                                            </button>
 
-                                        <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'oplDiv')">Delete</button>
-                                    </div>
+                                            <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'oplDiv')">Delete</button>
+                                        </div>
                                     counter++;
                                 }
                             }
@@ -256,15 +272,15 @@
                                 {
                                     string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                                    <div class="d-flex justify-content-between my-2">
-                                        <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
-                                            @{
+                                        <div class="d-flex justify-content-between my-2">
+                                            <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
+                                                @{
                                                 Write(counter.ToString());
-                                            }
-                                        </button>
+                                                }
+                                            </button>
 
-                                        <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'derogDiv')">Delete</button>
-                                    </div>
+                                            <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'derogDiv')">Delete</button>
+                                        </div>
                                     counter++;
                                 }
                             }
@@ -277,15 +293,15 @@
                                 {
                                     string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                                    <div class="d-flex justify-content-between my-2">
-                                        <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
-                                            @{
+                                        <div class="d-flex justify-content-between my-2">
+                                            <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
+                                                @{
                                                 Write(counter.ToString());
-                                            }
-                                        </button>
+                                                }
+                                            </button>
 
-                                        <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'prcoDiv')">Delete</button>
-                                    </div>
+                                            <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'prcoDiv')">Delete</button>
+                                        </div>
                                     counter++;
                                 }
                             }
@@ -298,15 +314,15 @@
                                 {
                                     string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                                    <div class="d-flex justify-content-between my-2">
-                                        <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
-                                            @{
+                                        <div class="d-flex justify-content-between my-2">
+                                            <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
+                                                @{
                                                 Write(counter.ToString());
-                                            }
-                                        </button>
+                                                }
+                                            </button>
 
-                                        <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'memoDiv')">Delete</button>
-                                    </div>
+                                            <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'memoDiv')">Delete</button>
+                                        </div>
                                     counter++;
                                 }
                             }

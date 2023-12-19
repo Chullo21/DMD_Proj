@@ -29,6 +29,7 @@ namespace DMD_Prototype.Controllers
             return View("Loginpage");
         }
 
+        [HttpPost]
         public ContentResult TryLogin(string user, string pass)
         {
             AccountModel? acc = ishared.GetAccounts().FirstOrDefault(j => j.Username == user && j.Password == pass);
@@ -39,8 +40,6 @@ namespace DMD_Prototype.Controllers
 
             if (acc != null)
             {
-                
-
                 string[] accData = { acc.AccName, acc.Role, acc.UserID };
 
                 TempData["EN"] = null;

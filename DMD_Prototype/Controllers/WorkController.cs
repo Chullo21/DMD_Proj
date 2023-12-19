@@ -3,6 +3,8 @@ using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OfficeOpenXml;
+using System.Net.Mail;
+using System.Net;
 using System.Reflection;
 
 namespace DMD_Prototype.Controllers
@@ -116,6 +118,18 @@ namespace DMD_Prototype.Controllers
             }
         }
 
+        public IActionResult HoldSession(string sessionID)
+        {
+            StartWorkModel sw = ishared.GetStartWork().FirstOrDefault(j => j.SessionID == sessionID);
+
+            sw.UserID = string.Empty;
+
+            _Db.StartWorkDb.Update(sw);
+            _Db.SaveChanges();
+
+            return RedirectToAction("Index", "Home");
+        }
+
         public ContentResult ValidateModule(string module, string serialNo, string workOrder)
         {
             string response = "go";
@@ -156,10 +170,10 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("LoginPage", "Login");
         }
 
-        public IActionResult SubmitTraveler(SubmitTravMod input)
-        {
-            return RedirectToAction();
-        }
+        //public IActionResult SubmitTraveler(SubmitTravMod input)
+        //{
+        //    return RedirectToAction();
+        //}
 
         public IActionResult ContinueWork(string userID, bool noPW)
         {
@@ -451,10 +465,11 @@ namespace DMD_Prototype.Controllers
             return Content(jsonData, "application/json");
         }
 
-        [HttpPost]
         public ContentResult SubmitProblemLog(string wweek, string affected, string docno,
             string desc, string probcon, string reportedby, string product, string rDocNumber)
         {
+            AccountModel origModel = ishared.GetAccounts().FirstOrDefault(j => j.UserID == ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == rDocNumber).OriginatorName);
+            string origEmail = $"{origModel.Email}{origModel.Sec}{origModel.Dom}";
 
             if (ModelState.IsValid)
             {
@@ -463,8 +478,22 @@ namespace DMD_Prototype.Controllers
                 _Db.SaveChanges();
             }
 
-            string jsonData = JsonConvert.SerializeObject("Success");
+            if (!string.IsNullOrEmpty(origEmail))
+            {
+                string subject = "New Problem Log";
+                string body = $"Good day!\r\nYou have received a problem log from a technician. Refer below:\r\n\r\nWork week: {wweek}\r\nAffected Document: {affected}\r\nDocument Number: {rDocNumber}\r\nDescription: {desc}\r\nProblem Description: {probcon}\r\nReporter: {reportedby}\r\nProduct: {product}" +
+                    "\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a great day!";
+
+                SendEmail(origEmail, subject, body);
+            }
+
+            string jsonData = JsonConvert.SerializeObject(new {response = "Success"});
             return Content(jsonData, "application/json");
+        }
+
+        private void SendEmail(string origEmail, string subject, string body)
+        {
+            ishared.SendEmailNotification(origEmail, subject, body);
         }
 
         private string SetSeries(string seriesPrimary)

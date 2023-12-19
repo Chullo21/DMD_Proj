@@ -9,7 +9,7 @@
 
 <div class="container-fluid row mx-0">   
     <div class="col-md-12 col-lg-4 mx-auto mb-md-2">       
-        <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
+        <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9; min-height: 80vh">
             <div class="card-header text-center border-2 border-dark fs-3" style="background-color:#B5AD9A">
                 <p class="modal-title fs-5 fw-bold text-center">Documents Menu</p>
             </div>
@@ -105,40 +105,42 @@
     @if (EN[1] != "USER")
     {
         <div class="col-md-12 col-lg-4 mb-md-2 mx-auto">
-            <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
+            <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9; min-height: 80vh">
                 <div class="card-header border-2 border-dark fs-3" style="background-color:#B5AD9A">
                     <p class="modal-title fs-5 fw-bold text-center">Documents Statuses</p>
                 </div>
-                <div class="card-body flex-column">
-                    <div class="card border-2 border-dark">
-                        <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                            <p class="card-title text-center fs-6 fw-bold text-white">Uploaded Documents</p>
+                <div class="card-body">
+                    <div class="d-flex flex-column h-100 justify-content-evenly">
+                        <div class="card border-2 border-dark">
+                            <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                                <p class="card-title text-center fs-6 fw-bold text-white">Uploaded Documents</p>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-center fw-bold fs-1">@Model.ControlledVal</p>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <p class="text-center fw-bold fs-1">@Model.ControlledVal</p>
+                        <div class="card border-2 border-dark">
+                            <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                                <p class="card-title text-center fs-6 fw-bold text-white">Interim Documents</p>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-center fw-bold fs-1">@Model.InterimVal</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card border-2 border-dark my-2">
-                        <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                            <p class="card-title text-center fs-6 fw-bold text-white">Interim Documents</p>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-center fw-bold fs-1">@Model.InterimVal</p>
-                        </div>
-                    </div>
-                    <div class="card border-2 border-dark">
-                        <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
-                            <p class="card-title text-center fs-6 fw-bold text-white">Obsolete Documents</p>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-center fw-bold fs-1">@Model.ObsoleteVal</p>
+                        <div class="card border-2 border-dark">
+                            <div class="card-header border-2 border-dark" style="background-color:darkslateblue">
+                                <p class="card-title text-center fs-6 fw-bold text-white">Obsolete Documents</p>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-center fw-bold fs-1">@Model.ObsoleteVal</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="flex-column col-md-12 col-lg-4">
-            <div class="card border-2 border-dark" style="background-color:#E9E4E9">
+            <div class="card border-2 border-dark" style="background-color:#E9E4E9; min-height: 80vh">
                 <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
                     <p class="modal-title fs-5 fw-bold text-center">Problem Log</p>
                 </div>
@@ -152,20 +154,16 @@
                             }
                         </select>
                     </div>
-                    <div class="card border-2 border-dark mb-2 mt-2" style="background-color:white">
-                        @* <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                    <p class="modal-title fs-6 text-center">Problem Log Count</p>
-                    </div> *@
-                        <div class="">
-                            <canvas id="problemlognumber"></canvas>
+                    <div class="d-flex flex-column h-100 justify-content-evenly">
+                        <div class="card border-2 border-dark mb-2 mt-2" style="background-color:white">
+                            <div class="" style="min-height: 50%">
+                                <canvas id="problemlognumber"></canvas>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card border-2 border-dark mb-md-5 mb-lg-0" style="background-color:white">
-                        @* <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
-                    <p class="modal-title fs-6 text-center">PL Open and Closed</p>
-                    </div> *@
-                        <div class="">
-                            <canvas id="ProblemLogOpenAndClosed"></canvas>
+                        <div class="card border-2 border-dark mb-md-5 mb-lg-0" style="background-color:white">
+                            <div class="" style="min-height: 50%">
+                                <canvas id="ProblemLogOpenAndClosed"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>

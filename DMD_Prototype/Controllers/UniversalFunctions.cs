@@ -1,6 +1,8 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Net.Mail;
 
 namespace DMD_Prototype.Controllers
 {   
@@ -27,6 +29,10 @@ namespace DMD_Prototype.Controllers
         public void RecordOriginatorAction(string action, string originator, DateTime date);
 
         public IEnumerable<UserActionModel> GetUA();
+
+        public void SendEmailNotification(List<string> receivers, string subject, string body);
+
+        public void SendEmailNotification(string receiver, string subject, string body);
     }
 
     public class UniversalFunctions : Controller, ISharedFunct
@@ -38,9 +44,17 @@ namespace DMD_Prototype.Controllers
 
         private readonly AppDbContext _Db;
 
-        private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
-        private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
-        private readonly string tempDir = "D:\\jtoledo\\Desktop\\TempFiles";
+        //private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
+        //private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
+        //private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
+
+        private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
+        private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
+        private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
+
+        //private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
+        //private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
+        //private readonly string tempDir = "D:\\jtoledo\\Desktop\\TempFiles";
 
         //private readonly string userDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Sessions";
         //private readonly string mainDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Documents";
@@ -188,6 +202,62 @@ namespace DMD_Prototype.Controllers
             fs.CopyTo(ms);
 
             return File(ms.ToArray(), "application/pdf");
+        }
+
+        public void SendEmailNotification(List<string> receivers, string subject, string body)
+        {
+            EmailModel dmdEmail = new EmailModel().SecondEmailAccount();
+
+            SmtpClient client = new SmtpClient();
+            client.Host = "smtp.gmail.com";
+            client.Port = 587;
+            client.UseDefaultCredentials = false;
+            client.Credentials = new NetworkCredential(dmdEmail.Email, dmdEmail.Password);
+            client.EnableSsl = true;
+
+            MailMessage mail = new();
+
+            mail.From = new MailAddress(dmdEmail.Email);
+            mail.Subject = subject;
+            mail.Body = body;
+
+            foreach(string receiver in receivers.Where(j => j != ""))
+            {
+                mail.To.Add(receiver);
+            }
+
+            if (mail.To.Count > 0 && mail.To != null)
+            {
+                client.Send(mail);
+            }
+        }
+
+        public void SendEmailNotification(string receiver, string subject, string body)
+        {
+            EmailModel dmdEmail = new EmailModel().FirstEmailAccount();
+
+            SmtpClient client = new SmtpClient();
+            client.Host = "smtp.gmail.com";
+            client.Port = 587;
+            client.UseDefaultCredentials = false;
+            client.Credentials = new NetworkCredential(dmdEmail.Email, dmdEmail.Password);
+            client.EnableSsl = true;
+
+            MailMessage mail = new();
+
+            mail.From = new MailAddress(dmdEmail.Email);
+            mail.Subject = subject;
+            mail.Body = body;
+
+            if (!string.IsNullOrEmpty(receiver))
+            {
+                mail.To.Add(receiver);                
+            }
+            
+            if (mail.To.Count > 0)
+            {
+                client.Send(mail);
+            }
         }
     }
 

@@ -151,7 +151,7 @@ namespace DMD_Prototype.Controllers
 
             if (sw != null)
             {
-                sw.UserID = "";
+                sw.UserID = string.Empty;
                 _Db.StartWorkDb.Update(sw);
             }
         }

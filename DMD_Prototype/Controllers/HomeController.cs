@@ -136,11 +136,12 @@ namespace DMD_Prototype.Controllers
             return Content(JsonConvert.SerializeObject(new {r = docs}), "application/json");
         }
 
-        public ContentResult GetRSCount()
+        public ContentResult GetSessionsCount()
         {
             int rsCount = ishare.GetRS().Count;
+            int usCount = ishare.GetStartWork().Count(j => j.FinishDate == null);
 
-            return Content(JsonConvert.SerializeObject(new {r = rsCount}), "application/json");
+            return Content(JsonConvert.SerializeObject(new {r = rsCount, usCount = usCount}), "application/json");
         }
 
         private int[] DataPerMonthGetter(List<ProblemLogModel> list)

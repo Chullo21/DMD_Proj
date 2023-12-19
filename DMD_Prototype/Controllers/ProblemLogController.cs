@@ -35,6 +35,29 @@ namespace DMD_Prototype.Controllers
             return EN;
         }
 
+        private List<string> GetPLEmails()
+        {
+           List<string> listOfPlEmails = new List<string>();
+           IEnumerable<AccountModel> plAccounts = ishare.GetAccounts().Where(j => j.Role == "PL_INTERVENOR");
+
+            foreach (var pls in plAccounts)
+            {
+                if (!string.IsNullOrEmpty(pls.Email) && !string.IsNullOrEmpty(pls.Sec) && !string.IsNullOrEmpty(pls.Dom))
+                {
+                    listOfPlEmails.Add($"{pls.Email}{pls.Sec}{pls.Dom}");
+                }
+            }
+
+            return listOfPlEmails;
+        }
+
+        private void SendEmailNotificationToPLs(string plNo)
+        {
+            string subject = "Valid Problem Log";
+            string body = $"Good day!\r\nAn Originator have validated a problem log with PL number of {plNo} as valid.\r\nPlease refer to our DMD Portal to process this.\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a nice day";
+            ishare.SendEmailNotification(GetPLEmails(), subject, body);
+        }
+
         private Stream GetProblemLogTemplate()
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -303,6 +326,11 @@ namespace DMD_Prototype.Controllers
                 _Db.SaveChanges();
             }
 
+            if (fromView.Validation == "Valid")
+            {
+                SendEmailNotificationToPLs(pl.PLNo);
+            }
+
             return RedirectToAction("ProblemLogView");
         }
 
@@ -384,5 +412,12 @@ namespace DMD_Prototype.Controllers
     {
         public ProblemLogModel PL { get; set; }
         public string Owner { get; set; }
+    }
+
+    public class PLEmails
+    {
+        public string Email { get; set; }
+        public string Sec { get; set; }
+        public string Dom { get; set; }
     }
 }

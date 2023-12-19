@@ -54,7 +54,14 @@
                             @line.SerialNo
                         </td>
                         <td>
-                            @line.CurrentTech
+                            @if (string.IsNullOrEmpty(line.CurrentTech))
+                            {
+                                <p>On-Hold</p>
+                            }
+                            else
+                            {
+                                @line.CurrentTech
+                            }
                         </td>
                         <td>
                             @if(EN[1] == "USER")

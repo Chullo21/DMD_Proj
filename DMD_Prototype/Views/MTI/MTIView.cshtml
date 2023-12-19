@@ -44,10 +44,11 @@
     </style>
 </head>
 <body>
+    <div class="loader" id="loadingIcon"></div>
     <div class="container-fluid position-absolute" style="z-index:2001">
         <div class="w-100">
             <div class="row bg-primary" style="height:8vh">
-                <div class="col-2 align-self-center d-flex justify-content-around">
+                <div class="col-md-2 align-self-center d-flex justify-content-around">
                     @if (!Model.WorkingStat)
                     {
                         <a class="btn btn-secondary mx-1" asp-controller="Home" asp-action="Index">
@@ -110,7 +111,7 @@
                     }
                     else
                     {
-                        <button class="btn fw-bold text-white" onclick="" id="twbtn" style="background-color: red">Switch Work</button>
+                        <button class="btn fw-bold text-white" onclick="" id="twbtn" style="background-color: red">Session</button>
                         <button class="btn bg-warning fw-bold" onclick="GetTravProgress('readonly')">Progress</button>
                     }
                 </div>
@@ -233,14 +234,17 @@
     </script>
 
     <div class="modal fade" data-bs-backdrop="static" id="twmodal" style="z-index:2002">
-        <div class="modal-dialog modal-fullscreen">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-primary">
                     <p class="fw-bold fs-5 modal-title text-white">On-Going and Pending sessions</p>
                     <button class="btn-close" data-bs-dismiss="modal" onclick="$('#twpartialhere').html('');"></button>
                 </div>
-                <div class="modal-body" id="twpartialhere">
+                <div class="modal-body" id="twpartialhere" style="height:75vh">
 
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-danger" asp-controller="Work" asp-action="HoldSession" asp-route-sessionID="@Model.SessionID">Hold Session</a>
                 </div>
             </div>
         </div>
@@ -333,7 +337,7 @@
                             }
 
                             if (line.isMerge === true){
-                                editprogbody.innerHTML += '<tr><td><input name="Step" class="form-control" value="' + line.Step + '" readonly /></td><td><textarea name="Instruction" class="form-control" readonly>' + line.Instruction + '</textarea></td><td><input name="SinglePara" class="form-control" value="' + line.SinglePara + '" ' + sub + ' /><input name="isMerge" value="' + line.isMerge + '" hidden /><input name="FirstThreePara" value="" hidden/><input name="SecondThreePara" value="" hidden/><input name="ThirdThreePara" value="" hidden/></td></tr>';
+                                editprogbody.innerHTML += '<tr><td><input name="Step" class="form-control" value="' + line.Step + '" readonly /></td><td><textarea name="Instruction" class="form-control" readonly>' + line.Instruction + '</textarea></td><td><input name="SinglePara" placeholder="Required" class="form-control" value="' + line.SinglePara + '" ' + sub + ' /><input name="isMerge" value="' + line.isMerge + '" hidden /><input name="FirstThreePara" value="" hidden/><input name="SecondThreePara" value="" hidden/><input name="ThirdThreePara" value="" hidden/></td></tr>';
                             }
                             else{
                                 editprogbody.innerHTML += '<tr><td><input name="Step" class="form-control" value="' + line.Step + '" readonly /></td><td><textarea name="Instruction" class="form-control" readonly>' + line.Instruction + '</textarea></td><td><div class="d-flex"><input name="FirstThreePara" class="form-control" value="' + line.FirstThreePara + '" ' + sub + ' /><input name="SecondThreePara" class="form-control" value="' + line.SecondThreePara + '" ' + sub + ' /><input name="ThirdThreePara" class="form-control" value="' + line.ThirdThreePara + '" ' + sub + ' /></div><input name="isMerge" value="' + line.isMerge + '" hidden /></td> <input name="SinglePara" value="" hidden/></tr>';
@@ -576,13 +580,13 @@
                                         <div>
                                             <div style="display:none" id="three" class="w-100">
                                                 <div class="d-flex">
-                                                    <input class="form-control w-100" id="firstParaid" placeholder="box 1" autocomplete="off"/>
+                                                    <input class="form-control w-100" id="firstParaid" value="" placeholder="box 1" autocomplete="off"/>
                                                     <input class="form-control w-100" id="secParaid" placeholder="box 2" autocomplete="off" />
                                                     <input class="form-control w-100" id="thirdParaid" placeholder="box 3" autocomplete="off" />
                                                 </div>
                                             </div>
                                             <div style="display:none" id="single" class="w-100">
-                                                <input class="form-control w-100" id="singleParaid" autocomplete="off" />
+                                                <input class="form-control w-100" id="singleParaid" placeholder="Required" autocomplete="off" />
                                                 <div class="h-100">
                                                     @if (Model.DocType == "MPI")
                                                     {
@@ -610,10 +614,9 @@
                     {
                         Write("You are currently viewing the document, click start to start working. Thank you!");
                     }
-                    else
-                    {
-                        <input type="submit" class="btn btn-primary" id="submittravbtn" />
-                    }
+
+                    <input type="submit" class="btn btn-primary" id="submittravbtn" style="display:none"/>
+
                 </div>
             </form>
         </div>
@@ -673,6 +676,79 @@
     </div>
 
     <script>
+        $(function () {
+            $('#submitTravForm').submit(function (event) {
+                event.preventDefault();
+
+                var stepNumber = document.getElementById('stepnoid').value;
+                var Task = document.getElementById('taskid').value;
+                var Single = document.getElementById('singleParaid').value;
+                var Div = [];
+
+                if (divType === 't') {
+                    Div.push(document.getElementById('firstParaid').value);
+                    Div.push(document.getElementById('secParaid').value);
+                    Div.push(document.getElementById('thirdParaid').value);
+                }
+
+                if (Single === '' && Div.length === 0) {
+                    return;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: $(this).attr('action'),
+                    data: { stepNo: stepNumber, tAsk: Task, byThree: Div, singlePara: Single, sessionID: '@sesID', tech: '@EN[0]', date: '@DateTime.Now.ToShortDateString()', docType: '@Model.DocType' },
+                    success: function (response) {
+                        document.getElementById('closetravmodal').click();
+                        DisableTravBtn();
+                        if (response.Task === "" || response.Task === null) {
+                            if ('@Model.AfterTravlog' !== 'N') {
+                                $('#startlogsession').modal('show');
+                            }
+                            else {
+                                $('#endsession').modal('show');
+                            }
+
+                        }
+                        else {
+                            $('#stepnoid').val(response.StepNo);
+                            $('#taskid').val(response.Task);
+                            $('#firstParaid').val('');
+                            $('#secParaid').val('');
+                            $('#thirdParaid').val('');
+                            $('#singleParaid').val('');
+
+                            divType = response.Div;
+                            var Sing = document.getElementById('single');
+                            var Thr = document.getElementById('three');
+
+                            if (response.Div === 't') {
+                                Sing.style.display = 'none';
+                                Thr.style.display = 'block';
+                                document.getElementById('firstParaid').setAttribute('required', '');
+                                document.getElementById('secParaid').setAttribute('required', '');
+                                document.getElementById('thirdParaid').setAttribute('required', '');
+                                document.getElementById('singleParaid').removeAttribute('required');
+                            }
+                            else {
+                                Sing.style.display = 'block';
+                                Thr.style.display = 'none';
+                                document.getElementById('firstParaid').removeAttribute('required');
+                                document.getElementById('secParaid').removeAttribute('required');
+                                document.getElementById('thirdParaid').removeAttribute('required');
+                                document.getElementById('singleParaid').setAttribute('required', '');
+                            }
+                        }
+
+                    },
+                    error: function (error) {
+                        console.error('An error occurred: ' + error.statusText);
+                    }
+                });
+            });
+        });
+
         var dTitle = document.getElementById('docTitle');
 
         document.querySelectorAll('input').forEach(function (input) {
@@ -685,6 +761,7 @@
                     url: '@Url.Action("UserRefreshed", "Work")',
                     data: { sessionId: '@Model.SessionID' },
                     success: function (response) {
+                        console.log(response.Div);
 
                         $('#stepnoid').val(response.StepNo);
                         $('#taskid').val(response.Task);
@@ -701,13 +778,24 @@
                             var Sing = document.getElementById('single');
                             var Thr = document.getElementById('three');
                             divType = response.Div;
+
                             if (response.Div === 't') {
                                 Sing.style.display = 'none';
                                 Thr.style.display = 'block';
+
+                                document.getElementById('firstParaid').setAttribute('required', '');
+                                document.getElementById('secParaid').setAttribute('required', '');
+                                document.getElementById('thirdParaid').setAttribute('required', '');
+                                document.getElementById('singleParaid').removeAttribute('required');
                             }
                             else {
                                 Sing.style.display = 'block';
                                 Thr.style.display = 'none';
+
+                                document.getElementById('firstParaid').removeAttribute('required');
+                                document.getElementById('secParaid').removeAttribute('required');
+                                document.getElementById('thirdParaid').removeAttribute('required');
+                                document.getElementById('singleParaid').setAttribute('required', '');
                             }
                         }
 
@@ -907,83 +995,7 @@
             }, 5000);
         }
 
-        $(function () {
-            $('#submitTravForm').submit(function (event) {
-                event.preventDefault();
-                
-                var stepNumber = document.getElementById('stepnoid').value;
-                var Task = document.getElementById('taskid').value;
-                var Single = document.getElementById('singleParaid').value;
-                var Div = [];
-
-                if (divType === 't')
-                {
-                    Div.push(document.getElementById('firstParaid').value);
-                    Div.push(document.getElementById('secParaid').value);
-                    Div.push(document.getElementById('thirdParaid').value);
-                }
-
-                if (Single === '' && Div.length === 0)
-                {
-                    return;
-                }
-
-                $.ajax({
-                    type: 'POST',
-                    url: $(this).attr('action'),
-                    data: { stepNo: stepNumber, tAsk: Task, byThree: Div, singlePara: Single, sessionID: '@sesID', tech: '@EN[0]', date: '@DateTime.Now.ToShortDateString()' , docType: '@Model.DocType'},
-                    success: function (response) {
-                        document.getElementById('closetravmodal').click();
-                        DisableTravBtn();
-                        if (response.Task === "" || response.Task === null)
-                        {
-                            if ('@Model.AfterTravlog' !== 'N')
-                            {
-                                $('#startlogsession').modal('show');
-                            }
-                            else
-                            {
-                                $('#endsession').modal('show');
-                            }
-                            
-                        }
-                        else
-                        {                
-                            $('#stepnoid').val(response.StepNo);
-                            $('#taskid').val(response.Task);
-                            $('#firstParaid').val('');
-                            $('#secParaid').val('');
-                            $('#thirdParaid').val('');
-                            $('#singleParaid').val('');
-
-                            divType = response.Div;
-                            var Sing = document.getElementById('single');
-                            var Thr = document.getElementById('three');
-
-                            if (response.Div === 't')
-                            {
-                                Sing.style.display = 'none';
-                                Thr.style.display = 'block';
-                            }
-                            else
-                            {
-                                Sing.style.display = 'block';
-                                Thr.style.display = 'none';
-                            }
-
-                            document.getElementById('firstParaid').value = '';
-                            document.getElementById('secParaid').value = '';
-                            document.getElementById('thirdParaid').value = '';
-                            document.getElementById('singleParaid').value = '';
-                        }
-                        
-                    },
-                    error: function (error) {
-                        console.error('An error occurred: ' + error.statusText);
-                    }
-                });
-            });
-        });
+       
     </script>
 
     <div class="modal fade" id="docuFrame" data-bs-backdrop="true" data-bs-keyboard="false">
@@ -1094,7 +1106,10 @@
             $('#probForm').submit(function (event) {
                 event.preventDefault();
 
+                var LoadingIcon = document.getElementById('loadingIcon');
+
                 var formData = $(this).serialize();
+                LoadingIcon.style.display = 'block';
 
                 if (document.getElementById('reporter').value === '')
                 {
@@ -1102,10 +1117,9 @@
                 }
 
                 $.ajax({
-                    type: 'POST',
                     url: $(this).attr('action'),
                     data: formData,
-                    success: function (response) {
+                    success: function (response){
 
                         $('#closeproblog').click();
 
@@ -1115,6 +1129,8 @@
                         $('#de').val('');
                         $('#pd').val('');
                         $('#ww').val('');
+
+                        LoadingIcon.style.display = 'none';
 
                         $('#plConfirm').modal('show');
                     },
