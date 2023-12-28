@@ -3,6 +3,7 @@ using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Mail;
+using DMDLibrary;
 
 namespace DMD_Prototype.Controllers
 {   
@@ -33,6 +34,11 @@ namespace DMD_Prototype.Controllers
         public void SendEmailNotification(List<string> receivers, string subject, string body);
 
         public void SendEmailNotification(string receiver, string subject, string body);
+
+        public List<string> GetMultipleusers(string userRole);
+
+        public void BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName);
+
     }
 
     public class UniversalFunctions : Controller, ISharedFunct
@@ -44,21 +50,24 @@ namespace DMD_Prototype.Controllers
 
         private readonly AppDbContext _Db;
 
-        //private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
-        //private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
-        //private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
+        private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
+        private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
 
-        private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
-        private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
-        private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        //private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
+        //private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
+        //private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        //private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        //private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        //private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
 
-        //private readonly string userDir = "D:\\jtoledo\\Desktop\\DMD_SessionFolder";
-        //private readonly string mainDir = "D:\\jtoledo\\Desktop\\DocumentsHere\\";
-        //private readonly string tempDir = "D:\\jtoledo\\Desktop\\TempFiles";
-
-        //private readonly string userDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Sessions";
-        //private readonly string mainDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Documents";
-        //private readonly string tempDir = "C:\\Users\\pimesadmin\\Desktop\\DMD_Temp";
+        private readonly string travelerBackupDir = "A:\\DMD Portal Backups\\Travelers";
+        private readonly string configBackupDir = "A:\\DMD Portal Backups\\Configuration Logs";
+        private readonly string testBackupDir = "A:\\DMD Portal Backups\\Test Equipment Logs";
+        private readonly string plBackupDir = "A:\\DMD Portal Backups\\Problem Logs";
 
         private readonly string wsFolderName = "1_WORKMANSHIP_STANDARD_FOLDER";
         private readonly string wsName = "WS.pdf";
@@ -74,6 +83,38 @@ namespace DMD_Prototype.Controllers
         private readonly string prcoName = "PRCO.pdf";
         private readonly string derogationName = "Derogation.pdf";
         private readonly string memoName = "EngineeringMemo.pdf";
+
+        public void BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName)
+        {
+            string saveInIdentifier = travelerForBackupDir;
+            string srcDir;
+
+            switch (whichFile)
+            {
+                case whichFileEnum.Traveler:
+                    {
+                        srcDir = Path.Combine(userDir, sessionId, userTravName);
+                        break;
+                    }
+                case whichFileEnum.Log:
+                    {
+                        srcDir = Path.Combine(userDir, sessionId, userLogName);
+                        saveInIdentifier = logType.ToLower() == "c" ? configForBackupDir : testForBackupDir;
+                        break;
+                    }
+                default:
+                    {
+                        return;
+                    }
+            }
+
+            if (System.IO.File.Exists(srcDir))
+            {
+                COMHandler converter = new COMHandler();
+
+                converter.ConvertExceltoPdfAndStoreInSpecifiedPath(srcDir, saveInIdentifier, $"{setName}.pdf");
+            }
+        }
 
         public IEnumerable<UserActionModel> GetUA()
         {
@@ -124,6 +165,22 @@ namespace DMD_Prototype.Controllers
         {
             switch (whichPath)
             {
+                case "plBackup":
+                    {
+                        return plBackupDir;
+                    }
+                case "testBackup":
+                    {
+                        return testBackupDir;
+                    }
+                case "configBackup":
+                    {
+                        return configBackupDir;
+                    }
+                case "travelerBackup":
+                    {
+                        return travelerBackupDir;
+                    }
                 case "wsf":
                     {
                         return wsFolderName;
@@ -217,11 +274,11 @@ namespace DMD_Prototype.Controllers
 
             MailMessage mail = new();
 
-            mail.From = new MailAddress(dmdEmail.Email);
+            mail.From = new MailAddress(dmdEmail.Email, "DMD Notificator");
             mail.Subject = subject;
             mail.Body = body;
 
-            foreach(string receiver in receivers.Where(j => j != ""))
+            foreach (string receiver in receivers.Where(j => j != ""))
             {
                 mail.To.Add(receiver);
             }
@@ -245,7 +302,7 @@ namespace DMD_Prototype.Controllers
 
             MailMessage mail = new();
 
-            mail.From = new MailAddress(dmdEmail.Email);
+            mail.From = new MailAddress(dmdEmail.Email, "DMD Notificator");
             mail.Subject = subject;
             mail.Body = body;
 
@@ -259,6 +316,22 @@ namespace DMD_Prototype.Controllers
                 client.Send(mail);
             }
         }
+
+        public List<string> GetMultipleusers(string userRole)
+        {
+            List<string> listOfPlEmails = new List<string>();
+            IEnumerable<AccountModel> plAccounts = GetAccounts().Where(j => j.Role == userRole);
+
+            foreach (var pls in plAccounts)
+            {
+                if (!string.IsNullOrEmpty(pls.Email) && !string.IsNullOrEmpty(pls.Sec) && !string.IsNullOrEmpty(pls.Dom))
+                {
+                    listOfPlEmails.Add($"{pls.Email}{pls.Sec}{pls.Dom}");
+                }
+            }
+
+            return listOfPlEmails;
+        }
     }
 
     public enum Tri
@@ -266,5 +339,11 @@ namespace DMD_Prototype.Controllers
         v,
         iv,
         d
+    }
+
+    public enum whichFileEnum
+    {
+        Traveler,
+        Log
     }
 }

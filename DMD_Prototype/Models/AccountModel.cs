@@ -33,7 +33,6 @@ namespace DMD_Prototype.Models
 
         //Conditionals
 
-        //public string? ProductHandled { get; set; }
 
     }
 

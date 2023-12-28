@@ -582,7 +582,7 @@
                                                 <div class="d-flex">
                                                     <input class="form-control w-100" id="firstParaid" value="" placeholder="box 1" autocomplete="off"/>
                                                     <input class="form-control w-100" id="secParaid" placeholder="box 2" autocomplete="off" />
-                                                    <input class="form-control w-100" id="thirdParaid" placeholder="box 3" autocomplete="off" />
+                                                    <input class="form-control w-100" id="thirdParaid" placeholder="box 3" autocomplete="off" />                                                
                                                 </div>
                                             </div>
                                             <div style="display:none" id="single" class="w-100">
@@ -604,7 +604,6 @@
                                         </div>
                                     </td>
                                 </tr>
-
                             </tbody>
                         </table>
                     </div>
@@ -679,6 +678,7 @@
         $(function () {
             $('#submitTravForm').submit(function (event) {
                 event.preventDefault();
+                document.getElementById('loadingIcon').style.display = 'block';
 
                 var stepNumber = document.getElementById('stepnoid').value;
                 var Task = document.getElementById('taskid').value;
@@ -746,6 +746,8 @@
                         console.error('An error occurred: ' + error.statusText);
                     }
                 });
+
+                document.getElementById('loadingIcon').style.display = 'none';
             });
         });
 
@@ -761,7 +763,6 @@
                     url: '@Url.Action("UserRefreshed", "Work")',
                     data: { sessionId: '@Model.SessionID' },
                     success: function (response) {
-                        console.log(response.Div);
 
                         $('#stepnoid').val(response.StepNo);
                         $('#taskid').val(response.Task);
@@ -889,7 +890,7 @@
                                 <button class="btn bg-warning fw-bold mx-4 text-nowrap" onclick="GetConfigProgress('required')">Review Logsheet</button>
                             }
                         </div>
-                        <a class="btn btn-primary" asp-controller="Work" asp-action="FinishWork" asp-route-sessionId="@sesID" asp-route-logType="@Model.AfterTravlog" asp-route-docNo="@Model.DocumentNumber">END</a>
+                        <a class="btn btn-primary" asp-controller="Work" asp-action="FinishWork" asp-route-sessionId="@sesID" asp-route-logType="@Model.AfterTravlog" asp-route-docNo="@Model.DocumentNumber" onclick="document.getElementById('loadingIcon').style.display = 'block'; this.setAttribute('hidden', '');">END</a>
                     </div>
                 </div>
             </div>
@@ -903,7 +904,7 @@
                     <p class="modal-title text-white fs-5 fw-bold">Logsheet</p>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form asp-controller="Document" asp-action="SaveConfigChanges" id="editconfigform" asp-route-sessionId="@Model.SessionID">
+                <form asp-controller="Document" asp-action="SaveConfigChanges" id="editconfigform" asp-route-sessionId="@Model.SessionID" onsubmit="">
                     <div class="modal-body" style="height:520px">
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped">
@@ -1189,6 +1190,8 @@
     </form>
 
 <script>
+
+    
     function WhichDev(docName, doctit) {
         document.getElementById('closeoffcanvas').click();
         var Frame = document.getElementById('docFrame');

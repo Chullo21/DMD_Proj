@@ -277,11 +277,11 @@
                             <div class="d-flex justify-content-between">
                                 @if (string.IsNullOrEmpty(item.PL.Validation) && (item.Owner == EN[2] || EN[1] == "ADMIN"))
                                 {
-                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" onclick="OpenValidatePL('@item.PL.PLID')">Validate</button>
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#validatemodal" onclick="OpenValidatePL('@item.PL.PLID')">Validate</button>
                                 }
                                 else if ((item.Owner == EN[2] || EN[1] == "ADMIN") && item.PL.Validation == "Valid" && item.PL.PLSDStatus != "CLOSED")
                                 {
-                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus', '@item.PL.DocNo')">Update</button>
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editplvalidationmodal" onclick="EditValidation('@item.PL.PLID', '@item.PL.Validation', '@item.PL.RC', '@item.PL.CA', '@item.PL.InterimDoc', '@item.PL.StandardizedDoc', '@item.PL.IDStatus', '@item.PL.DocNo')">Update</button>
                                 }
 
                                 <div class="mx-1">
@@ -355,27 +355,26 @@
     }
 
     function EditValidation(plid, val, rc, ca, id, sd, idStat, docno) {
-        $('#editplvalidationmodal').modal('show');
+        @* $('#editplvalidationmodal').modal('show'); *@
         $('#editplid').val(plid);
         $('#editrc').val(rc);
         $('#editca').val(ca);
         $('#editstand').val(sd);
 
-        if (idStat !== 'CLOSED'){
-            $('#editinterim').val(id);           
+        if (idStat === 'OPEN'){
+            $('#editinterim').val(id);
+            document.getElementById('editinterimDiv').removeAttribute('hidden');
         }
         else{
-            document.getElementById('editinterimdoc').removeAttribute('required');
-            document.getElementById('editinterimDiv').style.display = 'none';
+            @* document.getElementById('editinterimdoc').removeAttribute('required'); *@
+            document.getElementById('editinterimDiv').setAttribute('hidden', '');
         }
 
         docNumber = docno;
-        console.log(docno);
-        console.log(docNumber);
     }
 
     function OpenValidatePL(plid) {
-        $('#validatemodal').modal('show');
+        @* $('#validatemodal').modal('show'); *@
         $('#plidVal').val(plid);
     }
 
@@ -383,50 +382,41 @@
     {
         if (val === 'Valid'){
             document.getElementById('plisValid').style.display = 'block';
-            document.getElementById('selectCat').setAttribute('required', 'true');
+            document.getElementById('selectCat').setAttribute('required', '');
             document.getElementById('remSetReq').removeAttribute('required');
+            document.getElementById('selectdoctype').setAttribute('required', '');
 
-            document.getElementById('selectCat').setAttribute('required', 'true');
-            document.getElementById('rcVal').setAttribute('required', 'true');
-            document.getElementById('caVal').setAttribute('required', 'true');
-            document.getElementById('idVal').setAttribute('required', 'true');
-            document.getElementById('idtcdVal').setAttribute('required', 'true');
-            document.getElementById('idstatVal').setAttribute('required', 'true');
-            @*document.getElementById('sdVal').setAttribute('required', 'true');*@
-            document.getElementById('sdtcdVal').setAttribute('required', 'true');
-            document.getElementById('sdstatVal').setAttribute('required', 'true');
+            document.getElementById('rcVal').setAttribute('required', '');
+            document.getElementById('caVal').setAttribute('required', '');
+            document.getElementById('idVal').setAttribute('required', '');
+            document.getElementById('idtcdVal').setAttribute('required', '');
+            document.getElementById('sdtcdVal').setAttribute('required', '');
         }
         else if (val === 'Invalid') {
             document.getElementById('plisValid').style.display = 'none';
             document.getElementById('selectCat').removeAttribute('required');
             document.getElementById('remSetReq').setAttribute('required', 'true');
+            document.getElementById('selectdoctype').removeAttribute('required');
 
-            document.getElementById('selectCat').removeAttribute('required');
             document.getElementById('rcVal').removeAttribute('required');
             document.getElementById('caVal').removeAttribute('required');
             document.getElementById('idVal').removeAttribute('required');
             document.getElementById('idtcdVal').removeAttribute('required');
-            document.getElementById('idstatVal').removeAttribute('required');
-            @*document.getElementById('sdVal').removeAttribute('required');*@
             document.getElementById('sdtcdVal').removeAttribute('required');
-            document.getElementById('sdstatVal').removeAttribute('required');
         }
-        else
+      @*   else
         {
+            document.getElementById('remSetReq').setAttribute('required', '');
             document.getElementById('valSelect').value = '';
             document.getElementById('plisValid').style.display = 'none';
             document.getElementById('selectCat').removeAttribute('required');
-
-            document.getElementById('selectCat').removeAttribute('required');
+            document.getElementById('selectdoctype').removeAttribute('required');
             document.getElementById('rcVal').removeAttribute('required');
             document.getElementById('caVal').removeAttribute('required');
             document.getElementById('idVal').removeAttribute('required');
             document.getElementById('idtcdVal').removeAttribute('required');
-            document.getElementById('idstatVal').removeAttribute('required');
-            @*document.getElementById('sdVal').removeAttribute('required');*@
             document.getElementById('sdtcdVal').removeAttribute('required');
-            document.getElementById('sdstatVal').removeAttribute('required');
-        }
+        } *@
     }
 
     function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rcc, caa, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem, orem, validation)
@@ -602,7 +592,7 @@
     </div>
 </div>
 
-<div class="modal fade" data-bs-backdrop="static" id="editplvalidationmodal">
+<div class="modal fade" data-bs-backdrop="static" dat-bs-dismiss="modal" id="editplvalidationmodal">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <form asp-controller="ProblemLog" asp-action="EditPLValidation" asp-route-user="@EN[0]">
@@ -678,7 +668,7 @@
 <div class="modal fade" data-bs-backdrop="static" id="validatemodal">
     <div class="modal-dialog modal-lg" style="max-height:600px">
         <div class="modal-content">
-            <form asp-controller="ProblemLog" asp-action="SubmitPLValidation" asp-route-Validator="@EN[0]">
+            <form asp-controller="ProblemLog" asp-action="SubmitPLValidation" asp-route-Validator="@EN[0]" onsubmit="document.getElementById('loadingIcon').style.display = 'block'">
                 <input value="" id="plidVal" name="PLID" hidden/>
                 <div class="modal-header bg-primary text-white">
                     <div class="modal-title d-flex">
@@ -687,7 +677,7 @@
                         </svg>
                         <p class="my-auto mx-2 w-100 fs-5 fw-bold">Validate Problem Log</p>
                     </div>
-                    <button class="btn-close" data-bs-dismiss="modal" onclick="$('#validatemodal').find('input, textarea, select').val(''); document.getElementById('plisValid').style.display = 'none'"></button>
+                    <button class="btn-close" data-bs-dismiss="modal" type="button" onclick="$('#validatemodal').find('input, textarea, select').val(''); document.getElementById('plisValid').style.display = 'none'"></button>
                 </div>
                 <div class="modal-body">
                     <div>
@@ -702,19 +692,50 @@
                             </div>
                             <div class="flex-column w-50">
                                 <label class="form-label">Remarks</label>
-                                <textarea class="form-control w-100" name="OwnerRemarks" style="max-height:100px; min-height:40px; height: 40px" id="remSetReq"></textarea>
+                                <textarea class="form-control w-100" name="OwnerRemarks" style="max-height:100px; min-height:40px; height: 40px" id="remSetReq" required></textarea>
                             </div>
                         </div>
                         <div id="plisValid" style="display:none">
-                            <div>
-                                <label class="form-label">Category</label>
-                                <select class="form-select" id="selectCat" name="Category" onchange="">
-                                    <option hidden selected value="">Select Category</option>
-                                    <option>A</option>
-                                    <option>B</option>
-                                    <option>C</option>
-                                </select>
-                            </div>
+                           <div class="d-flex">
+                                <div class="w-50">
+                                    <label class="form-label">Category</label>
+                                    <select class="form-select" id="selectCat" name="Category" onchange="">
+                                        <option hidden selected value="">Select Category</option>
+                                        <option>A</option>
+                                        <option>B</option>
+                                        <option>C</option>
+                                    </select>
+                                </div>
+                                <div class="w-50">
+                                    <label class="form-label">Affected Document</label>
+                                    <select class="form-select" id="selectdoctype" name="affectedDocIdentifier" onchange="DoctypeSetter(this.value)">
+                                        <option hidden selected value="">Select Document</option>
+                                        <option value="main">MPI/MTI</option>
+                                        <option value="c">CONFIGURATION LOGSHEET</option>
+                                        <option value="t">TEST EQUIPMENT LOGSHEET</option>
+                                        <option value="b">BOM</option>
+                                        <option value="s">SCHEMATIC DIAGRAM</option>
+                                        <option value="d">ASSEMBLY DRAWING</option>
+                                    </select>
+
+                                    <script>
+                                        function DoctypeSetter(str)
+                                        {
+                                            var interimIF = document.getElementById('idVal');
+                                            if (str === 'b' || str === 's' || str === 'd'){
+                                                interimIF.removeAttribute('required');
+                                                interimIF.setAttribute('readonly', '');
+                                                interimIF.value = 'Not Required';
+                                            }
+                                            else{
+                                                interimIF.setAttribute('required', '');
+                                                interimIF.removeAttribute('readonly');
+                                                interimIF.placeholder = 'Required';
+                                            }
+                                        }
+                                    </script>
+                                </div>
+                           </div>
                             <div>
                                 <label class="form-label">Root Cause</label>
                                 <textarea class="form-control" name="RC" style="max-height:100px; min-height:40px; height: 40px" id="rcVal"></textarea>
@@ -731,13 +752,13 @@
                                     </div>
                                     <div>
                                         <label class="form-label">TCD</label>
-                                        <input class="form-control" type="date" id="idtcdVal" name="IDTCD" readonly/>
+                                        <input class="form-control" type="date" id="idtcdVal" placeholder="Required" name="IDTCD" readonly/>
                                     </div>
                                 </div>
                                 <div class="d-flex w-100 justify-content-evenly">
                                     <div>
                                         <label class="form-label">Standardized Doc.</label>
-                                        <input class="form-control" placeholder="Standardized Document" id="sdVal" name="StandardizedDoc"/>
+                                        <input class="form-control" placeholder="Required" id="sdVal" name="StandardizedDoc"/>
                                     </div>
                                     <div>
                                         <label class="form-label">TCD</label>
@@ -749,7 +770,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" type="submit" onclick="document.getElementById('loadingIcon').style.display = 'block'; $('#validatemodal').modal('hide')">Submit</button>
+                    <button class="btn btn-primary" type="submit" onclick="">Submit</button>
                 </div>
             </form>
         </div>

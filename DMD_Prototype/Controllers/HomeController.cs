@@ -3,7 +3,6 @@ using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using System.Reflection.Metadata.Ecma335;
 
 namespace DMD_Prototype.Controllers
 {

@@ -73,7 +73,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult EditDocument(string docuno,IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
             List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile, List<string> DirsTobeDeleted, char mtpistatus,
-            string user, string revNo)
+            string user, string revNo, bool emailPL, string? remarks)
         {
 
             var fromDb = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuno);
@@ -98,6 +98,15 @@ namespace DMD_Prototype.Controllers
 
                 ishare.RecordOriginatorAction($"{user}, updated the following engineering documents {docs} with Doc Number of {docuno}.", user, DateTime.Now);
                 _Db.SaveChanges();
+            }
+
+            if (emailPL)
+            {
+                string statusSetter = mtpistatus == 'c' ? "Controlled" : "Interim";
+                string remarkSetter = string.IsNullOrEmpty(remarks) ? "No remarks" : remarks;
+                string subject = $"DMD Portal, Document update {statusSetter}";
+                string body = $"Good day!\r\n{user} has updated a document/s with document number of {docuno}, having the details of the following:\r\n\r\nStatus: {statusSetter}\r\nAssembly Part Number: {mod.AssemblyPN}\r\nDescription: {mod.AssemblyDesc}\r\nRevision Number: {mod.RevNo}\r\nRemaks:{remarkSetter}\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a great day!";
+                ishare.SendEmailNotification(ishare.GetMultipleusers("PL_INTERVENOR"), subject, body);
             }
 
             return RedirectToAction("MTIView", new {docuNumber = docuno, workStat = false});

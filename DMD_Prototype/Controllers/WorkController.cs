@@ -3,6 +3,7 @@ using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OfficeOpenXml;
+using DMD_Prototype.Controllers;
 using System.Net.Mail;
 using System.Net;
 using System.Reflection;
@@ -195,6 +196,13 @@ namespace DMD_Prototype.Controllers
         {
             CompleteWork(sessionId);
             SubmitDateFinished(sessionId, logType, docNo);
+
+            MTIModel docDet = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo);
+            ModuleModel module = ishared.GetModules().FirstOrDefault(j => j.SessionID == sessionId);
+
+            ishared.BackupHandler(logType, whichFileEnum.Traveler, sessionId, $"{docDet.Product} {module.WorkOrder} {module.Module} {module.SerialNo}");
+
+            if (logType.ToLower() != "n") ishared.BackupHandler(logType, whichFileEnum.Log, sessionId, $"{docDet.Product} {module.WorkOrder} {module.Module} {module.SerialNo}");
 
             return RedirectToAction("Index", "Home");
         }
@@ -471,17 +479,20 @@ namespace DMD_Prototype.Controllers
             AccountModel origModel = ishared.GetAccounts().FirstOrDefault(j => j.UserID == ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == rDocNumber).OriginatorName);
             string origEmail = $"{origModel.Email}{origModel.Sec}{origModel.Dom}";
 
+            ProblemLogModel probModel = new ProblemLogModel();
+
             if (ModelState.IsValid)
             {
-                _Db.PLDb.Add(new ProblemLogModel().CreatePL(SetSeries("PL"), DateTime.Now, $"Week {wweek}", affected, product,
-                    docno, desc, probcon, reportedby, rDocNumber));
+                probModel = new ProblemLogModel().CreatePL(SetSeries("PL"), DateTime.Now, $"Week {wweek}", affected, product,
+                    docno, desc, probcon, reportedby, rDocNumber);
+                _Db.PLDb.Add(probModel);
                 _Db.SaveChanges();
             }
 
             if (!string.IsNullOrEmpty(origEmail))
             {
                 string subject = "New Problem Log";
-                string body = $"Good day!\r\nYou have received a problem log from a technician. Refer below:\r\n\r\nWork week: {wweek}\r\nAffected Document: {affected}\r\nDocument Number: {rDocNumber}\r\nDescription: {desc}\r\nProblem Description: {probcon}\r\nReporter: {reportedby}\r\nProduct: {product}" +
+                string body = $"Good day!\r\nYou have received a problem log from a technician, having a PL number of {probModel.PLNo}. Refer below:\r\n\r\nWork week: {wweek}\r\nAffected Document: {affected}\r\nDocument Number: {rDocNumber}\r\nDescription: {desc}\r\nProblem Description: {probcon}\r\nReporter: {reportedby}\r\nProduct: {product}" +
                     "\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a great day!";
 
                 SendEmail(origEmail, subject, body);

@@ -1,12 +1,9 @@
 ﻿using DMD_Prototype.Data;
-using DMD_Prototype.Migrations;
 using DMD_Prototype.Models;
-using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OfficeOpenXml;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Metrics;
+using OfficeOpenXml.Style;
 using System.Reflection;
 
 namespace DMD_Prototype.Controllers
@@ -33,29 +30,13 @@ namespace DMD_Prototype.Controllers
             TempData.Keep();
 
             return EN;
-        }
-
-        private List<string> GetPLEmails()
-        {
-           List<string> listOfPlEmails = new List<string>();
-           IEnumerable<AccountModel> plAccounts = ishare.GetAccounts().Where(j => j.Role == "PL_INTERVENOR");
-
-            foreach (var pls in plAccounts)
-            {
-                if (!string.IsNullOrEmpty(pls.Email) && !string.IsNullOrEmpty(pls.Sec) && !string.IsNullOrEmpty(pls.Dom))
-                {
-                    listOfPlEmails.Add($"{pls.Email}{pls.Sec}{pls.Dom}");
-                }
-            }
-
-            return listOfPlEmails;
-        }
+        }        
 
         private void SendEmailNotificationToPLs(string plNo)
         {
             string subject = "Valid Problem Log";
             string body = $"Good day!\r\nAn Originator have validated a problem log with PL number of {plNo} as valid.\r\nPlease refer to our DMD Portal to process this.\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a nice day";
-            ishare.SendEmailNotification(GetPLEmails(), subject, body);
+            ishare.SendEmailNotification(ishare.GetMultipleusers("PL_INTERVENOR"), subject, body);
         }
 
         private Stream GetProblemLogTemplate()
@@ -69,7 +50,17 @@ namespace DMD_Prototype.Controllers
         {
             int counter = 10;
 
-            using(ExcelPackage package = new ExcelPackage(GetProblemLogTemplate()))
+            int interimOpenCount = pls.Count(j => j.IDStatus == "OPEN");
+            int interimClosedCount = pls.Count(j => j.IDStatus == "CLOSED");
+            int standardizedOpenCount = pls.Count(j => j.SDStatus == "OPEN");
+            int standardizedClosedCount = pls.Count(j => j.SDStatus == "CLOSED");
+
+            int plInterimOpenCount = pls.Count(j => j.PLIDStatus == "OPEN");
+            int plInterimClosedCount = pls.Count(j => j.PLIDStatus == "CLOSED");
+            int plStandardizedOpenCount = pls.Count(j => j.PLSDStatus == "OPEN");
+            int plStandardizedClosedCount = pls.Count(j => j.PLSDStatus == "CLOSED");
+
+            using (ExcelPackage package = new ExcelPackage(GetProblemLogTemplate()))
             {
                 var ws = package.Workbook.Worksheets[0];
 
@@ -99,8 +90,37 @@ namespace DMD_Prototype.Controllers
                     ws.Cells[counter, 22].Value = p.PLIDStatus;
                     ws.Cells[counter, 23].Value = p.PLSDStatus;
 
+                    ws.Cells[counter, 1, counter, 23].Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                    ws.Cells[counter, 1, counter, 23].Style.ShrinkToFit = true;
+
+                    if (p.Validation == "Valid")
+                    {
+                        ws.Cells[counter, 1, counter, 23].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Red);
+                    }
+                    else if (p.Validation == "Invalid")
+                    {
+                        ws.Cells[counter, 1, counter, 23].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Green);
+                    }
+                    else
+                    {
+                        ws.Cells[counter, 1, counter, 23].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                    }
+
                     counter++;
                 }
+
+                ws.Cells[5, 2].Value = pls.First().LogDate.Year.ToString();
+
+                ws.Cells[4, 16].Value = interimOpenCount;
+                ws.Cells[5, 16].Value = interimClosedCount;
+                ws.Cells[4, 19].Value = standardizedOpenCount;
+                ws.Cells[5, 19].Value = standardizedClosedCount;
+
+                ws.Cells[4, 22].Value = plInterimOpenCount;
+                ws.Cells[4, 23].Value = plInterimClosedCount;
+                ws.Cells[5, 22].Value = plStandardizedOpenCount;
+                ws.Cells[5, 23].Value = plStandardizedClosedCount;
+
 
                 return package.GetAsByteArray();
             }
@@ -289,7 +309,7 @@ namespace DMD_Prototype.Controllers
             return View(pls.OrderByDescending(j => j.PL.LogDate));
         }
 
-        public IActionResult SubmitPLValidation(ProblemLogModel fromView)
+        public IActionResult SubmitPLValidation(ProblemLogModel fromView, string? affectedDocIdentifier)
         {
             string sdVal = "";
 
@@ -319,16 +339,22 @@ namespace DMD_Prototype.Controllers
                 }
             }
 
+            if (affectedDocIdentifier == "d" || affectedDocIdentifier == "b" || affectedDocIdentifier == "s")
+            {
+                pl.IDStatus = "CLOSED";
+                pl.PLIDStatus = "CLOSED";
+            }
+
             if (ModelState.IsValid)
             {
                 ishare.RecordOriginatorAction($"{fromView.Validator}, validated problem log with PLID of {pl.PLNo} as {pl.Validation}.", fromView.Validator, DateTime.Now);
                 _Db.PLDb.Update(pl);
                 _Db.SaveChanges();
-            }
 
-            if (fromView.Validation == "Valid")
-            {
-                SendEmailNotificationToPLs(pl.PLNo);
+                if (fromView.Validation == "Valid")
+                {
+                    SendEmailNotificationToPLs(pl.PLNo);
+                }
             }
 
             return RedirectToAction("ProblemLogView");
