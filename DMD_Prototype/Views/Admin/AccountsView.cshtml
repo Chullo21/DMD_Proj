@@ -14,6 +14,8 @@
             ordering: false
         });
     });
+
+    
 </script>
 
 
@@ -48,40 +50,40 @@
             @{
                 if (Model != null && Model.Count() > 0)
                 {
-                    foreach (var item in Model)
+                    foreach (var item in Model.OrderBy(j => j.AccName))
                     {
                         string thisEmail = item.Email + item.Sec + item.Dom;
-                        <tr>
-                            <td>
-                                @item.AccName
-                            </td>
-                            <td>
-                                @item.Role
-                            </td>
-                            <td>
-                                @thisEmail
-                            </td>
-                            <td>
-                                @item.Username
-                            </td>
-                            <td>
-                                <div class="d-flex justify-content-center">
-                                    <button class="btn btn-secondary" data-bs-target="#pass" data-bs-toggle="modal" onclick="userandpass('@item.Username', '@item.Password')">Password</button>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="w-100 d-flex justify-content-between">
-                                    <div class="w-100">
-                                        <button class="btn btn-success w-100" data-bs-target="#edituser" data-bs-toggle="modal" onclick="editAccount('@item.AccName', '@item.Email', '@item.Username', '@item.Password', '@item.Sec', '@item.Dom', '@item.AccID', '@item.Role', '@item.UserID')">Edit</button>
+                            <tr>
+                                <td>
+                                    @item.AccName
+                                </td>
+                                <td>
+                                    @item.Role
+                                </td>
+                                <td>
+                                    @thisEmail
+                                </td>
+                                <td>
+                                    @item.Username
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center">
+                                        <button class="btn btn-secondary" data-bs-target="#pass" data-bs-toggle="modal" onclick="userandpass('@item.Username', '@item.Password')">Password</button>
                                     </div>
-                                    <div class="mx-1">
+                                </td>
+                                <td>
+                                    <div class="w-100 d-flex justify-content-between">
+                                        <div class="w-100">
+                                            <button class="btn btn-success w-100" data-bs-target="#edituser" data-bs-toggle="modal" onclick="editAccount('@item.AccName', '@item.Email', '@item.Username', '@item.Password', '@item.Sec', '@item.Dom', '@item.AccID', '@item.Role', '@item.UserID')">Edit</button>
+                                        </div>
+                                        <div class="mx-1">
+                                        </div>
+                                        <div class="w-100">
+                                            <button class="btn btn-danger w-100" data-bs-target="#deleteuser" data-bs-toggle="modal" onclick="deleteAccount('@item.AccName', '@item.Email@item.Sec@item.Dom', '@item.Username', '@item.Password', '@item.AccID', '@item.Role', '@item.UserID')">Delete</button>
+                                        </div>
                                     </div>
-                                    <div class="w-100">
-                                        <button class="btn btn-danger w-100" data-bs-target="#deleteuser" data-bs-toggle="modal" onclick="deleteAccount('@item.AccName', '@item.Email@item.Sec@item.Dom', '@item.Username', '@item.Password', '@item.AccID', '@item.Role', '@item.UserID')">Delete</button>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
                     }
                 }
             }

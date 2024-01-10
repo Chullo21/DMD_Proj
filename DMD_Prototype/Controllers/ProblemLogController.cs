@@ -309,7 +309,7 @@ namespace DMD_Prototype.Controllers
             return View(pls.OrderByDescending(j => j.PL.LogDate));
         }
 
-        public IActionResult SubmitPLValidation(ProblemLogModel fromView, string? affectedDocIdentifier)
+        public IActionResult SubmitPLValidation(ProblemLogModel fromView, char affectedDocIdentifier)
         {
             string sdVal = "";
 
@@ -331,6 +331,7 @@ namespace DMD_Prototype.Controllers
                 pl.SDTCD = fromView.SDTCD;
                 pl.SDStatus = fromView.Validation == "Valid" ? "OPEN" : "";
                 pl.Validation = fromView.Validation;
+                pl.AffectedDocSys = affectedDocIdentifier;
 
                 if (fromView.Validation == "Valid")
                 {
@@ -339,7 +340,7 @@ namespace DMD_Prototype.Controllers
                 }
             }
 
-            if (affectedDocIdentifier == "d" || affectedDocIdentifier == "b" || affectedDocIdentifier == "s")
+            if (affectedDocIdentifier == 'd' || affectedDocIdentifier == 'b' || affectedDocIdentifier == 's')
             {
                 pl.IDStatus = "CLOSED";
                 pl.PLIDStatus = "CLOSED";
@@ -403,9 +404,36 @@ namespace DMD_Prototype.Controllers
             return Content(JsonConvert.SerializeObject(new { status = doc.MTPIStatus != 'i' ? "Controlled" : "Interim" }), "application/json");
         }
 
-        public IActionResult GetPLDoc(string docNo)
+        public IActionResult GetPLDoc(string docNo, int plID)
         {
-            using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), docNo, ishare.GetPath("mainDoc")), FileMode.Open))
+            string whichDoc = string.Empty;
+
+            ProblemLogModel pl = ishare.GetProblemLogs().FirstOrDefault(j => j.PLID == plID);
+
+            switch (pl.AffectedDocSys)
+            {
+                case 'm':
+                    {
+                        whichDoc = "mainDoc";
+                        break;
+                    }
+                case 'b':
+                    {
+                        whichDoc = "bom";
+                        break;
+                    }
+                case 's':
+                    {
+                        whichDoc = "schema";
+                        break;
+                    }
+                case 'd':
+                    {
+                        whichDoc = "assy";
+                        break;
+                    }                   
+            }
+            using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), docNo, ishare.GetPath(whichDoc)), FileMode.Open))
             {
                 using (MemoryStream ms = new MemoryStream())
                 {

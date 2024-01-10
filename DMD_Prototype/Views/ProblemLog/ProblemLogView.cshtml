@@ -306,11 +306,12 @@
 
 <script>
     var docNumber;
+    var plID;
 
     function GetDoc()
     {        
         $(function (){
-            document.getElementById('dociframe').src = '@Url.Action("GetPLDoc", "ProblemLog")' + '?docNo=' + docNumber;
+            document.getElementById('dociframe').src = '@Url.Action("GetPLDoc", "ProblemLog")' + '?docNo=' + docNumber + '&plID=' + plID;
             $('#showdocmodal').modal('show');
         });
     }
@@ -318,6 +319,7 @@
     function InterimDocValidation(plId, interimStat, docNo, id, pd) {
         
         $(function (){
+            plID = plId;
             docNumber = docNo;
             document.getElementById('plidPL').value = plId;
             var idDiv = document.getElementById('IDiv');
@@ -404,19 +406,6 @@
             document.getElementById('idtcdVal').removeAttribute('required');
             document.getElementById('sdtcdVal').removeAttribute('required');
         }
-      @*   else
-        {
-            document.getElementById('remSetReq').setAttribute('required', '');
-            document.getElementById('valSelect').value = '';
-            document.getElementById('plisValid').style.display = 'none';
-            document.getElementById('selectCat').removeAttribute('required');
-            document.getElementById('selectdoctype').removeAttribute('required');
-            document.getElementById('rcVal').removeAttribute('required');
-            document.getElementById('caVal').removeAttribute('required');
-            document.getElementById('idVal').removeAttribute('required');
-            document.getElementById('idtcdVal').removeAttribute('required');
-            document.getElementById('sdtcdVal').removeAttribute('required');
-        } *@
     }
 
     function SetDets(pl, log, wweek, aff, pn, des, pro, rep, cat, rcc, caa, id, idtcd, idstat, sd, sdtcd, sdstat, val, plidstat, plsdstat, plrem, orem, validation)
@@ -710,7 +699,7 @@
                                     <label class="form-label">Affected Document</label>
                                     <select class="form-select" id="selectdoctype" name="affectedDocIdentifier" onchange="DoctypeSetter(this.value)">
                                         <option hidden selected value="">Select Document</option>
-                                        <option value="main">MPI/MTI</option>
+                                        <option value="m">MPI/MTI</option>
                                         <option value="c">CONFIGURATION LOGSHEET</option>
                                         <option value="t">TEST EQUIPMENT LOGSHEET</option>
                                         <option value="b">BOM</option>
@@ -722,15 +711,23 @@
                                         function DoctypeSetter(str)
                                         {
                                             var interimIF = document.getElementById('idVal');
-                                            if (str === 'b' || str === 's' || str === 'd'){
+                                            var sdIF = document.getElementById('sdVal');
+
+                                            if (str == 'b' || str == 's' || str == 'd'){
                                                 interimIF.removeAttribute('required');
                                                 interimIF.setAttribute('readonly', '');
                                                 interimIF.value = 'Not Required';
+
+                                                sdIF.setAttribute('required', '');
                                             }
                                             else{
+                                                interimIF.value = '';
+                                                interimIF.placeholder = 'Required';
                                                 interimIF.setAttribute('required', '');
                                                 interimIF.removeAttribute('readonly');
                                                 interimIF.placeholder = 'Required';
+
+                                                sdIF.removeAttribute('required');
                                             }
                                         }
                                     </script>

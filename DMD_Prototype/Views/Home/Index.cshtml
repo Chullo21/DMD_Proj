@@ -9,7 +9,7 @@
 
 <div class="container-fluid row mx-0">   
     <div class="col-md-12 col-lg-4 mx-auto mb-md-2">       
-        <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9; min-height: 80vh">
+        <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
             <div class="card-header text-center border-2 border-dark fs-3" style="background-color:#B5AD9A">
                 <p class="modal-title fs-5 fw-bold text-center">Documents Menu</p>
             </div>
@@ -21,7 +21,7 @@
                     </div>
 
                     <div class="modal fade" data-bs-backdrop="static" id="wsmodal">
-                        <div class="modal-dialog modal-lg">
+                        <div class="modal-dialog modal-xl">
                             <div class="modal-content">
                                 <div class="modal-header bg-primary text-white">
                                     <div class="modal-title d-flex">
@@ -105,7 +105,7 @@
     @if (EN[1] != "USER")
     {
         <div class="col-md-12 col-lg-4 mb-md-2 mx-auto">
-            <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9; min-height: 80vh">
+            <div class="card border-2 border-dark h-100" style="background-color:#E9E4E9">
                 <div class="card-header border-2 border-dark fs-3" style="background-color:#B5AD9A">
                     <p class="modal-title fs-5 fw-bold text-center">Documents Statuses</p>
                 </div>
@@ -140,13 +140,13 @@
             </div>
         </div>
         <div class="flex-column col-md-12 col-lg-4">
-            <div class="card border-2 border-dark" style="background-color:#E9E4E9; min-height: 80vh">
+            <div class="card border-2 border-dark" style="background-color:#E9E4E9">
                 <div class="card-header text-center border-2 border-dark" style="background-color:#B5AD9A">
                     <p class="modal-title fs-5 fw-bold text-center">Problem Log</p>
                 </div>
                 <div class="card-body">
                     <div>
-                        <select class="form-select w-100 fw-bolder" onchange="SelectYear(this.value)" id="plYearSelector">
+                        <select class="form-select w-100 fw-bolder" onchange="GetPLValues(this.value)" id="plYearSelector">
                             <option>@DateTime.Now.Year</option>
                             @for (int i = DateTime.Now.Year - 1; i >= 2022; i--)
                             {
@@ -171,9 +171,20 @@
         </div>
 
         <script>
-            function SelectYear(year) {
-                GetPLValues(year);
-            }
+            @* openPopup();
+
+            function openPopup() {
+                var popupUrl = '@Url.Action("ShowDoc", "MTI", new { docunumber = "", whichdoc = "WS" })';
+
+                var popupWidth = 600;
+                var popupHeight = 400;
+
+                var leftPosition = (screen.width - popupWidth) / 2;
+                var topPosition = (screen.height - popupHeight) / 2;
+
+                var popupWindow = window.open(popupUrl, '_blank', 'width=' + popupWidth + ',height=' + popupHeight + ',top=' + topPosition + ',left=' + leftPosition);
+
+            } *@
 
             var openClosedPL = document.getElementById('ProblemLogOpenAndClosed');
             var plCount = document.getElementById('problemlognumber');
@@ -189,20 +200,20 @@
             var swap = '';
             var spares = '';
 
-            function getMonthsToCurrent() {
-                const months = [
+            function getMonthsToCurrent(month) {
+                var months = [];
+                var monthNames = [
                     'January', 'February', 'March', 'April', 'May', 'June',
                     'July', 'August', 'September', 'October', 'November', 'December'
                 ];
 
-                const currentMonth = new Date().getMonth();
-
-                const monthsToCurrent = months.slice(0, currentMonth + 1);
-
-                return monthsToCurrent;
+                for (var i = 0; i <= month; i++) {
+                    months.push(monthNames[i]);
+                }
+                return months;
             }
 
-            var months = getMonthsToCurrent();
+            var months = getMonthsToCurrent(new Date().getMonth());
 
             var openClosedChart = new Chart(openClosedPL, {
                 type: 'bar',
@@ -334,13 +345,15 @@
                 }
             });
 
-            @* window.onload = function () {
-                GetPLValues('@DateTime.Now.Year');
-            } *@
-
-            GetPLValues('@DateTime.Now.Year');
+            GetPLValues(new Date().getFullYear());
 
             function GetPLValues(year) {
+                var monthCount = 11;
+
+                if (year == new Date().getFullYear()){
+                    monthCount = new Date().getMonth();
+                }
+
                 $.ajax({
                     url: '@Url.Action("GetPLDashboard", "Home")',
                     data: { year: year },
@@ -357,14 +370,17 @@
                         swap = r.swap;
                         spares = r.spares
 
+                        openClosedChart.data.labels = getMonthsToCurrent(monthCount);
                         openClosedChart.data.datasets[0].data = openidpl;
                         openClosedChart.data.datasets[1].data = opensdpl;
                         openClosedChart.data.datasets[2].data = closedidpl;
                         openClosedChart.data.datasets[3].data = closedsdpl;
+                        
                         openClosedChart.update();
 
                         plCountChart.data.datasets[0].data = [jlp, jtp, pnp, olb, swap, spares];
                         plCountChart.update();
+
                     }
                 });
             }

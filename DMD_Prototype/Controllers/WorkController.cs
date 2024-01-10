@@ -7,6 +7,7 @@ using DMD_Prototype.Controllers;
 using System.Net.Mail;
 using System.Net;
 using System.Reflection;
+using System.Collections;
 
 namespace DMD_Prototype.Controllers
 {
@@ -135,21 +136,23 @@ namespace DMD_Prototype.Controllers
         {
             string response = "go";
 
-            ModuleModel mod = ishared.GetModules().FirstOrDefault(j => j.Module == module && j.WorkOrder != workOrder);
+            //if (ishared.GetModules().)  
 
-            if (mod != null)
-            {
-                return Content(JsonConvert.SerializeObject(new { response = "m" }), "application/json");
-            }
+            //ModuleModel mod = ishared.GetModules().FirstOrDefault(j => j.Module == module && j.WorkOrder != workOrder);
 
-            IEnumerable<ModuleModel> wO = ishared.GetModules().Where(j => j.WorkOrder == workOrder);
+            //if (mod != null)
+            //{
+            //    return Content(JsonConvert.SerializeObject(new { response = "m" }), "application/json");
+            //}
 
-            Dictionary<string, string> modules = wO.Where(j => j.Module == module).ToDictionary(j => j.Module, j => j.SerialNo);
+            //IEnumerable<ModuleModel> wO = ishared.GetModules().Where(j => j.WorkOrder == workOrder);
 
-            if (modules.Any(j => j.Value == serialNo))
-            {
-                response = "s";
-            }
+            //Dictionary<string, string> modules = wO.Where(j => j.Module == module).ToDictionary(j => j.Module, j => j.SerialNo);
+
+            //if (modules.Any(j => j.Value == serialNo))
+            //{
+            //    response = "s";
+            //}
 
             return Content(JsonConvert.SerializeObject(new { response = response }), "application/json");
         }

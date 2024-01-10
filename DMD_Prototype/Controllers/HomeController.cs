@@ -145,7 +145,7 @@ namespace DMD_Prototype.Controllers
 
         private int[] DataPerMonthGetter(List<ProblemLogModel> list)
         {
-            int[] res = new int[DateTime.Now.Month];
+            int[] res = new int[12];
 
             foreach (var log in list)
             {

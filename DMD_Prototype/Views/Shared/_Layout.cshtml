@@ -27,7 +27,7 @@
     TempData.Keep();
 }
 <body style="background-color:lightgray">
-    <header class="mb-3" style="font-family:'Franklin Gothic'">
+    <header class="mb-3" style="font-family:'Franklin Gothic'; height: 13vh; position:sticky; top:0">
         <nav class="navbar" style="background-color:blue">
             <div class="container-fluid flex-column">
                 <div class="w-100 d-flex justify-content-between align-self-start mb-2">
@@ -49,7 +49,6 @@
                             </svg>
                             Home
                         </a>
-                        
                         @if (EN[1] != "USER")
                         {
                             <a class="col d-flex btn text-white" asp-controller="Home" asp-action="ShowTravelers">
@@ -130,7 +129,7 @@
         </nav>
     </header>
 
-    <div class="container-fluid" style="margin-bottom: 5vh">
+    <div class="container-fluid" style="height:80vh">
         <main role="main">
             @RenderBody()
         </main>

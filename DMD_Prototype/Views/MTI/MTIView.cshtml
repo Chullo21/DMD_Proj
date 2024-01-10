@@ -351,12 +351,13 @@
     </script>
 
     <div class="container-fluid position-fixed top-0">
-        <iframe class="w-100 border-3 border-dark" id="MainDoc" style="min-height:100vh" src="@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber, whichDoc = "MainDoc"})"></iframe>
+        <iframe class="w-100 border-3 border-dark" id="MainDoc" style="height:100vh" src="@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber, whichDoc = "MainDoc"})"></iframe>
     </div>
 
     <div class="modal fade" id="confirmStart" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-sm">
-            <form asp-controller ="Work" asp-action="StartWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" id="startworkform">
+            @* asp-controller ="Work" asp-action="StartWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" *@
+            <form  id="startworkform">
                 <div class="modal-content">
                     <div class="modal-header d-flex justify-content-start bg-primary text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-question-diamond-fill my-auto" viewBox="0 0 16 16">
@@ -413,7 +414,7 @@
                         }
                         else{
                             var err = '';
-                            if (response.response === 's'){
+                            if (response.response == 's'){
                                 err = 'Serial Number';
                             }
                             else{
@@ -751,8 +752,6 @@
             });
         });
 
-        var dTitle = document.getElementById('docTitle');
-
         document.querySelectorAll('input').forEach(function (input) {
             input.setAttribute("autocomplete", "off");
         });
@@ -1002,7 +1001,7 @@
     <div class="modal fade" id="docuFrame" data-bs-backdrop="true" data-bs-keyboard="false">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-primary text-white">
                     <h1 class="modal-title fs-5 fw-bold" id="docTitle"></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="document.getElementById('docFrame').src = ''"></button>
                 </div>
@@ -1191,7 +1190,8 @@
 
 <script>
 
-    
+    var dTitle = document.getElementById('docTitle');
+
     function WhichDev(docName, doctit) {
         document.getElementById('closeoffcanvas').click();
         var Frame = document.getElementById('docFrame');

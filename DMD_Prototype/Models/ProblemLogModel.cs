@@ -37,6 +37,7 @@ namespace DMD_Prototype.Models
         // Conditionals
 
         public string DocNo { get; set; } = string.Empty;
+        public char? AffectedDocSys { get; set; }
 
         public ProblemLogModel CreatePL(string plNo, DateTime logDate, string workWeek, string affectedDoc,
             string product, string pnDn, string desc, string problem, string reporter, string docNo)
