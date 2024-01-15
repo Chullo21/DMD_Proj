@@ -281,93 +281,68 @@
     <div class="modal fade" data-bs-backdrop="static" id="deviationModal">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header">
-                    <p class="modal-title text-center" id="devTit"></p>
+                <div class="modal-header bg-primary">
+                    <p class="modal-title text-center text-white fs-5 fw-bold" id="devTit"></p>
                     <button class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <div class="modal-body">
                     <div class="flex-column">
                         <div id="oplDiv" class="flex-column">
                             @{
-                                counter = 1;
-
                                 foreach (string path in opls)
                                 {
-                                    string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
+                                    string dirHere = System.IO.Path.GetFileName(path);
+                                    dirHere = dirHere.Replace("(o)", "");
 
-                                                <div class="d-flex justify-content-between my-2">
-                                                    <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
-                                                        @{
-                                                Write(counter.ToString());
-                                                        }
-                                                    </button>
+                                        <div class="d-flex justify-content-between my-2">
+                                            <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">@dirHere</button>
 
-                                                    <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'oplDiv')">Delete</button>
-                                                </div>
-                                    counter++;
+                                            <button class="btn btn-danger" type="button" onclick="ToggleBackgroundColor(this, '@Html.Encode(System.IO.Path.GetFileName(path))', 'oplDiv')">Delete</button>
+                                        </div>
                                 }
                             }
                         </div>
                         <div id="derogDiv" class="flex-column">
                             @{
-                                counter = 1;
-
                                 foreach (string path in derogations)
                                 {
-                                    string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
+                                    string dirHere = System.IO.Path.GetFileName(path);
+                                    dirHere = dirHere.Replace("(d)", "");
 
-                                                <div class="d-flex justify-content-between my-2">
-                                                    <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
-                                                        @{
-                                                Write(counter.ToString());
-                                                        }
-                                                    </button>
+                                        <div class="d-flex justify-content-between my-2">
+                                            <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">@dirHere</button>
 
-                                                    <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'derogDiv')">Delete</button>
-                                                </div>
-                                    counter++;
+                                            <button class="btn btn-danger" type="button" onclick="ToggleBackgroundColor(this, '@Html.Encode(System.IO.Path.GetFileName(path))', 'derogDiv')">Delete</button>
+                                        </div>
                                 }
                             }
                         </div>
                         <div id="prcoDiv" class="flex-column">
                             @{
-                                counter = 1;
-
                                 foreach (string path in prcos)
                                 {
-                                    string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
+                                    string dirHere = System.IO.Path.GetFileName(path);
+                                    dirHere = dirHere.Replace("(p)", "");
 
-                                                <div class="d-flex justify-content-between my-2">
-                                                    <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
-                                                        @{
-                                                Write(counter.ToString());
-                                                        }
-                                                    </button>
+                                        <div class="d-flex justify-content-between my-2">
+                                            <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">@dirHere</button>
 
-                                                    <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'prcoDiv')">Delete</button>
-                                                </div>
-                                    counter++;
+                                            <button class="btn btn-danger" type="button" onclick="ToggleBackgroundColor(this, '@Html.Encode(System.IO.Path.GetFileName(path))', 'prcoDiv')">Delete</button>
+                                        </div>
                                 }
                             }
                         </div>
                         <div id="memoDiv" class="flex-column">
                             @{
-                                counter = 1;
-
                                 foreach (string path in memos)
                                 {
-                                    string dirHere = System.IO.Path.GetFileNameWithoutExtension(path);
+                                    string dirHere = System.IO.Path.GetFileName(path);
+                                    dirHere = dirHere.Replace("(m)", "");
 
-                                                <div class="d-flex justify-content-between my-2">
-                                                    <button class="btn btn-primary w-75" type="button" onclick="OpenPDF('@dirHere')">
-                                                        @{
-                                                Write(counter.ToString());
-                                                        }
-                                                    </button>
-
-                                                    <button class="btn btn-original" type="button" onclick="ToggleBackgroundColor(this, '@dirHere', 'memoDiv')">Delete</button>
-                                                </div>
-                                    counter++;
+                                    <div class="d-flex justify-content-between my-2">
+                                            <button class="btn btn-primary w-75" type="button" onclick="OpenPDF(this.innerText)">@Html.Raw(dirHere)</button>
+                                            <button class="btn btn-danger" type="button" onclick="ToggleBackgroundColor(this, '@Html.Encode(System.IO.Path.GetFileName(path))', 'memoDiv')">Delete</button>
+                                    </div>
                                 }
                             }
                         </div>
@@ -379,15 +354,28 @@
 </form>
 
 <script>
+    let dirsToBeDeleted = [];
+
+    function OpenPDF(path) {
+
+        $('#showPdf').modal('show');
+
+        var frame = document.getElementById('showPdfIframe');
+
+        frame.src = '';
+        frame.src = '@Url.Action("ShowDoc", "MTI", new { docunumber = Model.DocumentNumber })' + '&whichDoc=' + path;
+    }
+
     function ToggleBackgroundColor(button, dir, div) {
-        if (button.classList.contains('btn-original')) {
-            button.classList.remove('btn-original');
-            button.classList.add('btn-alternate');
+
+        if (button.classList.contains('btn-danger')) {
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-primary');
             button.innerHTML = 'Undo';
             PushToDirectory(div, dir);
         } else {
-            button.classList.remove('btn-alternate');
-            button.classList.add('btn-original');
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-danger');
             button.innerHTML = 'Delete';
             RemoveFromDirectory(div);
         }        
@@ -406,9 +394,17 @@
     {
         var inputField = document.createElement('input');
         inputField.name = 'DirsToBeDeleted';
-        inputField.value = dir;
+        inputField.value = unescapeSpecialCharacters(dir);
         inputField.type = 'hidden';
         document.getElementById(div).appendChild(inputField);
+    }
+
+    function unescapeSpecialCharacters(input) {
+        return input.replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'");
     }
 </script>
 
@@ -426,15 +422,4 @@
     </div>
 </div>
 
-<script>
-    function OpenPDF(path)
-    {
-        $('#deviationModal').modal('hide');
-        $('#showPdf').modal('show');
-        var frame = document.getElementById('showPdfIframe');
-        frame.src = '@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber})' + '&whichDoc=' + path;
-    }
-
-    
-</script>
 

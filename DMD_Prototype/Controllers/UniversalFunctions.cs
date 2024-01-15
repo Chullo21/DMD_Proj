@@ -13,6 +13,8 @@ namespace DMD_Prototype.Controllers
 
         public string GetPath(string path);
 
+        public IEnumerable<SerialNumberModel> GetSerialNumbers();
+
         public List<MTIModel> GetMTIs();
 
         public List<AccountModel> GetAccounts();
@@ -50,19 +52,19 @@ namespace DMD_Prototype.Controllers
 
         private readonly AppDbContext _Db;
 
-        private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
-        private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
-        private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
-        private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
-        private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
-        private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        //private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
+        //private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
+        //private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        //private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        //private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        //private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
 
-        //private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
-        //private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
-        //private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
-        //private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
-        //private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
-        //private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
+        private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
+        private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
 
         private readonly string travelerBackupDir = "A:\\DMD Portal Backups\\Travelers";
         private readonly string configBackupDir = "A:\\DMD Portal Backups\\Configuration Logs";
@@ -114,6 +116,11 @@ namespace DMD_Prototype.Controllers
 
                 converter.ConvertExceltoPdfAndStoreInSpecifiedPath(srcDir, saveInIdentifier, $"{setName}.pdf");
             }
+        }
+
+        public IEnumerable<SerialNumberModel> GetSerialNumbers()
+        {
+            return _Db.SerialNumberDb;
         }
 
         public IEnumerable<UserActionModel> GetUA()

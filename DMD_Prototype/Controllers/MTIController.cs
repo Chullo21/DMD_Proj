@@ -90,7 +90,7 @@ namespace DMD_Prototype.Controllers
             {
                 DocumentNumberVar = docuno;
 
-                DeleteMultipleFiles(DirsTobeDeleted, docuno);
+                if (DirsTobeDeleted.Count > 0) DeleteMultipleFiles(DirsTobeDeleted, docuno);
                 CopyNoneMultipleDocs(mpti, drawing, bom, schema, travFile);
                 CopyMultipleDocs(opl, prco, derogation, memo);
 
@@ -118,10 +118,10 @@ namespace DMD_Prototype.Controllers
 
             string filePath = Path.Combine(ishare.GetPath("mainDir"), docuNo);
 
-            ViewBag.opl= Directory.GetFiles(filePath).Where(j => j.Contains("OPL")).ToList();
-            ViewBag.derogation = Directory.GetFiles(filePath).Where(j => j.Contains("Derogation")).ToList();
-            ViewBag.prco = Directory.GetFiles(filePath).Where(j => j.Contains("PRCO")).ToList();
-            ViewBag.memo = Directory.GetFiles(filePath).Where(j => j.Contains("EngineeringMemo")).ToList();
+            ViewBag.opl= Directory.GetFiles(filePath).Where(j => j.Contains("(o)")).ToList();
+            ViewBag.derogation = Directory.GetFiles(filePath).Where(j => j.Contains("(d)")).ToList();
+            ViewBag.prco = Directory.GetFiles(filePath).Where(j => j.Contains("(p)")).ToList();
+            ViewBag.memo = Directory.GetFiles(filePath).Where(j => j.Contains("(m)")).ToList();
 
             return View(model);
         }
@@ -133,10 +133,10 @@ namespace DMD_Prototype.Controllers
             MTIViewModel mModel = new MTIViewModel();
             {
                 mModel.DocumentNumber = docuNumber;
-                mModel.Opl = DeviationDocNames(ishare.GetPath("opl"), docuNumber);
-                mModel.Prco = DeviationDocNames(ishare.GetPath("prco"), docuNumber);
-                mModel.Derogation = DeviationDocNames(ishare.GetPath("derog"), docuNumber);
-                mModel.Memo = DeviationDocNames(ishare.GetPath("memo"), docuNumber);
+                mModel.Opl = DeviationDocNames("o", docuNumber);
+                mModel.Prco = DeviationDocNames("p", docuNumber);
+                mModel.Derogation = DeviationDocNames("d", docuNumber);
+                mModel.Memo = DeviationDocNames("m", docuNumber);
                 mModel.WorkingStat = workStat;
                 mModel.SessionID = sesID;
                 mModel.AssyNo = mti.AssemblyPN;
@@ -162,9 +162,18 @@ namespace DMD_Prototype.Controllers
 
         private void DeleteMultipleFiles(List<string> fileNames, string docNo)
         {
+            IEnumerable<string> files = Directory.GetFiles(Path.Combine(ishare.GetPath("mainDir"), docNo));
+
             foreach (string filename in fileNames)
             {
-                System.IO.File.Delete(Path.Combine(ishare.GetPath("mainDir"), docNo, $"{filename}.pdf"));
+                string filePath = Path.Combine(ishare.GetPath("mainDir"), docNo, filename);
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    filePath = files.FirstOrDefault(j => j == filename);
+                }
+
+                System.IO.File.Delete(filePath);
             }
         }
 
@@ -201,9 +210,11 @@ namespace DMD_Prototype.Controllers
             {
                 foreach (string docs in Directory.GetFiles(folderPath))
                 {
-                    string FileNameOnly = Path.GetFileNameWithoutExtension(docs);
+                    string fileName = Path.GetFileName(docs);
 
-                    if (docs.Contains(Path.GetFileNameWithoutExtension(DocName))) listOfDocs.Add(FileNameOnly);
+                    fileName = fileName.Substring(3);
+
+                    if (docs.Contains(Path.GetFileNameWithoutExtension($"({DocName})"))) listOfDocs.Add(fileName);
                 }
             }
 
@@ -275,56 +286,26 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private void CopyMultipleDocs(List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo)
+        private void CopyMultipleDocHandler(List<IFormFile>? files, char whichDoc)
         {
-            Dictionary<string, List<IFormFile>> files = new Dictionary<string, List<IFormFile>>();
-
-            if (onepointlesson?.Count > 0) files.Add(ishare.GetPath("opl"), onepointlesson);
-            if (prco?.Count > 0) files.Add(ishare.GetPath("prco"), prco);
-            if (derogation?.Count > 0) files.Add(ishare.GetPath("derog"), derogation);
-            if (engineeringmemo?.Count > 0) files.Add(ishare.GetPath("memo"), engineeringmemo);
-
             string filePath = Path.Combine(ishare.GetPath("mainDir"), DocumentNumberVar);
 
-            foreach (var file in files)
+            foreach (IFormFile file in files)
             {
-                foreach (var item in file.Value)
+                using (FileStream fs = new FileStream(Path.Combine(filePath, $"({whichDoc}){file.FileName}"), FileMode.Create))
                 {
-                    int counter = 1;
-
-                    string fileNameOnly = Path.GetFileNameWithoutExtension(file.Key);
-
-                    List<string> getFiles = Directory.GetFiles(filePath).Where(j => j.Contains(fileNameOnly)).ToList();
-
-                    do
-                    {
-                        if (!System.IO.File.Exists(Path.Combine(filePath, $"{fileNameOnly}_{counter}.pdf")))
-                        {
-                            using (FileStream fs = new FileStream(Path.Combine(filePath, fileNameOnly + "_" + (getFiles.Count + 1).ToString() + ".pdf"), FileMode.Create))
-                            {
-                                item.CopyTo(fs);
-                            }
-
-                            break;
-                        }
-                        counter++;
-                    } while (true);
+                    file.CopyTo(fs);
                 }
             }
         }
 
-        private byte[] getDocumentsFromDb(string docuNumber, string whichDoc, string extension)
+        private void CopyMultipleDocs(List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo)
         {
-            string folderPath = Path.Combine(ishare.GetPath("mainDir"), docuNumber, whichDoc + extension);
 
-            using (FileStream fileStream = new FileStream(folderPath, FileMode.Open))
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    fileStream.CopyTo(ms);
-                    return ms.ToArray();
-                }
-            }
+            if (onepointlesson != null && onepointlesson.Count > 0) CopyMultipleDocHandler(onepointlesson, 'o');
+            if (prco != null && prco.Count > 0) CopyMultipleDocHandler(prco, 'p');
+            if (derogation != null && derogation.Count > 0) CopyMultipleDocHandler(derogation, 'd');
+            if (engineeringmemo != null && engineeringmemo.Count > 0) CopyMultipleDocHandler(engineeringmemo, 'm');
         }
 
         public IActionResult UploadWS(IFormFile file)
@@ -337,35 +318,65 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult ShowDoc(string docunumber, string whichDoc)
+        private byte[] getDocumentsFromDb(string docuNumber, string whichDoc, char? docType)
         {
-            if (whichDoc == "WS")
+            string folderPath = "";
+            IEnumerable<string> files;
+
+            if (docType == null)
             {
-                if (System.IO.File.Exists(Path.Combine(ishare.GetPath("mainDir"), ishare.GetPath("wsf"), ishare.GetPath("ws"))))
-                {
-                    using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), ishare.GetPath("wsf"), ishare.GetPath("ws")), FileMode.Open))
-                    {
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            fs.CopyTo(ms);
-                            return File(ms.ToArray(), "application/pdf");
-                        }
-                    }
-                }
-                else
-                {
-                    return NoContent();
-                }
-                          
+                folderPath = Path.Combine(ishare.GetPath("mainDir"), docuNumber, whichDoc);
             }
-            else if (Directory.GetFiles(Path.Combine(ishare.GetPath("mainDir"), docunumber)).Any(j => Path.GetFileName(j) == whichDoc + ".pdf"))
+            else
             {
-                return File(getDocumentsFromDb(docunumber, whichDoc, ".pdf"), "application/pdf");
+                folderPath = Path.Combine(ishare.GetPath("mainDir"), docuNumber, $"({docType}){whichDoc}");
+            }
+
+            if (!System.IO.File.Exists(folderPath))
+            {
+                files = Directory.GetFiles(Path.Combine(ishare.GetPath("mainDir"), docuNumber));
+                folderPath = files.FirstOrDefault(j => j.Contains(whichDoc));
+            }
+
+            using (FileStream fileStream = new FileStream(folderPath, FileMode.Open))
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    fileStream.CopyTo(ms);
+                    return ms.ToArray();
+                }
+            }
+        }
+
+        public IActionResult ShowDoc(string docunumber, string whichDoc, char? docType)
+        {
+            if (whichDoc != "WS")
+            {
+                return File(getDocumentsFromDb(docunumber, whichDoc, docType), "application/pdf");
             }
             else
             {
                 return NoContent();
-            }          
+            }
+        }
+
+        public IActionResult ShowWS()
+        {
+            if (System.IO.File.Exists(Path.Combine(ishare.GetPath("mainDir"), ishare.GetPath("wsf"), ishare.GetPath("ws"))))
+            {
+                using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), ishare.GetPath("wsf"), ishare.GetPath("ws")), FileMode.Open))
+                {
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        fs.CopyTo(ms);
+                        return File(ms.ToArray(), "application/pdf");
+                    }
+                }
+            }
+            else
+            {
+                return NoContent();
+            }
         }
     }
 

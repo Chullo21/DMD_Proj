@@ -351,7 +351,7 @@
     </script>
 
     <div class="container-fluid position-fixed top-0">
-        <iframe class="w-100 border-3 border-dark" id="MainDoc" style="height:100vh" src="@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber, whichDoc = "MainDoc"})"></iframe>
+        <iframe class="w-100 border-3 border-dark" id="MainDoc" style="height:100vh" src="@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber, whichDoc = "MainDoc.pdf"})"></iframe>
     </div>
 
     <div class="modal fade" id="confirmStart" data-bs-backdrop="static">
@@ -413,15 +413,7 @@
                             window.location.href = '@Url.Action("StartWork", "Work")' + '?docno=' + '@Model.DocumentNumber' + '&EN=' + '@EN[0]' + '&wOrder=' + workOrder + '&serialNo=' + serialNo + '&module=' + Module;
                         }
                         else{
-                            var err = '';
-                            if (response.response == 's'){
-                                err = 'Serial Number';
-                            }
-                            else{
-                                err = 'Module';
-                            }
-
-                            alert( err + ' already exist, are you trying to continue a pending work? Go to "Pending Travelers" instead.');
+                            alert(response.message);
                             $('#workorder').val('');
                             $('#serialno').val('');
                             $('#module').val('');
@@ -446,10 +438,10 @@
                         <h4 class="card-title text-center">Primary Docs</h4>
                     </div>
                     <div class="card-body row">
-                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('AssyDrawing', 'Assembly Drawing')" data-bs-toggle="modal" data-bs-target="#docuFrame">Assembly Drawing</button>
-                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('BOM', 'BOM')" data-bs-toggle="modal" data-bs-target="#docuFrame">Bills of Materials</button>
-                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('SchematicDiag', 'Schematic Diagram')" data-bs-toggle="modal" data-bs-target="#docuFrame">Schematic Diagram</button>
-                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('WS', 'Workmanship Standard')" data-bs-toggle="modal" data-bs-target="#docuFrame">Workmanship Standard (MPI)</button>
+                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('AssyDrawing.pdf', 'Assembly Drawing')" data-bs-toggle="modal" data-bs-target="#docuFrame">Assembly Drawing</button>
+                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('BOM.pdf', 'BOM')" data-bs-toggle="modal" data-bs-target="#docuFrame">Bills of Materials</button>
+                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SetDoc('SchematicDiag.pdf', 'Schematic Diagram')" data-bs-toggle="modal" data-bs-target="#docuFrame">Schematic Diagram</button>
+                        <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="SeeWS()" data-bs-toggle="modal" data-bs-target="#docuFrame">Workmanship Standard (MPI)</button>
                     </div>
                 </div>
                 <div class="card mt-1 border-3 border-dark">
@@ -458,11 +450,9 @@
                     </div>
                     <div class="card-body row">
                         @{
-                            counter = 0;
                             foreach (string opl in Model.Opl)
                             {
-                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@opl', 'One Point Lesson')" data-bs-toggle="modal" data-bs-target="#docuFrame">One Point Lesson @counter</button>
-                                counter++;
+                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev(this.innerText, 'o')" data-bs-toggle="modal" data-bs-target="#docuFrame">@opl</button>
                             }
 
                             if (Model.Opl.Count <= 0)
@@ -478,11 +468,9 @@
                     </div>
                     <div class="card-body row">
                         @{
-                            counter = 0;
                             foreach (string prco in Model.Prco)
                             {
-                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@prco', 'PRCO')" data-bs-toggle="modal" data-bs-target="#docuFrame">PRCO @counter</button>
-                                counter++;
+                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev(this.innerText, 'p')" data-bs-toggle="modal" data-bs-target="#docuFrame">@prco</button>
                             }
 
                             if (Model.Prco.Count <= 0)
@@ -498,11 +486,9 @@
                     </div>
                     <div class="card-body row">
                         @{
-                            counter = 0;
                             foreach (string dero in Model.Derogation)
                             {
-                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@dero', 'Derogation')" data-bs-toggle="modal" data-bs-target="#docuFrame">Derogation @counter</button>
-                                counter++;
+                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev(this.innerText, 'd')" data-bs-toggle="modal" data-bs-target="#docuFrame">@dero</button>
                             }
 
                             if (Model.Derogation.Count <= 0)
@@ -518,11 +504,9 @@
                     </div>
                     <div class="card-body row">
                         @{
-                            counter = 0;
                             foreach (string memo in Model.Memo)
                             {
-                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev('@memo', 'Engineering Memo')" data-bs-toggle="modal" data-bs-target="#docuFrame">Engineering Memo @counter</button>
-                                counter++;
+                                <button class="w-75 my-1 mx-auto btn btn-primary border-1 border-dark" onclick="WhichDev(this.innerText, 'm')" data-bs-toggle="modal" data-bs-target="#docuFrame">@memo</button>
                             }
 
                             if (Model.Memo.Count <= 0)
@@ -999,7 +983,7 @@
     </script>
 
     <div class="modal fade" id="docuFrame" data-bs-backdrop="true" data-bs-keyboard="false">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h1 class="modal-title fs-5 fw-bold" id="docTitle"></h1>
@@ -1192,13 +1176,23 @@
 
     var dTitle = document.getElementById('docTitle');
 
-    function WhichDev(docName, doctit) {
+    function WhichDev(docName, docType) {
         document.getElementById('closeoffcanvas').click();
         var Frame = document.getElementById('docFrame');
 
         var baseUrl = '@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber})';
-        Frame.src = baseUrl + '&whichDoc=' + docName;
-        dTitle.innerText = doctit;
+        Frame.src = baseUrl + '&whichDoc=' + docName + '&docType=' + docType;
+        dTitle.innerText = docName;
+    }
+
+    function SeeWS() {
+        document.getElementById('closeoffcanvas').click();
+        var Frame = document.getElementById('docFrame');
+
+        var baseUrl = '@Url.Action("ShowWS", "MTI")';
+        Frame.src = baseUrl;
+
+            dTitle.innerText = 'Workmanship Standard';
     }
 
     function SetDoc(doc, doctit) {

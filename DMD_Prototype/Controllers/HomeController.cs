@@ -93,7 +93,9 @@ namespace DMD_Prototype.Controllers
         public IActionResult ShowTravelers()
         {
             Dictionary<string, (string, string)> mtis = ishare.GetMTIs().Where(j => !j.ObsoleteStat).ToDictionary(j => j.DocumentNumber, j => (j.AssemblyDesc, j.AfterTravLog));
-            Dictionary<string, (string, string)> module = ishare.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo));
+            IEnumerable<ModuleModel> module = ishare.GetModules();
+            IEnumerable<SerialNumberModel> serialNumbers = ishare.GetSerialNumbers();
+
             Dictionary<string, (string, string?, string?, string, string)> sw = ishare.GetStartWork().ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.HasValue ? j.FinishDate.Value.ToShortDateString() : "NF", j.UserID, j.DocNo, j.SWID.ToString()));
             Dictionary<string, string> accs = ishare.GetAccounts().Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
 
@@ -112,8 +114,8 @@ namespace DMD_Prototype.Controllers
                 trav.FinishDate = work.Value.Item2;
                 trav.Status = stat;
                 trav.Technician = accs.FirstOrDefault(j => j.Key == work.Value.Item3).Value;
-                trav.SerialNo = module.FirstOrDefault(j => j.Key == work.Key).Value.Item2;
-                trav.Module = module.FirstOrDefault(j => j.Key == work.Key).Value.Item1;
+                trav.SerialNo = serialNumbers.FirstOrDefault(j => j.SessionId == work.Key).SerialNumber;
+                trav.Module = module.FirstOrDefault(j => j.SessionID == work.Key).Module;
                 trav.SessionID = work.Key;
                 trav.SWID = work.Value.Item5;
                 trav.LogType = mtis.FirstOrDefault(j => j.Key == work.Value.Item4).Value.Item2;

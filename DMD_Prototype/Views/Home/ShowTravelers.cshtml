@@ -255,12 +255,12 @@
                     </svg>
                     <p class="fs-5 fw-bold my-auto mx-2">View Traveler</p>                    
                 </div>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                <button class="btn-close" data-bs-dismiss="modal" onclick="ClearIframeSrc()"></button>
             </div>
             <div class="modal-body">
                 <div class="position-absolute bg-transparent end-0" style="height:60px; width:25%">
                 </div>
-                <div>
+                <div>                   
                     <iframe class="w-100 border-3 border-dark" id="viewtravmodalbody" src="" style="height:580px">Traveler Here</iframe>
                 </div>
             </div>
@@ -269,11 +269,18 @@
 </div>
 
 <script>
+    var excelFrame = document.getElementById('viewtravmodalbody');
+    
     function OpenExcel(sesId)
     {
         $(function () {
             $('#viewtravmodal').modal('show');
-            document.getElementById('viewtravmodalbody').src = '@Url.Action("ViewExcelFile", "DocGenerator")' + '?sessionId=' + sesId;
+            excelFrame.src = '@Url.Action("ViewExcelFile", "DocGenerator")' + '?sessionId=' + sesId;
         });
+    }
+
+    function ClearIframeSrc()
+    {
+        excelFrame.src = null;
     }
 </script>

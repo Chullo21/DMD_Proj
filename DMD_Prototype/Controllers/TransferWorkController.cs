@@ -20,7 +20,8 @@ namespace DMD_Prototype.Controllers
             List<SVSesViewModel> res = new();
 
             Dictionary<string, string> docs = ishared.GetMTIs().Where(j => !j.ObsoleteStat).ToList().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
-            Dictionary<string, (string, string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo, j.WorkOrder));
+            Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
+            IEnumerable<SerialNumberModel> serialNumbers = ishared.GetSerialNumbers();
             Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
             Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
 
@@ -34,7 +35,7 @@ namespace DMD_Prototype.Controllers
                 string session = s.Value.Item3;
                 vm.Module = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item1;
                 vm.SerialNo = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item2;
-                vm.WorkOrder = modules.FirstOrDefault(j =>  j.Key == s.Value.Item3).Value.Item3;
+                vm.WorkOrder = serialNumbers.FirstOrDefault(j => j.SessionId == s.Value.Item3).SerialNumber;
 
                 vm.CurrentTech = accounts.FirstOrDefault(j => j.Key == s.Value.Item1).Value;
 
@@ -68,9 +69,10 @@ namespace DMD_Prototype.Controllers
             List<RequestSessionModel> reqs = ishared.GetRS();
 
             Dictionary<string, string> docs = ishared.GetMTIs().Where(j => !j.ObsoleteStat).ToList().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
-            Dictionary<string, (string, string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.SerialNo, j.WorkOrder));
+            Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
             Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
             Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
+            IEnumerable<SerialNumberModel> serialNumbers = ishared.GetSerialNumbers();
             List<SVSesViewModel> res = new();
 
             foreach (var req in reqs)
@@ -87,8 +89,8 @@ namespace DMD_Prototype.Controllers
                 string sessionGetter = sw.FirstOrDefault(j => j.Key == req.SWID).Value.Item3;
 
                 vm.Module = modules.FirstOrDefault(j => j.Key == sessionGetter).Value.Item1;
-                vm.SerialNo = modules.FirstOrDefault(j => j.Key == sessionGetter).Value.Item2;
-                vm.WorkOrder = modules.FirstOrDefault(j => j.Key == sessionGetter).Value.Item3;
+                vm.SerialNo = serialNumbers.FirstOrDefault(j => j.SessionId == sessionGetter).SerialNumber;
+                vm.WorkOrder = modules.FirstOrDefault(j => j.Key == sessionGetter).Value.Item2;
 
                 res.Add(vm);
             }

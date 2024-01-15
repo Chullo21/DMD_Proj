@@ -39,7 +39,8 @@ namespace DMD_Prototype.Controllers
 
             if (ModelState.IsValid)
             {
-                _Db.ModuleDb.Add(new ModuleModel().CreateModule(sesID, module, serialNo, wo));
+                _Db.ModuleDb.Add(new ModuleModel().CreateModule(sesID, module, wo));
+                _Db.SerialNumberDb.Add(new SerialNumberModel().SubmitSerialNumber(serialNo, sesID));
                 _Db.StartWorkDb.Add(swModel);
                 _Db.SaveChanges();
             }
@@ -109,12 +110,13 @@ namespace DMD_Prototype.Controllers
             Stream stream = assembly.GetManifestResourceStream(filePath);
 
             ModuleModel module = ishared.GetModules().FirstOrDefault(j => j.SessionID == sessionId);
+            SerialNumberModel serialNumber = ishared.GetSerialNumbers().FirstOrDefault(j => j.SessionId == sessionId);
 
             using (ExcelPackage package = new ExcelPackage(stream))
             {
                 package.Workbook.Worksheets[0].Cells[5, 3].Value = DateTime.Now.ToShortDateString();
                 package.Workbook.Worksheets[0].Cells[4, 6].Value = module.WorkOrder;
-                package.Workbook.Worksheets[0].Cells[5, 6].Value = module.SerialNo;
+                package.Workbook.Worksheets[0].Cells[5, 6].Value = serialNumber.SerialNumber;
 
                 package.SaveAs(Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName")));
             }
@@ -136,25 +138,20 @@ namespace DMD_Prototype.Controllers
         {
             string response = "go";
 
-            //if (ishared.GetModules().)  
+            SerialNumberModel? serialNumber = ishared.GetSerialNumbers().FirstOrDefault(j => j.SerialNumber == serialNo);
+            ModuleModel? getModule = ishared.GetModules().FirstOrDefault(j => j.Module == module);
 
-            //ModuleModel mod = ishared.GetModules().FirstOrDefault(j => j.Module == module && j.WorkOrder != workOrder);
+            if (serialNumber != null)
+            {
+                return Content(JsonConvert.SerializeObject(new { response = "s", message = $"Serial Number already exist, with Work Order of {getModule.WorkOrder} and Module of {getModule.Module}." }), "application/json");
+            }
 
-            //if (mod != null)
-            //{
-            //    return Content(JsonConvert.SerializeObject(new { response = "m" }), "application/json");
-            //}
+            if (getModule != null && getModule.WorkOrder != workOrder)
+            {
+                return Content(JsonConvert.SerializeObject(new { response = "m", message = $"Module already exist, with Work Order of {getModule.WorkOrder}." }), "application/json");
+            }
 
-            //IEnumerable<ModuleModel> wO = ishared.GetModules().Where(j => j.WorkOrder == workOrder);
-
-            //Dictionary<string, string> modules = wO.Where(j => j.Module == module).ToDictionary(j => j.Module, j => j.SerialNo);
-
-            //if (modules.Any(j => j.Value == serialNo))
-            //{
-            //    response = "s";
-            //}
-
-            return Content(JsonConvert.SerializeObject(new { response = response }), "application/json");
+            return Content(JsonConvert.SerializeObject(new { response = response}), "application/json");
         }
 
         public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo, string module)
@@ -173,11 +170,6 @@ namespace DMD_Prototype.Controllers
 
             return RedirectToAction("LoginPage", "Login");
         }
-
-        //public IActionResult SubmitTraveler(SubmitTravMod input)
-        //{
-        //    return RedirectToAction();
-        //}
 
         public IActionResult ContinueWork(string userID, bool noPW)
         {
@@ -202,10 +194,11 @@ namespace DMD_Prototype.Controllers
 
             MTIModel docDet = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo);
             ModuleModel module = ishared.GetModules().FirstOrDefault(j => j.SessionID == sessionId);
+            SerialNumberModel serialNumber = ishared.GetSerialNumbers().FirstOrDefault(j => j.SessionId == sessionId);
 
-            ishared.BackupHandler(logType, whichFileEnum.Traveler, sessionId, $"{docDet.Product} {module.WorkOrder} {module.Module} {module.SerialNo}");
+            ishared.BackupHandler(logType, whichFileEnum.Traveler, sessionId, $"{docDet.Product} {module.WorkOrder} {module.Module} {serialNumber.SerialNumber}");
 
-            if (logType.ToLower() != "n") ishared.BackupHandler(logType, whichFileEnum.Log, sessionId, $"{docDet.Product} {module.WorkOrder} {module.Module} {module.SerialNo}");
+            if (logType.ToLower() != "n") ishared.BackupHandler(logType, whichFileEnum.Log, sessionId, $"{docDet.Product} {module.WorkOrder} {module.Module} {serialNumber.SerialNumber}");
 
             return RedirectToAction("Index", "Home");
         }

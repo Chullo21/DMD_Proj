@@ -22,6 +22,8 @@ namespace DMD_Prototype.Data
 
         public DbSet<ModuleModel> ModuleDb { get; set; }
 
+        public DbSet<SerialNumberModel> SerialNumberDb { get; set; }
+
         public DbSet<RequestSessionModel> RSDb { get; set; }
 
         public DbSet<UserActionModel> UADb { get; set; }
