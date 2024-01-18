@@ -2,10 +2,61 @@
 @{
     ViewData["Title"] = "Get Work";
 
-    string[] EN = TempData["EN"] as string[];
+    string[]? EN = TempData["EN"] as string[];
     TempData.Keep();
 }
+<div id="loader" style="display:none">
+    <div class="box-of-star1">
+        <div class="star star-position1"></div>
+        <div class="star star-position2"></div>
+        <div class="star star-position3"></div>
+        <div class="star star-position4"></div>
+        <div class="star star-position5"></div>
+        <div class="star star-position6"></div>
+        <div class="star star-position7"></div>
+    </div>
+    <div class="box-of-star2">
+        <div class="star star-position1"></div>
+        <div class="star star-position2"></div>
+        <div class="star star-position3"></div>
+        <div class="star star-position4"></div>
+        <div class="star star-position5"></div>
+        <div class="star star-position6"></div>
+        <div class="star star-position7"></div>
+    </div>
+    <div class="box-of-star3">
+        <div class="star star-position1"></div>
+        <div class="star star-position2"></div>
+        <div class="star star-position3"></div>
+        <div class="star star-position4"></div>
+        <div class="star star-position5"></div>
+        <div class="star star-position6"></div>
+        <div class="star star-position7"></div>
+    </div>
+    <div class="box-of-star4">
+        <div class="star star-position1"></div>
+        <div class="star star-position2"></div>
+        <div class="star star-position3"></div>
+        <div class="star star-position4"></div>
+        <div class="star star-position5"></div>
+        <div class="star star-position6"></div>
+        <div class="star star-position7"></div>
+    </div>
+    @* <div data-js="astro" class="astronaut">
+        <div class="head"></div>
+        <div class="arm arm-left"></div>
+        <div class="arm arm-right"></div>
+        <div class="body">
+            <div class="panel"></div>
+        </div>
+        <div class="leg leg-left"></div>
+        <div class="leg leg-right"></div>
+        <div class="schoolbag"></div>
+    </div> *@
+</div>
 
+<link href="~/css/loaderastronaut.css" rel="stylesheet" />
+<input value="@EN[2]" id="userId" hidden />
 <div class="container-fluid">
     <div class="table-responsive">
         <table class="table table-bordered table-hover" id="myTable">
@@ -77,6 +128,8 @@
 </div>
 
 <script>
+    var intervalSetter;
+
     var idGetter = '';
     $('#myTable').DataTable({
         searching: true,
@@ -93,11 +146,56 @@
     }
 
     function ConfirmAction(){
-        console.log($('#idGetter').val());
-        window.location.href = '@Url.Action("TakeSession", "TransferWork")' + '?id=' +idGetter + '&userId=' + '@EN[2]';
+        $.ajax({
+            url: '@Url.Action("TakeSession", "TransferWork")',
+            data: { id: idGetter , userId: $('#userId').val()},
+            success: function (r) {
+                if (r.r == 'g') {
+                    $('#waitModal').modal('show');
+                    document.getElementById('loader').style.display = 'block';
+
+                    intervalSetter = setInterval(CheckIfRequestIsApproved, 5000);
+                }
+            }
+        });
+    }
+
+    function CheckIfRequestIsApproved() {
+        $.ajax({
+            url: '@Url.Action("CheckIfRequestIsApproved", "TransferWork")',
+            data: {userId: $('#userId').val(), SWID: idGetter },
+            success: function (r) {
+                if (r.r == 'g') {
+                    window.location.href = '@Url.Action("ContinueWork", "Work")' + r.link;
+                }
+                else if (r.r == 'd'){
+                    clearInterval(intervalSetter);
+                    $('#waitModal').modal('hide');
+                    document.getElementById('loader').style.display = 'none';
+                    alert('Your request has been denied.');
+                }
+            }
+        });
     }
 
 </script>
+
+<div class="modal fade border-2 border-dark bg-opacity-75" data-bs-backdrop="static" data-bs-keyboard="false" id="waitModal">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border border-dark">
+            <div class="modal-header bg-primary fs-5 fw-bold text-white">
+                Please Wait..
+            </div>
+            <div class="modal-body fw-bold">
+                <p>Remind your supervisor to approve your request.</p>
+                <p>This is an automatic process.</p>
+                <p class="text-danger">Do not touch anything.</p>
+                <p class="text-danger">Do not close the browser.</p>
+                <p class="text-danger">Do not press back.</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade border-2 border-dark" data-bs-backdrop="static" data-bs-keyboard="false" id="confirmAction">
     <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -111,7 +209,7 @@
             <div class="modal-footer">
                 <div class="d-flex justify-content-between w-100">
                     <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <button class="btn btn-primary" onclick="ConfirmAction()">Confirm</button>
+                    <button class="btn btn-primary" data-bs-dismiss="modal" onclick="ConfirmAction()">Confirm</button>
                 </div>
             </div>
         </div>

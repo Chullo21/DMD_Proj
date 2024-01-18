@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Home Page";
 
-    string[] EN = TempData["EN"] as string[];
+    string[]? EN = TempData["EN"] as string[];
     TempData.Keep();
 
 }
@@ -20,7 +20,7 @@
                         <button class="w-100 btn btn-warning border-2 border-dark" style="font-size:20px" data-bs-toggle="modal" data-bs-target="#wsmodal">Workmanship Standard</button>
                     </div>
 
-                    <div class="modal fade" data-bs-backdrop="static" id="wsmodal">
+                    <div class="modal fade" data-bs-backdrop="static" id="wsmodal" style="z-index: 2002">
                         <div class="modal-dialog modal-xl">
                             <div class="modal-content">
                                 <div class="modal-header bg-primary text-white">

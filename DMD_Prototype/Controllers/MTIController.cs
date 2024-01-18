@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using DMD_Prototype.Models;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DMD_Prototype.Controllers
 {
@@ -18,6 +19,15 @@ namespace DMD_Prototype.Controllers
         private readonly AppDbContext _Db;
 
         private string DocumentNumberVar;
+
+        public string[] GetUserData()
+        {
+            string[] userData = TempData["EN"] as string[];
+
+            TempData.Keep();
+
+            return userData;
+        }
 
         public IActionResult ChangeDocOwner(string docNo, string  docOwner)
         {
@@ -77,8 +87,6 @@ namespace DMD_Prototype.Controllers
         {
 
             var fromDb = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuno);
-            string docs = GetDocNames(mpti != null, drawing != null, bom != null, schema != null, opl.Count, prco.Count, derogation.Count, memo.Count);
-
             MTIModel mod = new MTIModel();
             {
                 mod = fromDb;
@@ -96,7 +104,6 @@ namespace DMD_Prototype.Controllers
 
                 _Db.MTIDb.Update(mod);
 
-                ishare.RecordOriginatorAction($"{user}, updated the following engineering documents {docs} with Doc Number of {docuno}.", user, DateTime.Now);
                 _Db.SaveChanges();
             }
 
@@ -174,6 +181,8 @@ namespace DMD_Prototype.Controllers
                 }
 
                 System.IO.File.Delete(filePath);
+
+                ishare.RecordOriginatorAction($"Deleted {Path.GetFileName(filename).Substring(3)} from {docNo}.", GetUserData()[0], DateTime.Now);
             }
         }
 
@@ -211,8 +220,6 @@ namespace DMD_Prototype.Controllers
                 foreach (string docs in Directory.GetFiles(folderPath))
                 {
                     string fileName = Path.GetFileName(docs);
-
-                    fileName = fileName.Substring(3);
 
                     if (docs.Contains(Path.GetFileNameWithoutExtension($"({DocName})"))) listOfDocs.Add(fileName);
                 }
@@ -253,7 +260,7 @@ namespace DMD_Prototype.Controllers
                 CreateNewFolder(documentnumber);
                 CopyNoneMultipleDocs(mpti, assemblydrawing, billsofmaterial, schematicdiagram, TravelerFile);
                 CopyMultipleDocs(onepointlesson, prco, derogation, engineeringmemo);
-                ishare.RecordOriginatorAction($"{originator}, uploaded engineering doc/s with Doc Number of {documentnumber}.", originator, DateTime.Now);
+                ishare.RecordOriginatorAction($"Uploaded engineering documents/s with Doc Number of {documentnumber}.", originator, DateTime.Now);
 
                 _Db.MTIDb.Add(mti);
                 _Db.SaveChanges();
@@ -282,6 +289,7 @@ namespace DMD_Prototype.Controllers
                 using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), DocumentNumberVar, file.Key), FileMode.Create))
                 {
                     file.Value.CopyTo(fs);
+                    ishare.RecordOriginatorAction($"Uploaded {Path.GetFileName(fs.Name)} to {DocumentNumberVar}.", GetUserData()[0], DateTime.Now);
                 }
             }
         }
@@ -295,6 +303,7 @@ namespace DMD_Prototype.Controllers
                 using (FileStream fs = new FileStream(Path.Combine(filePath, $"({whichDoc}){file.FileName}"), FileMode.Create))
                 {
                     file.CopyTo(fs);
+                    ishare.RecordOriginatorAction($"Uploaded {Path.GetFileName(fs.Name).Substring(3)} to {DocumentNumberVar}.", GetUserData()[0], DateTime.Now);
                 }
             }
         }

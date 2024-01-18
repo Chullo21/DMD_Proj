@@ -2,8 +2,8 @@
 
 @{
     ViewData["Title"] = "Engineering Documents";
-    string[] accData = TempData["EN"] as string[];
-    string prod = TempData["Subj"] as string;
+    string[]? accData = TempData["EN"] as string[];
+    string? prod = TempData["Subj"] as string;
     string doc = TempData["DocType"] as string ?? "MPI";
     string viewType = "View";
     string viewColorType = "btn-primary";
@@ -226,7 +226,7 @@
                         <div class="mx-1"></div>
                         <div>
                             <label class="form-label">Owner</label>
-                            <select class="form-select" name="docOwner">
+                            <select class="form-select" name="docOwner" limit>
                                 <option id="currentowner" selected hidden></option>
                                 @foreach (string orig in Model.Originators)
                                 {

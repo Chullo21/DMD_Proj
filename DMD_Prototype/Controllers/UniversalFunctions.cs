@@ -29,6 +29,8 @@ namespace DMD_Prototype.Controllers
 
         public List<RequestSessionModel> GetRS();
 
+        public IEnumerable<AnnouncementModel> GetAnnouncements();
+
         public void RecordOriginatorAction(string action, string originator, DateTime date);
 
         public IEnumerable<UserActionModel> GetUA();
@@ -40,6 +42,7 @@ namespace DMD_Prototype.Controllers
         public List<string> GetMultipleusers(string userRole);
 
         public void BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName);
+
 
     }
 
@@ -116,6 +119,11 @@ namespace DMD_Prototype.Controllers
 
                 converter.ConvertExceltoPdfAndStoreInSpecifiedPath(srcDir, saveInIdentifier, $"{setName}.pdf");
             }
+        }
+
+        public IEnumerable<AnnouncementModel> GetAnnouncements()
+        {
+            return _Db.AnnouncementDb;
         }
 
         public IEnumerable<SerialNumberModel> GetSerialNumbers()

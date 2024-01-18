@@ -23,11 +23,12 @@
     </style>
 </head>
 @{
-    string[] EN = TempData["EN"] as string[];
+    string[]? EN = TempData["EN"] as string[];
     TempData.Keep();
 }
 <body style="background-color:lightgray">
-    <header class="mb-3" style="font-family:'Franklin Gothic'; height: 13vh; position:sticky; top:0">
+    <input value="@EN[2]" id="userName" hidden/>
+    <header class="mb-3" style="font-family:'Franklin Gothic'; height: 13vh; position:sticky; top:0; z-index: 2000">
         <nav class="navbar" style="background-color:blue">
             <div class="container-fluid flex-column">
                 <div class="w-100 d-flex justify-content-between align-self-start mb-2">
@@ -100,8 +101,27 @@
                             </button>
                         </div>
                     </div>
-                    <div class="col">
+                    <div class="col">                     
                         <div class="align-items-center text-white d-flex justify-content-end">
+                            @{
+                                if (EN[2] != "USER")
+                                {
+                                                        <div id="notifOn">
+                                                            <button class="btn btn-primary mx-2" onclick="SetUISession(0)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell my-auto" viewBox="0 0 16 16">
+                                                                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                        <div id="notifOff">
+                                                            <button class="btn btn-primary mx-2" onclick="SetUISession(1)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell-slash my-auto" viewBox="0 0 16 16">
+                                                                    <path d="M5.164 14H15c-.299-.199-.557-.553-.78-1-.9-1.8-1.22-5.12-1.22-6q0-.396-.06-.776l-.938.938c.02.708.157 2.154.457 3.58.161.767.377 1.566.663 2.258H6.164zm5.581-9.91a4 4 0 0 0-1.948-1.01L8 2.917l-.797.161A4 4 0 0 0 4 7c0 .628-.134 2.197-.459 3.742q-.075.358-.166.718l-1.653 1.653q.03-.055.059-.113C2.679 11.2 3 7.88 3 7c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0c.942.19 1.788.645 2.457 1.284zM10 15a2 2 0 1 1-4 0zm-9.375.625a.53.53 0 0 0 .75.75l14.75-14.75a.53.53 0 0 0-.75-.75z" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                }
+                            }
                             <form asp-controller="Home" asp-action="LogoutOptions" id="logout" onchange="this.submit()">
                                 <select class="form-select bg-primary w-auto text-white border-1 border-dark" name="option">
                                     <option selected hidden>
@@ -111,10 +131,10 @@
                                     @{
                                         if (EN[1] == "ADMIN")
                                         {
-                                            <option class="" value="Admin">
-                                                &#128101;
-                                                Admin
-                                            </option>
+                                                                                <option class="" value="Admin">
+                                                                                    &#128101;
+                                                                                    Admin
+                                                                                </option>
                                         }
                                     }
                                     <option class="text-danger bg-white" value="Logout">
@@ -129,13 +149,132 @@
         </nav>
     </header>
 
-    <div class="container-fluid" style="height:80vh">
+    <div class="toast-container position-fixed p-3 end-0 bottom-0" id="notifToast" style="z-index:2003" hidden>
+        <div class="toast show fade bg-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-primary">
+                <div class="mx-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell my-auto text-white" viewBox="0 0 16 16">
+                        <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+                    </svg>
+                </div>
+                <strong class="me-auto text-white fs-6">DMD Portal Announcements</strong>
+                <button type="button" class="btn-close" aria-label="Close" onclick="SetUISession(0)"></button>
+            </div>
+            <div class="toast-body bg-white">
+                <div id="notifBody" class="my-2 flex-colum overflow-auto" style="max-height: 50vh; min-height:50vh">
+                    <hr class="mt-3"/>
+                </div>            
+            </div>
+            @if (EN[1] != "USER")
+            {
+                <form class="d-flex justify-content-between m-1 mt-0" id="announcementForm">
+                    <div class="w-75">
+                        <textarea class="form-control w-100" style="max-height: 50px; min-height:50px" id="announcementMessage" required></textarea>
+                    </div>
+                    <div class="w-25 h-100 my-auto">
+                        <button class="btn btn-primary btn-sm w-100 mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-plus text-white" viewBox="0 0 16 16">
+                                <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855a.75.75 0 0 0-.124 1.329l4.995 3.178 1.531 2.406a.5.5 0 0 0 .844-.536L6.637 10.07l7.494-7.494-1.895 4.738a.5.5 0 1 0 .928.372zm-2.54 1.183L5.93 9.363 1.591 6.602z" />
+                                <path d="M16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0m-3.5-2a.5.5 0 0 0-.5.5v1h-1a.5.5 0 0 0 0 1h1v1a.5.5 0 0 0 1 0v-1h1a.5.5 0 0 0 0-1h-1v-1a.5.5 0 0 0-.5-.5" />
+                            </svg>
+                            Submit
+                            </button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+
+    <script>
+        var notifOn = document.getElementById('notifOn');
+        var notifOff = document.getElementById('notifOff');
+        var toastBtn = document.getElementById('notifToast');
+        var notifBody = document.getElementById('notifBody');
+        var announcementTxt = document.getElementById('announcementMessage');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            GetUISession();
+        });
+
+        $(function () {
+            $('#announcementForm').submit(function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '@Url.Action("SubmitAnnouncement", "Announcement")',
+                    data: { message: $('#announcementMessage').val(), announcer: $('#userName').val() },
+                    success: function (r) {
+                        announcementTxt.value = '';
+                        toastBtn.setAttribute('hidden', '');
+                        GetUISession();
+                        toastBtn.removeAttribute('hidden');
+                    }
+                });
+            });
+        });
+
+
+
+        function SetUISession(isVisible) {
+            $.ajax({
+                url: '@Url.Action("SetUISession", "Layout")',
+                data: { isVisible: isVisible },
+                success: function (r) {
+                    GetUISession();
+                }
+            });
+        }
+
+        function GetUISession() {
+            
+            $.ajax({
+                url: '@Url.Action("GetUISession", "Layout")',
+                success: function (r) {
+                    if (r.isVisible == 0) {
+                        toastBtn.setAttribute('hidden', '');
+
+                        notifOff.removeAttribute('hidden');
+                        notifOn.setAttribute('hidden', '');
+                    }
+                    else {
+                        toastBtn.removeAttribute('hidden');
+                        notifOn.removeAttribute('hidden');
+                        notifOff.setAttribute('hidden', '');
+                    }
+                    notifBody.innerHTML = '';
+                    if (r.announcements == null || r.announcements == undefined || r.announcements.length == 0) {
+                        notifBody.innerHTML += 'No Announcement';
+                    } else {
+                        for (let ann of r.announcements) {
+                            let deleteBtn = '';
+
+                            if ('@EN[0]' == ann.AnnouncementCreator || '@EN[1]' == 'ADMIN') {
+                                deleteBtn = '<button class="btn-close fs-6" onclick="DeleteAnnouncement(' + ann.AnnouncementID + ', this)"></button>';
+                            }
+                            notifBody.innerHTML += '<div class="card my-1"><div class="card-body"><h5 class="card-title d-flex justify-content-between">' + ann.AnnouncementCreator + deleteBtn + '</h5><p class="card-text">' + ann.AnnouncementMessage + '</p></div></div>';
+                        }
+                    }
+                }
+            });
+        }
+        
+        function DeleteAnnouncement(id, btn){
+            $.ajax({
+                url: '@Url.Action("RemoveAnnouncement", "Announcement")',
+                data: {id: id},
+                success: function (r){
+                    GetUISession();
+                }
+            });
+        }
+    </script>
+    <div class="container-fluid" style="height:80vh; z-index:2001">
         <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <div class="modal fade" data-bs-backdrop="static" id="searchDoc" style="z-index:2001">
+    <div class="modal fade" data-bs-backdrop="static" id="searchDoc" style="z-index:2002">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header text-bg-primary">

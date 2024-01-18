@@ -1,8 +1,8 @@
 ﻿@{
     ViewData["Title"] = "Upload Documents";
-    string subj = TempData["Subj"] as string;
-    string type = TempData["DocType"] as string;
-    string[] EN = TempData["EN"] as string[];
+    string? subj = TempData["Subj"] as string;
+    string? type = TempData["DocType"] as string;
+    string[]? EN = TempData["EN"] as string[];
     TempData.Keep();
 }
 @if (!string.IsNullOrEmpty(TempData["Error"] as string) && TempData["Error"] != null)

@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Travelers";
-    string[] EN = TempData["EN"] as string[];
+    string[]? EN = TempData["EN"] as string[];
     TempData.Keep();
 
     string containerType = (EN[1] == "ADMIN") ? "container-fluid" : "container";

@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<UserActionModel>
 @{
     ViewData["Title"] = "Admin Lounge";
-    string[] EN = TempData["EN"] as string[];
+    string[]? EN = TempData["EN"] as string[];
     TempData.Keep();
 }
 
@@ -69,7 +69,9 @@
                                             @entry.Date
                                         </td>
                                         <td>
-                                            @entry.Action
+                                            @{
+                                                Write($"{entry.Originator}, {entry.Action}");
+                                            }
                                         </td>
                                     </tr>
                                 }

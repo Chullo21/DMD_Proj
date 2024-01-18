@@ -27,5 +27,7 @@ namespace DMD_Prototype.Data
         public DbSet<RequestSessionModel> RSDb { get; set; }
 
         public DbSet<UserActionModel> UADb { get; set; }
+
+        public DbSet<AnnouncementModel> AnnouncementDb { get; set;}
     }
 }

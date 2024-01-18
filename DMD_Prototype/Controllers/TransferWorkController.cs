@@ -1,6 +1,7 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace DMD_Prototype.Controllers
 {
@@ -53,15 +54,29 @@ namespace DMD_Prototype.Controllers
             return View(GetSVSes());
         }
 
-        public IActionResult TakeSession(string id, string userId)
+        //public IActionResult TakeSession(string id, string userId)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _Db.RSDb.Add(new RequestSessionModel().CreateSessionRequest(userId, id));
+        //        _Db.SaveChanges();
+        //    }
+
+        //    return View("TakeSessionLoading", "TakeSession");
+        //}
+
+        public ContentResult TakeSession(string id, string userId)
         {
+
             if (ModelState.IsValid)
             {
                 _Db.RSDb.Add(new RequestSessionModel().CreateSessionRequest(userId, id));
                 _Db.SaveChanges();
+
+                return Content(JsonConvert.SerializeObject(new { r = "g" }), "application/json");
             }
 
-            return RedirectToAction("LoginPage", "Login");
+            return Content(JsonConvert.SerializeObject(new { r = "f" }), "application/json");
         }
 
         public IActionResult SVTWView()
@@ -132,9 +147,9 @@ namespace DMD_Prototype.Controllers
             return PartialView("_TWPartial", GetSVSes());
         }
 
-        public IActionResult RemoveSessionRequest(string RSID)
+        public IActionResult RemoveSessionRequest(int RSID)
         {
-            RequestSessionModel rsm = ishared.GetRS().FirstOrDefault(j => j.TakeSessionID == int.Parse(RSID));
+            RequestSessionModel rsm = ishared.GetRS().FirstOrDefault(j => j.TakeSessionID == RSID);
 
             if (ModelState.IsValid)
             {
@@ -143,6 +158,29 @@ namespace DMD_Prototype.Controllers
             }
 
             return RedirectToAction("SVTWView");
+        }
+
+        public ContentResult CheckIfRequestIsApproved(string userId, string SWID)
+        {
+            string response = "";
+
+            RequestSessionModel? rs = ishared.GetRS().FirstOrDefault(j => j.UserId == userId && j.SWID == SWID);
+
+            if (rs == null)
+            {
+                StartWorkModel? sw = ishared.GetStartWork().FirstOrDefault(j => j.UserID == userId && j.SWID == int.Parse(SWID));
+
+                if (sw != null)
+                {
+                    response = "g";
+                }
+                else
+                {
+                    response = "d";
+                }              
+            }
+
+            return Content(JsonConvert.SerializeObject(new { r = response, link = $"?userID={userId}" + $"&noPW={true}" }), "application/json");
         }
 
         private void CheckIfTechIsCurrentlyWorking(string userId)

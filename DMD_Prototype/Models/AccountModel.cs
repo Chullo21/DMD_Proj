@@ -30,10 +30,6 @@ namespace DMD_Prototype.Models
         public string Password { get; set; } = string.Empty;
 
         public DateTime DateCreated { get; set; } = DateTime.Now;
-
-        //Conditionals
-
-
     }
 
     public enum Roles

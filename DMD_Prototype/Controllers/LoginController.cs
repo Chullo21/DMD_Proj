@@ -2,7 +2,6 @@
 using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Net.Http.Json;
 
 namespace DMD_Prototype.Controllers
 {
@@ -19,13 +18,15 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult LoginPage()
         {
+            HttpContext.Response.Cookies.Append("notifToast", "1");
             TempData.Clear();
-
+            
             return View();
         }
 
         public IActionResult FailedLogin()
         {
+           
             return View("Loginpage");
         }
 
