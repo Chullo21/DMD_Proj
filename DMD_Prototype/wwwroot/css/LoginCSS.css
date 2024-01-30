@@ -1,0 +1,21 @@
+﻿body {
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.footerLayout {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: blue;
+    border-top: 2px solid;
+}
+
+.loginbg {
+    background-image: url('../pimesbg6.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position:center;
+}

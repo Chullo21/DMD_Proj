@@ -29,7 +29,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult AccountsView()
         {
-            return View(ishare.GetAccounts());
+            return View(ishare.GetAccounts().Where(j => !j.isDeleted));
         }
 
         public IActionResult CreateAccount(string accname, string email, string sec, 
@@ -86,7 +86,8 @@ namespace DMD_Prototype.Controllers
 
             if (deleteAccount != null)
             {
-                _Db.AccountDb.Remove(deleteAccount);
+                deleteAccount.isDeleted = true;
+                _Db.AccountDb.Update(deleteAccount);
                 _Db.SaveChanges();
             }
 
@@ -95,14 +96,14 @@ namespace DMD_Prototype.Controllers
 
         public ContentResult GetObsoleteDocs()
         {
-            List<MTIModel> mtis = ishare.GetMTIs().Where(j => j.ObsoleteStat).ToList();
+            List<MTIModel> mtis = ishare.GetMTIs().Where(j => j.ObsoleteStat && !j.isDeleted).ToList();
 
             return Content(JsonConvert.SerializeObject(new { docs = mtis, check = mtis.Count}), "application/json");
         }
 
         public ContentResult DeleteObsoleteDocs(string adminName)
         {
-            List<MTIModel> mtis = ishare.GetMTIs().Where(j => j.ObsoleteStat).ToList();
+            List<MTIModel> mtis = ishare.GetMTIs().Where(j => j.ObsoleteStat && !j.isDeleted).ToList();
 
             string res = "bad";
 
@@ -118,7 +119,9 @@ namespace DMD_Prototype.Controllers
                         Directory.Delete(directory, true);
                     }
 
-                    _Db.MTIDb.Remove(mti);
+                    mti.isDeleted = true;
+
+                    _Db.MTIDb.Update(mti);
                 }
 
                 ishare.RecordOriginatorAction($"{adminName}, have cleared/deleted all obsolete documents.", adminName, DateTime.Now);

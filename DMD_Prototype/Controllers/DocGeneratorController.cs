@@ -7,6 +7,7 @@ using PdfSharp.Pdf.Security;
 using PdfSharp.Pdf;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DMD_Prototype.Controllers
 {
@@ -49,9 +50,9 @@ namespace DMD_Prototype.Controllers
             return File(file, "application/pdf");
         }
 
-        public IActionResult ViewExcelFile(string sessionId)
+        public async Task<IActionResult> ViewExcelFile(string sessionId, string whichFile)
         {
-            string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath("userTravName"));
+            string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
             string tempPath = new COMHandler().GetAndConvertExcelFile(filePath, ishare.GetPath("tempDir"));
 
             byte[] file = System.IO.File.ReadAllBytes(tempPath);
@@ -109,7 +110,7 @@ namespace DMD_Prototype.Controllers
 
             System.IO.File.Delete(tempPath);
 
-            return File(file, "application/pdf", $"{sessionId}.pdf");
+            return File(file, "application/pdf", $"{whichFile}.pdf");
         }
 
         public void AttachWatermarkInPdf(string filePath)

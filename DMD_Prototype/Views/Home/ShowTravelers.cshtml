@@ -6,6 +6,7 @@
     TempData.Keep();
 
     string containerType = (EN[1] == "ADMIN") ? "container-fluid" : "container";
+    string logtype;
 }
 
 <script>
@@ -22,7 +23,7 @@
 
 <div class="container-fluid">
     <div class="table-responsive">
-        <table class="table table-hover text-center" id="travtable">
+        <table class="table table-hover text-center table-striped" id="travtable">
             <thead class="table-primary text-nowrap">
                 <tr>
                     <th>
@@ -50,15 +51,34 @@
                         Module
                     </th>
                     <th>
-                        Menu
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-post my-auto" viewBox="0 0 16 16">
+                            <path d="M4 3.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
+                            <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1" />
+                        </svg>
+                        View
                     </th>
+                    @if(EN[1] == "ORIGINATOR" || EN[1] == "ADMIN")
+                    {
+                        <th>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill my-auto" viewBox="0 0 16 16">
+                                <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z" />
+                            </svg>
+                            Download
+                        </th>
+                    }
+                    @if (EN[1] == "ADMIN")
+                    {
+                        <th>
+                            Others
+                        </th>
+                    }
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model.Travs.OrderByDescending(j => j.StartDate))
+                @foreach (var item in Model.Travs)
                 {
                     string finishedDate = "Not Finished yet";
-
+                    if (item.LogType == "C") logtype = "Config Log"; else logtype = "Test Equipt.";
                     if (item.FinishDate != null)
                     {
                         finishedDate = item.FinishDate;
@@ -91,57 +111,73 @@
                         </td>
                         <td>
                             <div class="w-100 d-flex justify-content-start text-nowrap">
-                                <button class="btn btn-success d-flex btn-sm mx-1" type="button" onclick="OpenExcel('@item.SessionID')">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet-fill my-auto" viewBox="0 0 16 16">
-                                        <path d="M6 12v-2h3v2H6z" />
-                                        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM3 9h10v1h-3v2h3v1h-3v2H9v-2H6v2H5v-2H3v-1h2v-2H3V9z" />
-                                    </svg>
-                                    <p class="my-auto mx-1">View</p>
+                                <button class="btn btn-success d-flex btn-sm mx-1" type="button" onclick="OpenExcel('@item.SessionID', 'userTravName')">
+                                    
+                                    <p class="my-auto mx-1">Traveler</p>
                                 </button>
-
-                                @if (item.FinishDate != null && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR"))
+                                @if (item.Status == "Done" && item.LogType != "N")
                                 {
-                                    <a asp-controller="DocGenerator" asp-action="DownloadPdf" asp-route-sessionId="@item.SessionID" asp-route-whichFile="userTravName" class="btn btn-primary d-flex btn-sm mx-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill my-auto" viewBox="0 0 16 16">
-                                            <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z" />
-                                        </svg>
-                                        <p class="my-auto mx-1">DL Trav</p>
-                                    </a>
-                                }
-
-                                @if (item.FinishDate != "NF" && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR") && item.LogType != "N")
-                                {
-                                    string logtype;
-                                    if (item.LogType == "C") logtype = "CL"; else logtype = "TEL";
-                                    <a asp-controller="DocGenerator" asp-action="DownloadPdf" asp-route-sessionId="@item.SessionID" asp-route-whichFile="logName" class="btn btn-warning d-flex btn-sm mx-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill my-auto" viewBox="0 0 16 16">
-                                            <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z" />
-                                        </svg>
-                                        <p class="my-auto mx-1">DL @{Write(logtype);}</p>
-                                    </a>                                
-                                }
-
-                                @if (EN[1] == "ADMIN" && item.FinishDate == "NF")
-                                {
-                                    <button class="btn btn-secondary mx-2 d-flex btn-sm mx-1" data-bs-toggle="modal" data-bs-target="#changeworker" onclick="ChangeTravWorker('@item.Technician', '@item.SWID')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill-gear my-auto" viewBox="0 0 16 16">
-                                            <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148ZM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z" />
-                                        </svg>
-                                        <p class="my-auto mx-1">TW</p>
+                                    <button class="btn btn-primary d-flex btn-sm mx-1" type="button" onclick="OpenExcel('@item.SessionID', 'logName')">
+                                        
+                                        <p class="my-auto mx-1">
+                                            @{
+                                                Write(logtype);
+                                            }
+                                        </p>
                                     </button>
-                                }
-
-                                @if (EN[1] == "ADMIN")
-                                {
-                                    <a class="btn text-white btn-sm mx-1" style="background-color:cadetblue" asp-controller="DocGenerator" asp-action="DownloadExcel" asp-route-sessionId="@item.SessionID" asp-route-whichFile="userTravName">T</a>
-
-                                    @if(item.Status == "Done" && item.LogType != "N")
-                                    {
-                                        <a class="btn text-white btn-sm mx-1" style="background-color:cadetblue" asp-controller="DocGenerator" asp-action="DownloadExcel" asp-route-sessionId="@item.SessionID" asp-route-whichFile="logName">L</a>
-                                    }
                                 }
                             </div>
                         </td>
+                        @if (EN[1] == "ORIGINATOR" || EN[1] == "ADMIN")
+                        {
+                            <td>
+                                <div class="w-100 d-flex justify-content-start text-nowrap">
+                                    @if (item.FinishDate != null && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR"))
+                                    {
+                                        <a asp-controller="DocGenerator" asp-action="DownloadPdf" asp-route-sessionId="@item.SessionID" asp-route-whichFile="userTravName" class="btn btn-secondary d-flex btn-sm mx-1">
+
+                                            <p class="my-auto mx-1">Traveler</p>
+                                        </a>
+                                    }
+
+                                    @if (item.FinishDate != "NF" && (EN[1] == "ADMIN" || EN[1] == "ORIGINATOR") && item.LogType != "N")
+                                    {
+                                        <a asp-controller="DocGenerator" asp-action="DownloadPdf" asp-route-sessionId="@item.SessionID" asp-route-whichFile="logName" class="btn btn-secondary d-flex btn-sm mx-1">
+
+                                            <p class="my-auto mx-1">
+                                                @{
+                                                    Write(logtype);
+                                                }
+                                            </p>
+                                        </a>
+                                    }
+                                    @if (EN[1] == "ADMIN")
+                                    {
+                                        <a class="btn text-white btn-sm mx-1" style="background-color:cadetblue" asp-controller="DocGenerator" asp-action="DownloadExcel" asp-route-sessionId="@item.SessionID" asp-route-whichFile="userTravName">T</a>
+
+                                        @if (item.Status == "Done" && item.LogType != "N")
+                                        {
+                                            <a class="btn text-white btn-sm mx-1" style="background-color:cadetblue" asp-controller="DocGenerator" asp-action="DownloadExcel" asp-route-sessionId="@item.SessionID" asp-route-whichFile="logName">L</a>
+                                        }
+                                    }
+                                </div>
+
+                            </td>
+                        }
+                        @if (EN[1] == "ADMIN")
+                        {
+                            <td>
+                                @if (item.FinishDate == "NF")
+                                {
+                                <button class="btn btn-secondary mx-2 d-flex btn-sm mx-1" data-bs-toggle="modal" data-bs-target="#changeworker" onclick="ChangeTravWorker('@item.Technician', '@item.SWID')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill-gear my-auto" viewBox="0 0 16 16">
+                                        <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148ZM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z" />
+                                    </svg>
+                                    <p class="my-auto mx-1">TW</p>
+                                </button>
+                                }
+                            </td>                  
+                        }
                     </tr>
                 }
             </tbody>
@@ -175,7 +211,6 @@
                 <button class="btn-close" data-bs-dismiss="modal" id="closechangeworkermodal"></button>
             </div>
             <form  id="submitworktransfer">
-                @*asp-controller="Traveler" asp-action="ChangeTravWorker"*@
                 <input id="travID" name="ID" hidden/>
                 <div class="modal-body">
                     <div class="d-flex justify-content-around">
@@ -246,14 +281,14 @@
 </script>
 
 <div class="modal fade" data-bs-backdrop="static" id="viewtravmodal">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-primary">
                 <div class="modal-title d-flex text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-easel-fill my-auto" viewBox="0 0 16 16">
                         <path d="M8.473.337a.5.5 0 0 0-.946 0L6.954 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1.85l-1.323 3.837a.5.5 0 1 0 .946.326L4.908 11H7.5v2.5a.5.5 0 0 0 1 0V11h2.592l1.435 4.163a.5.5 0 0 0 .946-.326L12.15 11H14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H9.046L8.473.337z" />
                     </svg>
-                    <p class="fs-5 fw-bold my-auto mx-2">View Traveler</p>                    
+                    <p class="fs-5 fw-bold my-auto mx-2">PDF Viewer</p>                    
                 </div>
                 <button class="btn-close" data-bs-dismiss="modal" onclick="ClearIframeSrc()"></button>
             </div>
@@ -271,11 +306,11 @@
 <script>
     var excelFrame = document.getElementById('viewtravmodalbody');
     
-    function OpenExcel(sesId)
+    function OpenExcel(sesId, whichFile)
     {
         $(function () {
             $('#viewtravmodal').modal('show');
-            excelFrame.src = '@Url.Action("ViewExcelFile", "DocGenerator")' + '?sessionId=' + sesId;
+            excelFrame.src = '@Url.Action("ViewExcelFile", "DocGenerator")' + '?sessionId=' + sesId + '&whichFile=' + whichFile;
         });
     }
 

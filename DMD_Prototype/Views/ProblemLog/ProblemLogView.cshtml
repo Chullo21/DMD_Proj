@@ -23,14 +23,18 @@
 <div class="loader" id="loadingIcon"></div>
 <div>
     <div class="container-fluid">
-        <div class="d-flex justify-content-between">
-            <button class="btn btn-primary d-flex" data-bs-toggle="modal" data-bs-target="#downloadmodal" id="exportplbtn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill my-auto" viewBox="0 0 16 16">
-                    <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z" />
-                </svg>
-                Export Problem Log
-            </button>
-            <i>NOTE: Click a row to see complete details.</i>
+        <div class="row justify-content-between">
+            <div class="col-sm-12 col-md-3 justify-content-start">
+                <button class="btn btn-primary d-flex text-nowrap" data-bs-toggle="modal" data-bs-target="#downloadmodal" id="exportplbtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill my-auto" viewBox="0 0 16 16">
+                        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z" />
+                    </svg>
+                    Export Problem Log
+                </button>
+            </div>
+           <div class="col-sm-12 col-md-4">
+                <i class="text-end w-100">NOTE: Click a row to see complete details.</i>
+           </div>
         </div>       
     </div>
     <div class="modal fade" data-bs-backdrop="static" id="downloadmodal">
@@ -41,24 +45,24 @@
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="d-flex justify-content-center">
-                        <div>
-                            <button class="btn btn-primary mx-2" onclick="ExportBtn('Year')">This Year</button>
+                    <div class="row">
+                        <div class="col-3 col-lg-2">
+                            <button class="btn btn-primary mx-2 text-nowrap" onclick="ExportBtn('Year')">This Year</button>
                         </div>
-                        <div>
-                            <button class="btn btn-primary mx-2" onclick="ExportBtn('Month')">This Month</button>
+                        <div class="col-3 col-lg-2">
+                            <button class="btn btn-primary mx-2 text-nowrap" onclick="ExportBtn('Month')">This Month</button>
                         </div>
-                        <div class="d-flex">
-                            <div class="d-flex mx-2">
+                        <div class="row col-12 my-2">
+                            <div class="d-flex col-12 col-md-4">
                                 <label class="form-label my-auto mx-2">From: </label>
                                 <input type="date" class="form-control" name="from" id="from" />
                             </div>
-                            <div class="d-flex mx-2">
+                            <div class="d-flex col-12 col-md-4">
                                 <label class="form-label my-auto mx-2">To: </label>
                                 <input type="date" class="form-control" name="to" id="to" />
                             </div>
-                            <div>
-                                <button class="btn btn-primary" onclick="ExportBtn('Range')">Proceed</button>
+                            <div class="col-12 col-md-4">
+                                <button class="btn btn-primary w-100" onclick="ExportBtn('Range')">Download</button>
                             </div>
                         </div>
                     </div>

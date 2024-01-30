@@ -19,6 +19,7 @@ ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();

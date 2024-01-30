@@ -16,7 +16,7 @@ namespace DMD_Prototype.Models
 
         //Document Statuses
 
-        public char MTPIStatus { get; set; } = 'C';
+        public char MTPIStatus { get; set; } = 'c';
 
         // Special columns
 
@@ -28,5 +28,7 @@ namespace DMD_Prototype.Models
         public string AfterTravLog { get; set; }
         public bool ObsoleteStat { get; set; } = false;
         public string Product { get; set; } = string.Empty;
+
+        public bool isDeleted { get; set; } = false;
     }
 }

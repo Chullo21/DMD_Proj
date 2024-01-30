@@ -1,5 +1,6 @@
 ﻿using DMD_Prototype.Data;
 using DMD_Prototype.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -18,10 +19,23 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult LoginPage()
         {
-            HttpContext.Response.Cookies.Append("notifToast", "1");
-            TempData.Clear();
+
+            string[]? loggedInUser = TempData["EN"] as string[];
+
+            if (loggedInUser != null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             
             return View();
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Response.Cookies.Append("notifToast", "0");
+            TempData.Clear();
+
+            return View("LoginPage", "Login");
         }
 
         public IActionResult FailedLogin()
@@ -33,7 +47,7 @@ namespace DMD_Prototype.Controllers
         [HttpPost]
         public ContentResult TryLogin(string user, string pass)
         {
-            AccountModel? acc = ishared.GetAccounts().FirstOrDefault(j => j.Username == user && j.Password == pass);
+            AccountModel? acc = ishared.GetAccounts().FirstOrDefault(j => j.Username == user && j.Password == pass && !j.isDeleted);
 
             string jsonContent = string.Empty;
             string val = string.Empty;
@@ -41,10 +55,10 @@ namespace DMD_Prototype.Controllers
 
             if (acc != null)
             {
+                
                 string[] accData = { acc.AccName, acc.Role, acc.UserID };
 
                 TempData["EN"] = null;
-
                 TempData["EN"] = accData;
 
                 if (CheckForActionSessionInSW(acc.UserID))

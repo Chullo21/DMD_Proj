@@ -30,6 +30,8 @@ namespace DMD_Prototype.Models
         public string Password { get; set; } = string.Empty;
 
         public DateTime DateCreated { get; set; } = DateTime.Now;
+
+        public bool isDeleted { get; set; } = false;
     }
 
     public enum Roles

@@ -20,7 +20,7 @@ namespace DMD_Prototype.Controllers
         {
             List<SVSesViewModel> res = new();
 
-            Dictionary<string, string> docs = ishared.GetMTIs().Where(j => !j.ObsoleteStat).ToList().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
+            Dictionary<string, string> docs = ishared.GetMTIs().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
             Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
             IEnumerable<SerialNumberModel> serialNumbers = ishared.GetSerialNumbers();
             Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
@@ -81,9 +81,9 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult SVTWView()
         {
-            List<RequestSessionModel> reqs = ishared.GetRS();
+            IEnumerable<RequestSessionModel> reqs = ishared.GetRS();
 
-            Dictionary<string, string> docs = ishared.GetMTIs().Where(j => !j.ObsoleteStat).ToList().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
+            Dictionary<string, string> docs = ishared.GetMTIs().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
             Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
             Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
             Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));

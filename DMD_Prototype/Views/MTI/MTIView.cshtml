@@ -1,12 +1,11 @@
 ﻿@model DMD_Prototype.Controllers.MTIViewModel
 @{
     Layout = null;
-    ViewData["Title"] = "View Documents";
+    ViewData["Title"] = "DMD Portal - " + Model.DocumentNumber;
     string[]? EN = TempData["EN"] as string[];
     TempData.Keep();
-    int counter;
 
-    string sesID = Model.SessionID;
+    string sesID = Model.SessionID!;
 
     string afterTrav1 = "Property No. / Fixed Asset No.";
     string afterTrav2 = "Description";

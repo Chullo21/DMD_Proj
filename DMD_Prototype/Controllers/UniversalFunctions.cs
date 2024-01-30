@@ -15,19 +15,19 @@ namespace DMD_Prototype.Controllers
 
         public IEnumerable<SerialNumberModel> GetSerialNumbers();
 
-        public List<MTIModel> GetMTIs();
+        public IEnumerable<MTIModel> GetMTIs();
 
-        public List<AccountModel> GetAccounts();
+        public IEnumerable<AccountModel> GetAccounts();
 
-        public List<StartWorkModel> GetStartWork();
+        public IEnumerable<StartWorkModel> GetStartWork();
 
-        public List<PauseWorkModel> GetPauseWorks();
+        public IEnumerable<PauseWorkModel> GetPauseWorks();
 
-        public List<ProblemLogModel> GetProblemLogs();
+        public IEnumerable<ProblemLogModel> GetProblemLogs();
 
-        public List<ModuleModel> GetModules();
+        public IEnumerable<ModuleModel> GetModules();
 
-        public List<RequestSessionModel> GetRS();
+        public IEnumerable<RequestSessionModel> GetRS();
 
         public IEnumerable<AnnouncementModel> GetAnnouncements();
 
@@ -39,10 +39,9 @@ namespace DMD_Prototype.Controllers
 
         public void SendEmailNotification(string receiver, string subject, string body);
 
-        public List<string> GetMultipleusers(string userRole);
+        public IEnumerable<string> GetMultipleusers(string userRole);
 
         public void BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName);
-
 
     }
 
@@ -55,19 +54,19 @@ namespace DMD_Prototype.Controllers
 
         private readonly AppDbContext _Db;
 
-        //private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
-        //private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
-        //private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
-        //private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
-        //private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
-        //private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
+        private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
+        private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
 
-        private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
-        private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
-        private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
-        private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
-        private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
-        private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        //private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
+        //private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
+        //private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        //private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        //private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        //private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
 
         private readonly string travelerBackupDir = "A:\\DMD Portal Backups\\Travelers";
         private readonly string configBackupDir = "A:\\DMD Portal Backups\\Configuration Logs";
@@ -141,39 +140,39 @@ namespace DMD_Prototype.Controllers
             _Db.UADb.Add(new UserActionModel().CreateAction(action, originator, date)); 
         }
 
-        public List<RequestSessionModel> GetRS()
+        public IEnumerable<RequestSessionModel> GetRS()
         {
-            return _Db.RSDb.ToList();
+            return _Db.RSDb;
         }
 
-        public List<ModuleModel> GetModules()
+        public IEnumerable<ModuleModel> GetModules()
         {
-            return _Db.ModuleDb.ToList();
+            return _Db.ModuleDb;
         }
 
-        public List<ProblemLogModel> GetProblemLogs()
+        public IEnumerable<ProblemLogModel> GetProblemLogs()
         {
-            return _Db.PLDb.ToList();
+            return _Db.PLDb;
         }
 
-        public List<MTIModel> GetMTIs()
+        public IEnumerable<MTIModel> GetMTIs()
         {
-            return _Db.MTIDb.ToList();
+            return _Db.MTIDb;
         }
 
-        public List<AccountModel> GetAccounts()
+        public IEnumerable<AccountModel> GetAccounts()
         {
-            return _Db.AccountDb.ToList();
+            return _Db.AccountDb;
         }
 
-        public List<StartWorkModel> GetStartWork()
+        public IEnumerable<StartWorkModel> GetStartWork()
         {
-            return _Db.StartWorkDb.ToList();
+            return _Db.StartWorkDb;
         }
 
-        public List<PauseWorkModel> GetPauseWorks()
+        public IEnumerable<PauseWorkModel> GetPauseWorks()
         {
-            return _Db.PauseWorkDb.ToList();
+            return _Db.PauseWorkDb;
         }
 
         public string GetPath(string whichPath)
@@ -332,7 +331,7 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public List<string> GetMultipleusers(string userRole)
+        public IEnumerable<string> GetMultipleusers(string userRole)
         {
             List<string> listOfPlEmails = new List<string>();
             IEnumerable<AccountModel> plAccounts = GetAccounts().Where(j => j.Role == userRole);

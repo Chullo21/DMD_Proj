@@ -113,7 +113,7 @@ namespace DMD_Prototype.Controllers
                 string remarkSetter = string.IsNullOrEmpty(remarks) ? "No remarks" : remarks;
                 string subject = $"DMD Portal, Document update {statusSetter}";
                 string body = $"Good day!\r\n{user} has updated a document/s with document number of {docuno}, having the details of the following:\r\n\r\nStatus: {statusSetter}\r\nAssembly Part Number: {mod.AssemblyPN}\r\nDescription: {mod.AssemblyDesc}\r\nRevision Number: {mod.RevNo}\r\nRemaks:{remarkSetter}\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a great day!";
-                ishare.SendEmailNotification(ishare.GetMultipleusers("PL_INTERVENOR"), subject, body);
+                ishare.SendEmailNotification(ishare.GetMultipleusers("PL_INTERVENOR").ToList(), subject, body);
             }
 
             return RedirectToAction("MTIView", new {docuNumber = docuno, workStat = false});
@@ -135,7 +135,7 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult MTIView(string docuNumber, bool workStat, string sesID)
         {
-            MTIModel mti = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuNumber);
+            MTIModel mti = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuNumber && !j.isDeleted);
 
             MTIViewModel mModel = new MTIViewModel();
             {

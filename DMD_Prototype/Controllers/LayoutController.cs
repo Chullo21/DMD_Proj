@@ -13,13 +13,36 @@ namespace DMD_Prototype.Controllers
             this.ishare = ishare;
         }
 
-        private string isVisible = "1";
+        private string isVisible = "0";
+
+        public IActionResult ValidateUserSession()
+        {
+            bool isEmpty = true;
+
+            string[]? userData = new string[3] {
+                HttpContext.Session.GetString("AccountName") ?? "",
+                HttpContext.Session.GetString("UserRole") ?? "",
+                HttpContext.Session.GetString("UserID") ?? ""
+            };
+
+            if (userData != null)
+            {
+                isEmpty = false;
+                ViewBag.EN = userData;
+            }
+        
+            return Json(new { result = isEmpty });
+        }
 
         public ContentResult GetUISession()
         {
             if (HttpContext.Request.Cookies["notifToast"] != null)
             {
                 isVisible = HttpContext.Request.Cookies["notifToast"].ToString();
+            }
+            else
+            {
+                HttpContext.Response.Cookies.Append("notifToast", isVisible);
             }
 
             List<AnnouncementModel> anns = ishare.GetAnnouncements().ToList();

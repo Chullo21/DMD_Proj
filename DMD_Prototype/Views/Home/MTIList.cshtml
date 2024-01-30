@@ -1,7 +1,6 @@
 ﻿@model DMD_Prototype.Controllers.MTIListModel
 
 @{
-    ViewData["Title"] = "Engineering Documents";
     string[]? accData = TempData["EN"] as string[];
     string? prod = TempData["Subj"] as string;
     string doc = TempData["DocType"] as string ?? "MPI";
@@ -10,6 +9,8 @@
     string tableLength = "container-fluid";
     string actionLength = "width: 40%";
     TempData.Keep();
+
+    ViewData["Title"] = $"{prod} {doc} List";
 
     if (accData[1] != "ADMIN")
     {
@@ -25,17 +26,19 @@
 }
 
 <div class="@tableLength flex-column">
-    <div class="w-100 d-flex justify-content-start">
+    <div class="row my-2">
         @if (accData[1] == "ADMIN" || accData[1] == "ORIGINATOR")
         {
-            <a class="btn btn-success d-flex" asp-controller="MTI" asp-action="CreateMTIView">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-plus-fill my-auto" viewBox="0 0 16 16">
-                    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM8.5 6v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 1 0z" />
-                </svg>
-                <p class="my-auto mx-1">Add Document</p>
-            </a>
+            <div class="col-sm-12 col-md-6 col-lg-2 text-nowrap">
+                <a class="btn btn-success d-flex" asp-controller="MTI" asp-action="CreateMTIView">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-plus-fill my-auto" viewBox="0 0 16 16">
+                        <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM8.5 6v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 1 0z" />
+                    </svg>
+                    <p class="my-auto mx-1">Add Document</p>
+                </a>
+            </div>
         }
-        <div class="mx-2">
+        <div class="col-sm-12 col-md-6 col-lg-3 mt-3 mt-md-0">
             <form asp-controller="Home" asp-action="MTIList" id="doctypeselect">
                 <input value="@prod" name="whichDoc" hidden />
                 <div class="d-flex">
@@ -50,7 +53,7 @@
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-bordered table-hover text-center" id="myTable">
+        <table class="table table-bordered table-hover text-center table-sm" id="myTable">
             <thead class="table-primary text-nowrap">
                 <tr>
                     <th>
@@ -344,7 +347,8 @@
             lengthChange: false,
             pageLength: 7,
             order: [],
-            ordering: false
+            ordering: false,
+            responsive: true
         });
     });
 </script>

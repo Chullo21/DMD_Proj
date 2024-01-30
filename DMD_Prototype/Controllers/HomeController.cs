@@ -65,11 +65,11 @@ namespace DMD_Prototype.Controllers
                     }
                 case "Logout":
                     {
-                        return RedirectToAction("LoginPage", "Login");
+                        return RedirectToAction("Logout", "Login");
                     }
                 default:
                     {
-                        return RedirectToAction("LoginPage", "Login");
+                        return RedirectToAction("Logout", "Login");
                     }
             }
         }
@@ -83,7 +83,7 @@ namespace DMD_Prototype.Controllers
 
             MTIListModel list = new MTIListModel();
             {
-                list.list = ishare.GetMTIs().Where(j => j.Product == whichDoc && j.DocType == type).OrderByDescending(j => j.DateCreated).ToList();
+                list.list = ishare.GetMTIs().Where(j => j.Product == whichDoc && j.DocType == type && !j.isDeleted).OrderByDescending(j => j.DateCreated).ToList();
                 list.Originators = ishare.GetAccounts().Where(j => j.Role == "ORIGINATOR").Select(j => j.AccName).ToList();
             }
 
@@ -92,11 +92,11 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult ShowTravelers()
         {
-            Dictionary<string, (string, string)> mtis = ishare.GetMTIs().Where(j => !j.ObsoleteStat).ToDictionary(j => j.DocumentNumber, j => (j.AssemblyDesc, j.AfterTravLog));
+            Dictionary<string, (string, string)> mtis = ishare.GetMTIs().ToDictionary(j => j.DocumentNumber, j => (j.AssemblyDesc, j.AfterTravLog));
             IEnumerable<ModuleModel> module = ishare.GetModules();
             IEnumerable<SerialNumberModel> serialNumbers = ishare.GetSerialNumbers();
 
-            Dictionary<string, (string, string?, string?, string, string)> sw = ishare.GetStartWork().ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.HasValue ? j.FinishDate.Value.ToShortDateString() : "NF", j.UserID, j.DocNo, j.SWID.ToString()));
+            Dictionary<string, (string, string?, string?, string, string, string)> sw = ishare.GetStartWork().OrderByDescending(j => j.FinishDate).ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.HasValue ? j.FinishDate.Value.ToShortDateString() : "NF", j.UserID, j.DocNo, j.SWID.ToString(), j.LogType));
             Dictionary<string, string> accs = ishare.GetAccounts().Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
 
             TravelerViewModel res = new();
@@ -118,7 +118,7 @@ namespace DMD_Prototype.Controllers
                 trav.Module = module.FirstOrDefault(j => j.SessionID == work.Key).Module;
                 trav.SessionID = work.Key;
                 trav.SWID = work.Value.Item5;
-                trav.LogType = mtis.FirstOrDefault(j => j.Key == work.Value.Item4).Value.Item2;
+                trav.LogType = work.Value.Item6;
 
                 dets.Add(trav);
             }
@@ -139,7 +139,7 @@ namespace DMD_Prototype.Controllers
 
         public ContentResult GetSessionsCount()
         {
-            int rsCount = ishare.GetRS().Count;
+            int rsCount = ishare.GetRS().ToList().Count;
             int usCount = ishare.GetStartWork().Count(j => j.FinishDate == null);
 
             return Content(JsonConvert.SerializeObject(new {r = rsCount, usCount = usCount}), "application/json");
@@ -163,21 +163,19 @@ namespace DMD_Prototype.Controllers
             IEnumerable<ProblemLogModel> pls = ishare.GetProblemLogs().Where(j => j.LogDate.Year == DateTime.Now.Year);
 
             IndexModel mod = new IndexModel();
-            {
-                mod.ControlledVal =  mtis.Count();               
-                mod.ObsoleteVal = mtis.Count(j => j.ObsoleteStat);
+            mod.ControlledVal = mtis.Where(j => !j.isDeleted).Count();
+            mod.ObsoleteVal = mtis.Count(j => j.ObsoleteStat && !j.isDeleted);
 
-                mod.InterimVal = mtis.Count(j => j.MTPIStatus == 'i');
+            mod.InterimVal = mtis.Count(j => j.MTPIStatus == 'i');
 
-                mod.PNPCount = mtis.Count(j => j.Product == "PNP" && !j.ObsoleteStat);
-                mod.JLPCount = mtis.Count(j => j.Product == "JLP" && !j.ObsoleteStat);
-                mod.JTPCount = mtis.Count(j => j.Product == "JTP" && !j.ObsoleteStat);
-                mod.OLBCount = mtis.Count(j => j.Product == "OLB" && !j.ObsoleteStat);
-                mod.SWAPCount = mtis.Count(j => j.Product == "SWAP" && !j.ObsoleteStat);
-                mod.SPARESCount = mtis.Count(j => j.Product == "SPARES" && !j.ObsoleteStat);
+            mod.PNPCount = mtis.Count(j => j.Product == "PNP" && !j.ObsoleteStat);
+            mod.JLPCount = mtis.Count(j => j.Product == "JLP" && !j.ObsoleteStat);
+            mod.JTPCount = mtis.Count(j => j.Product == "JTP" && !j.ObsoleteStat);
+            mod.OLBCount = mtis.Count(j => j.Product == "OLB" && !j.ObsoleteStat);
+            mod.SWAPCount = mtis.Count(j => j.Product == "SWAP" && !j.ObsoleteStat);
+            mod.SPARESCount = mtis.Count(j => j.Product == "SPARES" && !j.ObsoleteStat);
 
-                mod.AllDocs = mtis.Where(j => !j.ObsoleteStat).ToList();               
-            }
+            mod.AllDocs = mtis.Where(j => !j.ObsoleteStat).ToList();
 
             return mod;
         }
