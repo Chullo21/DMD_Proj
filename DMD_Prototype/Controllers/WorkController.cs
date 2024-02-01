@@ -8,6 +8,7 @@ using System.Net.Mail;
 using System.Net;
 using System.Reflection;
 using System.Collections;
+using System.Linq;
 
 namespace DMD_Prototype.Controllers
 {
@@ -25,16 +26,16 @@ namespace DMD_Prototype.Controllers
             this.ishared = ishared;
         }
 
-        private string UserIDGetter(string name)
+        private async Task<string> UserIDGetter(string name)
         {
-            string userid = ishared.GetAccounts().FirstOrDefault(j => j.AccName == name).UserID;
+            string userid = (await ishared.GetAccounts()).FirstOrDefault(j => j.AccName == name).UserID;
 
             return userid;
         }
 
-        private void SessionSaver(string docNo, string user, string wo, string serialNo, string module)
+        private async Task SessionSaver(string docNo, string user, string wo, string serialNo, string module)
         {
-            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, UserIDGetter(user), ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo).AfterTravLog);
+            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, await UserIDGetter(user), (await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docNo).AfterTravLog);
             sesID = swModel.SessionID;
 
             if (ModelState.IsValid)
@@ -46,26 +47,27 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private void PauseSession(string sesID, string reason, string tech)
+        private void PauseSession(string reason, string tech)
         {
-            PauseWorkModel pwModel = new PauseWorkModel().SetPause(sesID, reason, UserIDGetter(tech));
+            //PauseWorkModel pwModel = new PauseWorkModel().SetPause(sesID, reason, UserIDGetter(tech));
 
             if (ModelState.IsValid)
             {
-                _Db.PauseWorkDb.Add(pwModel);
+                //_Db.PauseWorkDb.Add(pwModel);
+                _Db.UADb.Add(new UserActionModel().CreateAction($"Work Paused with reason of {reason}.", tech, DateTime.Now));
                 _Db.SaveChanges();
             }
         }
 
-        private void CreateNewFolder(string sesID)
+        private async Task CreateNewFolder(string sesID)
         {
-            string filePath = Path.Combine(ishared.GetPath("userDir"), sesID);
+            string filePath = Path.Combine(await ishared.GetPath("userDir"), sesID);
             Directory.CreateDirectory(filePath);
         }
 
-        private void CopyTravToSession(string docNo, string wOrder, string serialNo)
+        private async Task CopyTravToSession(string docNo, string wOrder, string serialNo)
         {
-            string filePath = Path.Combine(ishared.GetPath("mainDir"), docNo, ishared.GetPath("travName"));
+            string filePath = Path.Combine(await ishared.GetPath("mainDir"), docNo, await ishared.GetPath("travName"));
 
             using(ExcelPackage package = new ExcelPackage(filePath))
             {
@@ -78,18 +80,18 @@ namespace DMD_Prototype.Controllers
                     ws.Cells[1, 10].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
                 }
 
-                package.SaveAs(Path.Combine(ishared.GetPath("userDir"), sesID, ishared.GetPath("userTravName")));
+                package.SaveAs(Path.Combine(await ishared.GetPath("userDir"), sesID, await ishared.GetPath("userTravName")));
             }
         }
 
-        private bool CheckForExistingLogsheet(string ses, string logname)
+        private async Task<bool> CheckForExistingLogsheet(string ses, string logname)
         {
-            return System.IO.File.Exists(Path.Combine(ishared.GetPath("userDir"), ses, logname));
+            return System.IO.File.Exists(Path.Combine(await ishared.GetPath("userDir"), ses, logname));
         }
 
-        public void CreateLogsheet(string logType, string sessionId)
+        public async Task CreateLogsheet(string logType, string sessionId)
         {
-            if (CheckForExistingLogsheet(sessionId, ishared.GetPath("logName")))
+            if (await CheckForExistingLogsheet(sessionId, await ishared.GetPath("logName")))
             {
                 return;
             }
@@ -109,8 +111,8 @@ namespace DMD_Prototype.Controllers
 
             Stream stream = assembly.GetManifestResourceStream(filePath);
 
-            ModuleModel module = ishared.GetModules().FirstOrDefault(j => j.SessionID == sessionId);
-            SerialNumberModel serialNumber = ishared.GetSerialNumbers().FirstOrDefault(j => j.SessionId == sessionId);
+            ModuleModel module = (await ishared.GetModules()).FirstOrDefault(j => j.SessionID == sessionId);
+            SerialNumberModel serialNumber = (await ishared.GetSerialNumbers()).FirstOrDefault(j => j.SessionId == sessionId);
 
             using (ExcelPackage package = new ExcelPackage(stream))
             {
@@ -118,13 +120,13 @@ namespace DMD_Prototype.Controllers
                 package.Workbook.Worksheets[0].Cells[4, 6].Value = module.WorkOrder;
                 package.Workbook.Worksheets[0].Cells[5, 6].Value = serialNumber.SerialNumber;
 
-                package.SaveAs(Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName")));
+                package.SaveAs(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName")));
             }
         }
 
-        public IActionResult HoldSession(string sessionID)
+        public async Task<IActionResult> HoldSession(string sessionID)
         {
-            StartWorkModel sw = ishared.GetStartWork().FirstOrDefault(j => j.SessionID == sessionID);
+            StartWorkModel sw = (await ishared.GetStartWork()).FirstOrDefault(j => j.SessionID == sessionID);
 
             sw.UserID = string.Empty;
 
@@ -134,12 +136,12 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public ContentResult ValidateModule(string module, string serialNo, string workOrder)
+        public async Task<ContentResult> ValidateModule(string module, string serialNo, string workOrder)
         {
             string response = "go";
 
-            SerialNumberModel? serialNumber = ishared.GetSerialNumbers().FirstOrDefault(j => j.SerialNumber == serialNo);
-            ModuleModel? getModule = ishared.GetModules().FirstOrDefault(j => j.Module == module);
+            SerialNumberModel? serialNumber = (await ishared.GetSerialNumbers()).FirstOrDefault(j => j.SerialNumber == serialNo);
+            ModuleModel? getModule = (await ishared.GetModules()).FirstOrDefault(j => j.Module == module);
 
             if (serialNumber != null)
             {
@@ -164,16 +166,20 @@ namespace DMD_Prototype.Controllers
                 sesID = sesID});
         }
 
-        public IActionResult PauseWork(string docNo, string EN, string reason, string sessID)
+        public IActionResult PauseWork(string EN, string reason)
         {
-            PauseSession(sessID, reason, EN);
+            if (ModelState.IsValid)
+            {
+                _Db.UADb.Add(new UserActionModel().CreateAction($"Work Paused with reason of {reason}.", EN, DateTime.Now));
+                _Db.SaveChanges();
+            }
 
-            return RedirectToAction("LoginPage", "Login");
+            return RedirectToAction("Logout", "Login");
         }
 
-        public IActionResult ContinueWork(string userID, bool noPW)
+        public async Task<IActionResult> ContinueWork(string userID, bool noPW)
         {
-            StartWorkModel swmodel = ishared.GetStartWork().FirstOrDefault(j => j.UserID == userID && j.FinishDate == null);
+            StartWorkModel swmodel = (await ishared.GetStartWork()).FirstOrDefault(j => j.UserID == userID && j.FinishDate == null);
 
             if (noPW)
             {
@@ -187,14 +193,14 @@ namespace DMD_Prototype.Controllers
             });
         }
 
-        public IActionResult FinishWork(string sessionId, string logType, string docNo)
+        public async Task<IActionResult> FinishWork(string sessionId, string logType, string docNo)
         {
-            CompleteWork(sessionId);
+            await CompleteWork(sessionId);
             SubmitDateFinished(sessionId, logType, docNo);
 
-            MTIModel docDet = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo);
-            ModuleModel module = ishared.GetModules().FirstOrDefault(j => j.SessionID == sessionId);
-            SerialNumberModel serialNumber = ishared.GetSerialNumbers().FirstOrDefault(j => j.SessionId == sessionId);
+            MTIModel docDet = (await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docNo);
+            ModuleModel module = (await ishared.GetModules()).FirstOrDefault(j => j.SessionID == sessionId);
+            SerialNumberModel serialNumber = (await ishared.GetSerialNumbers()).FirstOrDefault(j => j.SessionId == sessionId);
 
             ishared.BackupHandler(logType, whichFileEnum.Traveler, sessionId, $"{docDet.Product} {module.WorkOrder} {module.Module} {serialNumber.SerialNumber}");
 
@@ -203,9 +209,9 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public ContentResult SubmitLog(string logcellone, string logcelltwo, string logcellthree, string sessionId, string logType)
+        public async Task<ContentResult> SubmitLog(string logcellone, string logcelltwo, string logcellthree, string sessionId, string logType)
         {
-            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName"));
+            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"));
 
             int rowCount = 10;
 
@@ -275,11 +281,11 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private void SubmitDateFinished(string sessionId, string logType, string docNo)
+        private async Task SubmitDateFinished(string sessionId, string logType, string docNo)
         {
-            MTIModel mTIModel = ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo);
+            MTIModel mTIModel = (await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docNo);
 
-            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("userTravName"));
+            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("userTravName"));
             string dateNow = DateTime.Now.ToShortDateString();
 
             using (ExcelPackage package = new ExcelPackage(filePath))
@@ -295,7 +301,7 @@ namespace DMD_Prototype.Controllers
 
             if (logType != "N")
             {
-                using (ExcelPackage package = new ExcelPackage(Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName"))))
+                using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"))))
                 {
                     string startDate = package.Workbook.Worksheets.First().Cells[5, 3].Value.ToString();
 
@@ -317,9 +323,9 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private void CompleteWork(string sessionId)
+        private async Task CompleteWork(string sessionId)
         {
-            StartWorkModel swModel = ishared.GetStartWork().FirstOrDefault(j => j.SessionID == sessionId);
+            StartWorkModel swModel = (await ishared.GetStartWork()).FirstOrDefault(j => j.SessionID == sessionId);
 
             swModel.FinishDate = DateTime.Now;
 
@@ -338,13 +344,13 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public ContentResult UserRefreshed(string sessionId)
+        public async Task<ContentResult> UserRefreshed(string sessionId)
         {
-            string[] res = GetProgressFromTraveler(sessionId);
+            string[] res = await GetProgressFromTraveler(sessionId);
             return Content(JsonConvert.SerializeObject(new { StepNo = res[0], Task = res[1], Div = res[2] }), "application/json");
         }
 
-        private string[] GetProgressFromTraveler(string? sessionID)
+        private async Task<string[]> GetProgressFromTraveler(string? sessionID)
         {
             string[] progress = new string[3];
 
@@ -353,7 +359,7 @@ namespace DMD_Prototype.Controllers
                 return progress;
             }
 
-            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionID, ishared.GetPath("userTravName"));
+            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("userTravName"));
             int rowCount = 11;
 
             using (ExcelPackage package = new ExcelPackage(filePath))
@@ -404,9 +410,9 @@ namespace DMD_Prototype.Controllers
             return progress;
         }
 
-        private void SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date, string docType)
+        private async Task SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date, string docType)
         {
-            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionID, ishared.GetPath("userTravName"));
+            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("userTravName"));
             int rowCount = 11;
             int sheetCounter = 0;
 
@@ -459,27 +465,28 @@ namespace DMD_Prototype.Controllers
         }
 
         [HttpPost]
-        public ContentResult SubmitTravelerLog(string stepNo, string tAsk, string[]? byThree,
+        public async Task<ContentResult> SubmitTravelerLog(string stepNo, string tAsk, string[]? byThree,
             string? singlePara, string sessionID, string tech, string date, string docType)
         {           
             SaveTravLog(stepNo, tAsk, byThree, singlePara, sessionID, tech, date, docType);
 
-            string[] res = GetProgressFromTraveler(sessionID);
+            string[] res = await GetProgressFromTraveler(sessionID);
             string jsonData = JsonConvert.SerializeObject(new { StepNo = res[0], Task = res[1], Div = res[2] });
             return Content(jsonData, "application/json");
         }
 
-        public ContentResult SubmitProblemLog(string wweek, string affected, string docno,
+        public async Task<ContentResult> SubmitProblemLog(string wweek, string affected, string docno,
             string desc, string probcon, string reportedby, string product, string rDocNumber)
         {
-            AccountModel origModel = ishared.GetAccounts().FirstOrDefault(j => j.UserID == ishared.GetMTIs().FirstOrDefault(j => j.DocumentNumber == rDocNumber).OriginatorName);
+            string originatorName = (await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == rDocNumber).OriginatorName;
+            AccountModel origModel = (await ishared.GetAccounts()).FirstOrDefault(j => j.UserID == originatorName);
             string origEmail = $"{origModel.Email}{origModel.Sec}{origModel.Dom}";
 
             ProblemLogModel probModel = new ProblemLogModel();
 
             if (ModelState.IsValid)
             {
-                probModel = new ProblemLogModel().CreatePL(SetSeries("PL"), DateTime.Now, $"Week {wweek}", affected, product,
+                probModel = new ProblemLogModel().CreatePL(await SetSeries("PL"), DateTime.Now, $"Week {wweek}", affected, product,
                     docno, desc, probcon, reportedby, rDocNumber);
                 _Db.PLDb.Add(probModel);
                 _Db.SaveChanges();
@@ -503,11 +510,11 @@ namespace DMD_Prototype.Controllers
             ishared.SendEmailNotification(origEmail, subject, body);
         }
 
-        private string SetSeries(string seriesPrimary)
+        private async Task<string> SetSeries(string seriesPrimary)
         {
             string yearNow = DateTime.Now.Year.ToString()[2..];
 
-            List<ProblemLogModel> series = ishared.GetProblemLogs().Where(j => j.LogDate.Year == DateTime.Now.Year).ToList();
+            List<ProblemLogModel> series = (await ishared.GetProblemLogs()).Where(j => j.LogDate.Year == DateTime.Now.Year).ToList();
 
             if (series.Count <= 0)
             {

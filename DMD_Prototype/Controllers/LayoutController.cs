@@ -34,7 +34,7 @@ namespace DMD_Prototype.Controllers
             return Json(new { result = isEmpty });
         }
 
-        public ContentResult GetUISession()
+        public async Task<ContentResult> GetUISessionAsync()
         {
             if (HttpContext.Request.Cookies["notifToast"] != null)
             {
@@ -45,16 +45,16 @@ namespace DMD_Prototype.Controllers
                 HttpContext.Response.Cookies.Append("notifToast", isVisible);
             }
 
-            List<AnnouncementModel> anns = ishare.GetAnnouncements().ToList();
+            var anns = await ishare.GetAnnouncements();
 
             foreach (var ann in anns)
             {
-                string? accName = ishare.GetAccounts().FirstOrDefault(j => j.UserID == ann.AnnouncementCreator)?.AccName;
+                string? accName = (await ishare.GetAccounts()).FirstOrDefault(j => j.UserID == ann.AnnouncementCreator)?.AccName;
 
                 ann.AnnouncementCreator = string.IsNullOrEmpty(accName) ? "Account Deleted" : accName;
             }
 
-            return Content(JsonConvert.SerializeObject(new {isVisible = isVisible, announcements = ishare.GetAnnouncements().ToArray()}), "application/json");
+            return Content(JsonConvert.SerializeObject(new {isVisible = isVisible, announcements = anns.ToArray()}), "application/json");
         }
 
         public ContentResult SetUISession(string isVisible)

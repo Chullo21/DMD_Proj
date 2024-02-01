@@ -22,14 +22,14 @@ namespace DMD_Prototype.Controllers
             return Content(res, "application/json");
         }
 
-        public IActionResult AdminView()
+        public async Task<IActionResult> AdminView()
         {
-            return View(ishare.GetUA());
+            return View(await ishare.GetUA());
         }
 
-        public IActionResult AccountsView()
+        public async Task<IActionResult> AccountsView()
         {
-            return View(ishare.GetAccounts().Where(j => !j.isDeleted));
+            return View((await ishare.GetAccounts()).Where(j => !j.isDeleted));
         }
 
         public IActionResult CreateAccount(string accname, string email, string sec, 
@@ -94,16 +94,16 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("AccountsView");
         }
 
-        public ContentResult GetObsoleteDocs()
+        public async Task<ContentResult> GetObsoleteDocs()
         {
-            List<MTIModel> mtis = ishare.GetMTIs().Where(j => j.ObsoleteStat && !j.isDeleted).ToList();
+            List<MTIModel> mtis = (await ishare.GetMTIs()).Where(j => j.ObsoleteStat && !j.isDeleted).ToList();
 
             return Content(JsonConvert.SerializeObject(new { docs = mtis, check = mtis.Count}), "application/json");
         }
 
-        public ContentResult DeleteObsoleteDocs(string adminName)
+        public async Task<ContentResult> DeleteObsoleteDocs(string adminName)
         {
-            List<MTIModel> mtis = ishare.GetMTIs().Where(j => j.ObsoleteStat && !j.isDeleted).ToList();
+            List<MTIModel> mtis = (await ishare.GetMTIs()).Where(j => j.ObsoleteStat && !j.isDeleted).ToList();
 
             string res = "bad";
 
@@ -113,7 +113,7 @@ namespace DMD_Prototype.Controllers
 
                 foreach (var mti in mtis)
                 {
-                    string directory = Path.Combine(ishare.GetPath("mainDir"), mti.DocumentNumber);
+                    string directory = Path.Combine(await ishare.GetPath("mainDir"), mti.DocumentNumber);
                     if (Directory.Exists(directory))
                     {
                         Directory.Delete(directory, true);

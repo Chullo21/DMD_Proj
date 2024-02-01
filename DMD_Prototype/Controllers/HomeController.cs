@@ -17,9 +17,9 @@ namespace DMD_Prototype.Controllers
             ishare = _ishared;
         }
 
-        public ContentResult SearchDocument(string searchString)
+        public async Task<ContentResult> SearchDocument(string searchString)
         {
-            MTIModel model = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == searchString || j.AssemblyPN == searchString || j.AssemblyDesc == searchString);
+            MTIModel model = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == searchString || j.AssemblyPN == searchString || j.AssemblyDesc == searchString);
             string res = "";
 
             if (model == null)
@@ -34,14 +34,14 @@ namespace DMD_Prototype.Controllers
             return Content(res, "application/json");
         }
 
-        public ContentResult GetOrigName(string userId)
+        public async Task<ContentResult> GetOrigName(string userId)
         {           
-            return Content(JsonConvert.SerializeObject(new {Name = ishare.GetAccounts().FirstOrDefault(j => j.UserID == userId).AccName }), "application/json");
+            return Content(JsonConvert.SerializeObject(new {Name = (await ishare.GetAccounts()).FirstOrDefault(j => j.UserID == userId).AccName }), "application/json");
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View(DashboardDetGetter());
+            return View(await DashboardDetGetter());
         }
 
         public IActionResult Privacy()
@@ -74,7 +74,7 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public IActionResult MTIList(string whichDoc, string? whichType)
+        public async Task<IActionResult> MTIList(string whichDoc, string? whichType)
         {
             string type = whichType ?? "MPI";
 
@@ -83,21 +83,21 @@ namespace DMD_Prototype.Controllers
 
             MTIListModel list = new MTIListModel();
             {
-                list.list = ishare.GetMTIs().Where(j => j.Product == whichDoc && j.DocType == type && !j.isDeleted).OrderByDescending(j => j.DateCreated).ToList();
-                list.Originators = ishare.GetAccounts().Where(j => j.Role == "ORIGINATOR").Select(j => j.AccName).ToList();
+                list.list = (await ishare.GetMTIs()).Where(j => j.Product == whichDoc && j.DocType == type && !j.isDeleted).OrderByDescending(j => j.DateCreated).ToList();
+                list.Originators = (await ishare.GetAccounts()).Where(j => j.Role == "ORIGINATOR").Select(j => j.AccName).ToList();
             }
 
             return View(list);
         }
 
-        public IActionResult ShowTravelers()
+        public async Task<IActionResult> ShowTravelers()
         {
-            Dictionary<string, (string, string)> mtis = ishare.GetMTIs().ToDictionary(j => j.DocumentNumber, j => (j.AssemblyDesc, j.AfterTravLog));
-            IEnumerable<ModuleModel> module = ishare.GetModules();
-            IEnumerable<SerialNumberModel> serialNumbers = ishare.GetSerialNumbers();
+            Dictionary<string, (string, string)> mtis = (await ishare.GetMTIs()).ToDictionary(j => j.DocumentNumber, j => (j.AssemblyDesc, j.AfterTravLog));
+            IEnumerable<ModuleModel> module = await ishare.GetModules();
+            IEnumerable<SerialNumberModel> serialNumbers = await ishare.GetSerialNumbers();
 
-            Dictionary<string, (string, string?, string?, string, string, string)> sw = ishare.GetStartWork().OrderByDescending(j => j.FinishDate).ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.HasValue ? j.FinishDate.Value.ToShortDateString() : "NF", j.UserID, j.DocNo, j.SWID.ToString(), j.LogType));
-            Dictionary<string, string> accs = ishare.GetAccounts().Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
+            Dictionary<string, (string, string?, string?, string, string, string)> sw = (await ishare.GetStartWork()).OrderByDescending(j => j.FinishDate).ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.HasValue ? j.FinishDate.Value.ToShortDateString() : "NF", j.UserID, j.DocNo, j.SWID.ToString(), j.LogType));
+            Dictionary<string, string> accs = (await ishare.GetAccounts()).Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
 
             TravelerViewModel res = new();
             List<TravDets> dets = new();
@@ -124,23 +124,23 @@ namespace DMD_Prototype.Controllers
             }
 
             res.Travs = dets;
-            res.Users = ishare.GetAccounts().Where(j => j.Role == "USER").Select(j => j.AccName).ToList();
+            res.Users = (await ishare.GetAccounts()).Where(j => j.Role == "USER" && !j.isDeleted).Select(j => j.AccName).ToList();
 
             return View(res);
         }
 
-        public ContentResult GetAllDocuments()
+        public async Task<ContentResult> GetAllDocuments()
 
         {
-            List<MTIModel> docs = ishare.GetMTIs().Where(j => !j.ObsoleteStat).ToList();
+            List<MTIModel> docs = (await ishare.GetMTIs()).Where(j => !j.ObsoleteStat).ToList();
 
             return Content(JsonConvert.SerializeObject(new {r = docs}), "application/json");
         }
 
-        public ContentResult GetSessionsCount()
+        public async Task<ContentResult> GetSessionsCountAsync()
         {
-            int rsCount = ishare.GetRS().ToList().Count;
-            int usCount = ishare.GetStartWork().Count(j => j.FinishDate == null);
+            int rsCount = (await ishare.GetRS()).ToList().Count;
+            int usCount = (await ishare.GetStartWork()).Count(j => j.FinishDate == null);
 
             return Content(JsonConvert.SerializeObject(new {r = rsCount, usCount = usCount}), "application/json");
         }
@@ -157,10 +157,10 @@ namespace DMD_Prototype.Controllers
             return res;
         }
 
-        private IndexModel DashboardDetGetter()
+        private async Task<IndexModel> DashboardDetGetter()
         {
-            IEnumerable<MTIModel> mtis = ishare.GetMTIs();
-            IEnumerable<ProblemLogModel> pls = ishare.GetProblemLogs().Where(j => j.LogDate.Year == DateTime.Now.Year);
+            IEnumerable<MTIModel> mtis = await ishare.GetMTIs();
+            IEnumerable<ProblemLogModel> pls = (await ishare.GetProblemLogs()).Where(j => j.LogDate.Year == DateTime.Now.Year);
 
             IndexModel mod = new IndexModel();
             mod.ControlledVal = mtis.Where(j => !j.isDeleted).Count();
@@ -180,9 +180,9 @@ namespace DMD_Prototype.Controllers
             return mod;
         }
 
-        public ContentResult GetPLDashboard(int year)
+        public async Task<ContentResult> GetPLDashboard(int year)
         {
-            IEnumerable<ProblemLogModel> pls = ishare.GetProblemLogs().Where(j => j.LogDate.Year == year);
+            IEnumerable<ProblemLogModel> pls = (await ishare.GetProblemLogs()).Where(j => j.LogDate.Year == year);
 
             int JTPVal = pls.Count(j => j.Product == "JTP" && j.Validation == "Valid");
             int JLPVal = pls.Count(j => j.Product == "JLP" && j.Validation == "Valid");

@@ -29,11 +29,11 @@ namespace DMD_Prototype.Controllers
             return userData;
         }
 
-        public IActionResult ChangeDocOwner(string docNo, string  docOwner)
+        public async Task<IActionResult> ChangeDocOwner(string docNo, string  docOwner)
         {
             MTIModel mti = _Db.MTIDb.FirstOrDefault(j => j.DocumentNumber == docNo);
             {
-                mti.OriginatorName = ishare.GetAccounts().FirstOrDefault(j => j.AccName == docOwner).UserID;
+                mti.OriginatorName = (await ishare.GetAccounts()).FirstOrDefault(j => j.AccName == docOwner).UserID;
             }
 
             if (ModelState.IsValid)
@@ -45,20 +45,20 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("MTIList", "Home", new {whichDoc = mti.Product, whichType = mti.DocType});
         }
 
-        public IActionResult DeleteDeviationDoc(string dir, string devType, string docNo)
+        public async Task<IActionResult> DeleteDeviationDoc(string dir, string devType, string docNo)
         {
             System.IO.File.Delete(dir);
 
-            string filePath = Path.Combine(ishare.GetPath("mainDir"), docNo);
+            string filePath = Path.Combine(await ishare.GetPath("mainDir"), docNo);
 
             ViewData[devType] = Directory.GetFiles(filePath).Where(j => j.Contains(devType)).ToList();
 
             return Json(null);
         }
 
-        public IActionResult EditDocumentDetails(MTIModel mti, string user)
+        public async Task<IActionResult> EditDocumentDetails(MTIModel mti, string user)
         {
-            MTIModel tempMTI = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == mti.DocumentNumber);
+            MTIModel tempMTI = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == mti.DocumentNumber);
 
             tempMTI.AssemblyPN = mti.AssemblyPN;
             tempMTI.AssemblyDesc = mti.AssemblyDesc;
@@ -81,12 +81,12 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("MTIList", "Home", new { whichDoc = tempMTI.Product, whichType = tempMTI.DocType});
         }
 
-        public IActionResult EditDocument(string docuno,IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
+        public async Task<IActionResult> EditDocument(string docuno,IFormFile? mpti, IFormFile? bom, IFormFile? schema, IFormFile? drawing, List<IFormFile>? opl,
             List<IFormFile>? derogation, List<IFormFile>? prco, List<IFormFile>? memo, IFormFile? travFile, List<string> DirsTobeDeleted, char mtpistatus,
             string user, string revNo, bool emailPL, string? remarks)
         {
 
-            var fromDb = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuno);
+            var fromDb = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docuno);
             MTIModel mod = new MTIModel();
             {
                 mod = fromDb;
@@ -113,17 +113,17 @@ namespace DMD_Prototype.Controllers
                 string remarkSetter = string.IsNullOrEmpty(remarks) ? "No remarks" : remarks;
                 string subject = $"DMD Portal, Document update {statusSetter}";
                 string body = $"Good day!\r\n{user} has updated a document/s with document number of {docuno}, having the details of the following:\r\n\r\nStatus: {statusSetter}\r\nAssembly Part Number: {mod.AssemblyPN}\r\nDescription: {mod.AssemblyDesc}\r\nRevision Number: {mod.RevNo}\r\nRemaks:{remarkSetter}\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a great day!";
-                ishare.SendEmailNotification(ishare.GetMultipleusers("PL_INTERVENOR").ToList(), subject, body);
+                ishare.SendEmailNotification((await ishare.GetMultipleusers("PL_INTERVENOR")).ToList(), subject, body);
             }
 
             return RedirectToAction("MTIView", new {docuNumber = docuno, workStat = false});
         }
 
-        public IActionResult EditDocumentView(string docuNo)
+        public async Task<IActionResult> EditDocumentView(string docuNo)
         {
-            MTIModel model = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuNo)!;
+            MTIModel model = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docuNo)!;
 
-            string filePath = Path.Combine(ishare.GetPath("mainDir"), docuNo);
+            string filePath = Path.Combine(await ishare.GetPath("mainDir"), docuNo);
 
             ViewBag.opl= Directory.GetFiles(filePath).Where(j => j.Contains("(o)")).ToList();
             ViewBag.derogation = Directory.GetFiles(filePath).Where(j => j.Contains("(d)")).ToList();
@@ -133,17 +133,17 @@ namespace DMD_Prototype.Controllers
             return View(model);
         }
 
-        public IActionResult MTIView(string docuNumber, bool workStat, string sesID)
+        public async Task<IActionResult> MTIView(string docuNumber, bool workStat, string sesID)
         {
-            MTIModel mti = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docuNumber && !j.isDeleted);
+            MTIModel mti = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docuNumber && !j.isDeleted);
 
             MTIViewModel mModel = new MTIViewModel();
             {
                 mModel.DocumentNumber = docuNumber;
-                mModel.Opl = DeviationDocNames("o", docuNumber);
-                mModel.Prco = DeviationDocNames("p", docuNumber);
-                mModel.Derogation = DeviationDocNames("d", docuNumber);
-                mModel.Memo = DeviationDocNames("m", docuNumber);
+                mModel.Opl = await DeviationDocNames("o", docuNumber);
+                mModel.Prco = await DeviationDocNames("p", docuNumber);
+                mModel.Derogation = await DeviationDocNames("d", docuNumber);
+                mModel.Memo = await DeviationDocNames("m", docuNumber);
                 mModel.WorkingStat = workStat;
                 mModel.SessionID = sesID;
                 mModel.AssyNo = mti.AssemblyPN;
@@ -158,22 +158,22 @@ namespace DMD_Prototype.Controllers
             return View(mModel);
         }
 
-        public ContentResult ValidateDocNo(string DocNo)
+        public async Task<ContentResult> ValidateDocNo(string DocNo)
         {
             string jsonResponse = "";
 
-            if (ishare.GetMTIs().Any(j => j.DocumentNumber == DocNo)) jsonResponse = "Document Number already exist\r\n";
+            if ((await ishare.GetMTIs()).Any(j => j.DocumentNumber == DocNo)) jsonResponse = "Document Number already exist\r\n";
 
             return Content(JsonConvert.SerializeObject(new {Failed = jsonResponse}), "application/json");
         }
 
-        private void DeleteMultipleFiles(List<string> fileNames, string docNo)
+        private async Task DeleteMultipleFiles(List<string> fileNames, string docNo)
         {
-            IEnumerable<string> files = Directory.GetFiles(Path.Combine(ishare.GetPath("mainDir"), docNo));
+            IEnumerable<string> files = Directory.GetFiles(Path.Combine(await ishare.GetPath("mainDir"), docNo));
 
             foreach (string filename in fileNames)
             {
-                string filePath = Path.Combine(ishare.GetPath("mainDir"), docNo, filename);
+                string filePath = Path.Combine(await ishare.GetPath("mainDir"), docNo, filename);
 
                 if (!System.IO.File.Exists(filePath))
                 {
@@ -210,10 +210,10 @@ namespace DMD_Prototype.Controllers
             return res;
         }
 
-        private List<string>? DeviationDocNames(string DocName, string docNo)
+        private async Task<List<string>?> DeviationDocNames(string DocName, string docNo)
         {
             List<string>? listOfDocs = new List<string>();
-            string folderPath = Path.Combine(ishare.GetPath("mainDir"), docNo);
+            string folderPath = Path.Combine(await ishare.GetPath("mainDir"), docNo);
 
             if (Directory.GetFiles(folderPath).Count() > 0)
             {
@@ -233,7 +233,7 @@ namespace DMD_Prototype.Controllers
             return View();
         }
 
-        public IActionResult CreateMTI(string documentnumber, string assynumber, string assydesc, string revnumber, 
+        public async Task<IActionResult> CreateMTI(string documentnumber, string assynumber, string assydesc, string revnumber, 
             IFormFile? assemblydrawing, IFormFile? billsofmaterial, IFormFile? schematicdiagram, IFormFile mpti,
             List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo, 
             string product, string doctype, string originator, IFormFile TravelerFile, string afterTrav, string? logsheetDocNo, string? logsheetRevNo)
@@ -247,7 +247,7 @@ namespace DMD_Prototype.Controllers
                 mti.RevNo = revnumber;
                 mti.Product = product;
                 mti.DocType = doctype;
-                mti.OriginatorName = ishare.GetAccounts().FirstOrDefault(j => j.AccName == originator).UserID;
+                mti.OriginatorName = (await ishare.GetAccounts()).FirstOrDefault(j => j.AccName == originator).UserID;
                 mti.AfterTravLog = afterTrav;
                 mti.LogsheetDocNo = logsheetDocNo;
                 mti.LogsheetRevNo = logsheetRevNo;
@@ -269,24 +269,24 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("MTIList", "Home", new { whichDoc = product });
         }
 
-        private void CreateNewFolder(string docNumber)
+        private async Task CreateNewFolder(string docNumber)
         {
-            Directory.CreateDirectory(Path.Combine(ishare.GetPath("mainDir"), docNumber));
+            Directory.CreateDirectory(Path.Combine(await ishare.GetPath("mainDir"), docNumber));
         }
 
-        private void CopyNoneMultipleDocs(IFormFile? mainDoc, IFormFile? AssyDrawing, IFormFile? BOM, IFormFile? Schematic, IFormFile? Traveler)
+        private async Task CopyNoneMultipleDocs(IFormFile? mainDoc, IFormFile? AssyDrawing, IFormFile? BOM, IFormFile? Schematic, IFormFile? Traveler)
         {
             Dictionary<string, IFormFile> files = new Dictionary<string, IFormFile>();
 
-            if (mainDoc != null) files.Add(ishare.GetPath("mainDoc"), mainDoc);
-            if (AssyDrawing != null) files.Add(ishare.GetPath("assy"), AssyDrawing);
-            if (BOM  != null) files.Add(ishare.GetPath("bom"), BOM);
-            if (Schematic != null) files.Add(ishare.GetPath("schema"), Schematic);
-            if (Traveler != null) files.Add(ishare.GetPath("travName"), Traveler);
+            if (mainDoc != null) files.Add(await ishare.GetPath("mainDoc"), mainDoc);
+            if (AssyDrawing != null) files.Add(await ishare.GetPath("assy"), AssyDrawing);
+            if (BOM  != null) files.Add(await ishare.GetPath("bom"), BOM);
+            if (Schematic != null) files.Add(await ishare.GetPath("schema"), Schematic);
+            if (Traveler != null) files.Add(await ishare.GetPath("travName"), Traveler);
 
             foreach (var file in files)
             {
-                using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), DocumentNumberVar, file.Key), FileMode.Create))
+                using (FileStream fs = new FileStream(Path.Combine(await ishare.GetPath("mainDir"), DocumentNumberVar, file.Key), FileMode.Create))
                 {
                     file.Value.CopyTo(fs);
                     ishare.RecordOriginatorAction($"Uploaded {Path.GetFileName(fs.Name)} to {DocumentNumberVar}.", GetUserData()[0], DateTime.Now);
@@ -294,9 +294,9 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private void CopyMultipleDocHandler(List<IFormFile>? files, char whichDoc)
+        private async Task CopyMultipleDocHandler(List<IFormFile>? files, char whichDoc)
         {
-            string filePath = Path.Combine(ishare.GetPath("mainDir"), DocumentNumberVar);
+            string filePath = Path.Combine(await ishare.GetPath("mainDir"), DocumentNumberVar);
 
             foreach (IFormFile file in files)
             {
@@ -310,16 +310,15 @@ namespace DMD_Prototype.Controllers
 
         private void CopyMultipleDocs(List<IFormFile>? onepointlesson, List<IFormFile>? prco, List<IFormFile>? derogation, List<IFormFile>? engineeringmemo)
         {
-
             if (onepointlesson != null && onepointlesson.Count > 0) CopyMultipleDocHandler(onepointlesson, 'o');
             if (prco != null && prco.Count > 0) CopyMultipleDocHandler(prco, 'p');
             if (derogation != null && derogation.Count > 0) CopyMultipleDocHandler(derogation, 'd');
             if (engineeringmemo != null && engineeringmemo.Count > 0) CopyMultipleDocHandler(engineeringmemo, 'm');
         }
 
-        public IActionResult UploadWS(IFormFile file)
+        public async Task<IActionResult> UploadWS(IFormFile file)
         {
-            using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), ishare.GetPath("wsf"), ishare.GetPath("ws")), FileMode.Create))
+            using (FileStream fs = new FileStream(Path.Combine(await ishare.GetPath("mainDir"), await ishare.GetPath("wsf"), await ishare.GetPath("ws")), FileMode.Create))
             {
                 file.CopyTo(fs);
             }
@@ -327,53 +326,60 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        private byte[] getDocumentsFromDb(string docuNumber, string whichDoc, char? docType)
+        private async Task<byte[]?> getDocumentsFromDb(string docuNumber, string whichDoc, char? docType)
         {
             string folderPath = "";
             IEnumerable<string> files;
 
             if (docType == null)
             {
-                folderPath = Path.Combine(ishare.GetPath("mainDir"), docuNumber, whichDoc);
+                folderPath = Path.Combine(await ishare.GetPath("mainDir"), docuNumber, whichDoc);
             }
             else
             {
-                folderPath = Path.Combine(ishare.GetPath("mainDir"), docuNumber, $"({docType}){whichDoc}");
+                folderPath = Path.Combine(await ishare.GetPath("mainDir"), docuNumber, $"({docType}){whichDoc}");
             }
 
-            if (!System.IO.File.Exists(folderPath))
+            if (System.IO.File.Exists(folderPath))
             {
-                files = Directory.GetFiles(Path.Combine(ishare.GetPath("mainDir"), docuNumber));
+                files = Directory.GetFiles(Path.Combine(await ishare.GetPath("mainDir"), docuNumber));
                 folderPath = files.FirstOrDefault(j => j.Contains(whichDoc));
-            }
 
-            using (FileStream fileStream = new FileStream(folderPath, FileMode.Open))
-            {
-                using (MemoryStream ms = new MemoryStream())
+                using (FileStream fileStream = new FileStream(folderPath, FileMode.Open))
                 {
-                    fileStream.CopyTo(ms);
-                    return ms.ToArray();
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        fileStream.CopyTo(ms);
+                        return ms.ToArray();
+                    }
                 }
+            }
+            else
+            {
+                return null;
             }
         }
 
-        public IActionResult ShowDoc(string docunumber, string whichDoc, char? docType)
+        public async Task<IActionResult> ShowDoc(string docunumber, string whichDoc, char? docType)
         {
-            if (whichDoc != "WS")
-            {
-                return File(getDocumentsFromDb(docunumber, whichDoc, docType), "application/pdf");
-            }
-            else
+
+            byte[]? file = await getDocumentsFromDb(docunumber, whichDoc, docType);
+
+            if (file == null)
             {
                 return NoContent();
             }
+            else
+            {
+                return File(file, "application/pdf");
+            }
         }
 
-        public IActionResult ShowWS()
+        public async Task<IActionResult> ShowWS()
         {
-            if (System.IO.File.Exists(Path.Combine(ishare.GetPath("mainDir"), ishare.GetPath("wsf"), ishare.GetPath("ws"))))
+            if (System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), await ishare.GetPath("wsf"), await ishare.GetPath("ws"))))
             {
-                using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), ishare.GetPath("wsf"), ishare.GetPath("ws")), FileMode.Open))
+                using (FileStream fs = new FileStream(Path.Combine(await ishare.GetPath("mainDir"), await ishare.GetPath("wsf"), await ishare.GetPath("ws")), FileMode.Open))
                 {
                     using (MemoryStream ms = new MemoryStream())
                     {

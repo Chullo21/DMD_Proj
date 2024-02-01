@@ -137,7 +137,7 @@
                             <option value="T">Test Equipment Log</option>
                         </select>
                     </div>
-                    <div id="logsheetDiv">
+                    <div id="logsheetDiv" style="display: none">
                         <div class="my-4">
                             <label class="form-label">Logsheet Document Control Number</label>
                             <input class="form-control" name="logsheetDocNo" value="" id="editDetLogDocNo"/>
@@ -180,10 +180,6 @@
 </form>
 
 <script>
-    window.onload = function () {
-        CheckAfterTrav('N');
-    };
-
     function CheckAfterTrav(val)
     {
         var docNoInput = document.getElementById('editDetLogDocNo');

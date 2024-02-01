@@ -32,11 +32,11 @@ namespace DMD_Prototype.Controllers
             return EN;
         }        
 
-        private void SendEmailNotificationToPLs(string plNo)
+        private async Task SendEmailNotificationToPLs(string plNo)
         {
             string subject = "Valid Problem Log";
             string body = $"Good day!\r\nAn Originator have validated a problem log with PL number of {plNo} as valid.\r\nPlease refer to our DMD Portal to process this.\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a nice day";
-            ishare.SendEmailNotification(ishare.GetMultipleusers("PL_INTERVENOR").ToList(), subject, body);
+            ishare.SendEmailNotification((await ishare.GetMultipleusers("PL_INTERVENOR")).ToList(), subject, body);
         }
 
         private Stream GetProblemLogTemplate()
@@ -46,7 +46,7 @@ namespace DMD_Prototype.Controllers
             return assembly.GetManifestResourceStream("DMD_Prototype.wwwroot.Common.Templates.ProblemLogTemplate.xlsx");
         }
 
-        private byte[] ExportPL(List<ProblemLogModel> pls)
+        private byte[] ExportPL(IEnumerable<ProblemLogModel> pls)
         {
             int counter = 10;
 
@@ -126,14 +126,15 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public IActionResult DownloadFile(string selection, DateTime? from, DateTime? to)
+        public async Task<IActionResult> DownloadFile(string selection, DateTime? from, DateTime? to)
         {
             string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             Response.Headers["Content-Disposition"] = "inline; filename=" + $"ProblemLog_{DateTime.Now.Year}.xlsx";
-            return File(ExportPL(GetProblemLogs(selection, from, to)), contentType);
+
+            return File(ExportPL(await GetProblemLogs(selection, from, to)), contentType);
         }
 
-        private List<ProblemLogModel> GetProblemLogs(string selection, DateTime? from, DateTime? to)
+        private async Task<IEnumerable<ProblemLogModel>> GetProblemLogs(string selection, DateTime? from, DateTime? to)
         {
             List<ProblemLogModel> pls = new List<ProblemLogModel>();
 
@@ -141,17 +142,17 @@ namespace DMD_Prototype.Controllers
             {
                 case "Year":
                     {
-                        pls = ishare.GetProblemLogs().Where(j => j.LogDate.Year == DateTime.Now.Year).ToList();
+                        pls = (await ishare.GetProblemLogs()).Where(j => j.LogDate.Year == DateTime.Now.Year).ToList();
                         break;
                     }
                 case "Month":
                     {
-                        pls = ishare.GetProblemLogs().Where(j => j.LogDate.Month == DateTime.Now.Month && j.LogDate.Year == DateTime.Now.Year).ToList();
+                        pls = (await ishare.GetProblemLogs()).Where(j => j.LogDate.Month == DateTime.Now.Month && j.LogDate.Year == DateTime.Now.Year).ToList();
                         break;
                     }
                 case "Range":
                     {
-                        pls = ishare.GetProblemLogs().Where(j => j.LogDate.Date >= from && j.LogDate.Date <= to).ToList();
+                        pls = (await ishare.GetProblemLogs()).Where(j => j.LogDate.Date >= from && j.LogDate.Date <= to).ToList();
                         break;
                     }
                 default:
@@ -163,16 +164,16 @@ namespace DMD_Prototype.Controllers
             return pls;
         }
 
-        public ContentResult CheckForPLData(string selection, DateTime? from, DateTime? to)
+        public async Task<ContentResult> CheckForPLData(string selection, DateTime? from, DateTime? to)
         {
-            List<ProblemLogModel> pls = GetProblemLogs(selection, from, to);
+            List<ProblemLogModel> pls = (List<ProblemLogModel>)await GetProblemLogs(selection, from, to);
 
             string convertString = "Selected date will return with zero or no data, action terminated";
             bool plStat = false;
 
             if (pls.Count > 0 && pls != null)
             {
-                convertString = "Download will beggin shortly.";
+                convertString = "Download will begin shortly.";
                 plStat = true;
 
             }
@@ -288,7 +289,7 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("ProblemLogView");
         }
 
-        public IActionResult ProblemLogView()
+        public async Task<IActionResult> ProblemLogView()
         {
             List<ProblemLogViewModel> pls = new List<ProblemLogViewModel>();
 
@@ -300,7 +301,7 @@ namespace DMD_Prototype.Controllers
             foreach (var p in _plModel)
             {
                 ProblemLogViewModel mod = new ProblemLogViewModel();
-                mod.Owner = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == p.DocNo).OriginatorName;
+                mod.Owner = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == p.DocNo).OriginatorName;
                 mod.PL = p;
 
                 pls.Add(mod);
@@ -309,7 +310,7 @@ namespace DMD_Prototype.Controllers
             return View(pls.OrderByDescending(j => j.PL.LogDate));
         }
 
-        public IActionResult SubmitPLValidation(ProblemLogModel fromView, char affectedDocIdentifier)
+        public IActionResult SubmitPLValidation(ProblemLogModel fromView, char? affectedDocIdentifier)
         {
             string sdVal = "";
 
@@ -397,18 +398,18 @@ namespace DMD_Prototype.Controllers
             return Content(jsonContent, "application/json");
         }
 
-        public ContentResult GetDocStatus(string docNo)
+        public async Task<ContentResult> GetDocStatus(string docNo)
         {
-            MTIModel doc = ishare.GetMTIs().FirstOrDefault(j => j.DocumentNumber == docNo);
+            MTIModel doc = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docNo);
 
             return Content(JsonConvert.SerializeObject(new { status = doc.MTPIStatus != 'i' ? "Controlled" : "Interim" }), "application/json");
         }
 
-        public IActionResult GetPLDoc(string docNo, int plID)
+        public async Task<IActionResult> GetPLDoc(string docNo, int plID)
         {
             string whichDoc = string.Empty;
 
-            ProblemLogModel pl = ishare.GetProblemLogs().FirstOrDefault(j => j.PLID == plID);
+            ProblemLogModel pl = (await ishare.GetProblemLogs()).FirstOrDefault(j => j.PLID == plID);
 
             switch (pl.AffectedDocSys)
             {
@@ -433,7 +434,7 @@ namespace DMD_Prototype.Controllers
                         break;
                     }                   
             }
-            using (FileStream fs = new FileStream(Path.Combine(ishare.GetPath("mainDir"), docNo, ishare.GetPath(whichDoc)), FileMode.Open))
+            using (FileStream fs = new FileStream(Path.Combine(await ishare.GetPath("mainDir"), docNo, await ishare.GetPath(whichDoc)), FileMode.Open))
             {
                 using (MemoryStream ms = new MemoryStream())
                 {

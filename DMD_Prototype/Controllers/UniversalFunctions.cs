@@ -9,39 +9,39 @@ namespace DMD_Prototype.Controllers
 {   
     public interface ISharedFunct
     {
-        public IActionResult ShowPdf(string path);
+        public Task<IActionResult> ShowPdf(string path);
 
-        public string GetPath(string path);
+        public Task<string> GetPath(string path);
 
-        public IEnumerable<SerialNumberModel> GetSerialNumbers();
+        public Task<IEnumerable<SerialNumberModel>> GetSerialNumbers();
 
-        public IEnumerable<MTIModel> GetMTIs();
+        public Task<IEnumerable<MTIModel>> GetMTIs();
 
-        public IEnumerable<AccountModel> GetAccounts();
+        public Task<IEnumerable<AccountModel>> GetAccounts();
 
-        public IEnumerable<StartWorkModel> GetStartWork();
+        public Task<IEnumerable<StartWorkModel>> GetStartWork();
 
-        public IEnumerable<PauseWorkModel> GetPauseWorks();
+        public Task<IEnumerable<PauseWorkModel>> GetPauseWorks();
 
-        public IEnumerable<ProblemLogModel> GetProblemLogs();
+        public Task<IEnumerable<ProblemLogModel>> GetProblemLogs();
 
-        public IEnumerable<ModuleModel> GetModules();
+        public Task<IEnumerable<ModuleModel>> GetModules();
 
-        public IEnumerable<RequestSessionModel> GetRS();
+        public Task<IEnumerable<RequestSessionModel>> GetRS();
 
-        public IEnumerable<AnnouncementModel> GetAnnouncements();
+        public Task<IEnumerable<AnnouncementModel>> GetAnnouncements();
 
-        public void RecordOriginatorAction(string action, string originator, DateTime date);
+        public Task RecordOriginatorAction(string action, string originator, DateTime date);
 
-        public IEnumerable<UserActionModel> GetUA();
+        public Task<IEnumerable<UserActionModel>> GetUA();
 
-        public void SendEmailNotification(List<string> receivers, string subject, string body);
+        public Task SendEmailNotification(List<string> receivers, string subject, string body);
 
-        public void SendEmailNotification(string receiver, string subject, string body);
+        public Task SendEmailNotification(string receiver, string subject, string body);
 
-        public IEnumerable<string> GetMultipleusers(string userRole);
+        public Task<IEnumerable<string>> GetMultipleusers(string userRole);
 
-        public void BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName);
+        public Task BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName);
 
     }
 
@@ -54,19 +54,19 @@ namespace DMD_Prototype.Controllers
 
         private readonly AppDbContext _Db;
 
-        private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
-        private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
-        private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
-        private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
-        private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
-        private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        //private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
+        //private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
+        //private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        //private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        //private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        //private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
 
-        //private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
-        //private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
-        //private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
-        //private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
-        //private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
-        //private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
+        private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
+        private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
 
         private readonly string travelerBackupDir = "A:\\DMD Portal Backups\\Travelers";
         private readonly string configBackupDir = "A:\\DMD Portal Backups\\Configuration Logs";
@@ -88,7 +88,7 @@ namespace DMD_Prototype.Controllers
         private readonly string derogationName = "Derogation.pdf";
         private readonly string memoName = "EngineeringMemo.pdf";
 
-        public void BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName)
+        public async Task BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName)
         {
             string saveInIdentifier = travelerForBackupDir;
             string srcDir;
@@ -120,62 +120,62 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public IEnumerable<AnnouncementModel> GetAnnouncements()
+        public async Task<IEnumerable<AnnouncementModel>> GetAnnouncements()
         {
             return _Db.AnnouncementDb;
         }
 
-        public IEnumerable<SerialNumberModel> GetSerialNumbers()
+        public async Task<IEnumerable<SerialNumberModel>> GetSerialNumbers()
         {
             return _Db.SerialNumberDb;
         }
 
-        public IEnumerable<UserActionModel> GetUA()
+        public async Task<IEnumerable<UserActionModel>> GetUA()
         {
             return _Db.UADb;
         }
 
-        public void RecordOriginatorAction(string action, string originator, DateTime date)
+        public async Task RecordOriginatorAction(string action, string originator, DateTime date)
         {
             _Db.UADb.Add(new UserActionModel().CreateAction(action, originator, date)); 
         }
 
-        public IEnumerable<RequestSessionModel> GetRS()
+        public async Task<IEnumerable<RequestSessionModel>> GetRS()
         {
             return _Db.RSDb;
         }
 
-        public IEnumerable<ModuleModel> GetModules()
+        public async Task<IEnumerable<ModuleModel>> GetModules()
         {
             return _Db.ModuleDb;
         }
 
-        public IEnumerable<ProblemLogModel> GetProblemLogs()
+        public async Task<IEnumerable<ProblemLogModel>> GetProblemLogs()
         {
             return _Db.PLDb;
         }
 
-        public IEnumerable<MTIModel> GetMTIs()
+        public async Task<IEnumerable<MTIModel>> GetMTIs()
         {
             return _Db.MTIDb;
         }
 
-        public IEnumerable<AccountModel> GetAccounts()
+        public async Task<IEnumerable<AccountModel>> GetAccounts()
         {
             return _Db.AccountDb;
         }
 
-        public IEnumerable<StartWorkModel> GetStartWork()
+        public async Task<IEnumerable<StartWorkModel>> GetStartWork()
         {
             return _Db.StartWorkDb;
         }
 
-        public IEnumerable<PauseWorkModel> GetPauseWorks()
+        public async Task<IEnumerable<PauseWorkModel>> GetPauseWorks()
         {
             return _Db.PauseWorkDb;
         }
 
-        public string GetPath(string whichPath)
+        public async Task<string> GetPath(string whichPath)
         {
             switch (whichPath)
             {
@@ -266,7 +266,7 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public IActionResult ShowPdf(string path)
+        public async Task<IActionResult> ShowPdf(string path)
         {
             FileStream fs = new FileStream(path, FileMode.Open);
             MemoryStream ms = new MemoryStream();
@@ -275,7 +275,7 @@ namespace DMD_Prototype.Controllers
             return File(ms.ToArray(), "application/pdf");
         }
 
-        public void SendEmailNotification(List<string> receivers, string subject, string body)
+        public async Task SendEmailNotification(List<string> receivers, string subject, string body)
         {
             EmailModel dmdEmail = new EmailModel().SecondEmailAccount();
 
@@ -303,7 +303,7 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public void SendEmailNotification(string receiver, string subject, string body)
+        public async Task SendEmailNotification(string receiver, string subject, string body)
         {
             EmailModel dmdEmail = new EmailModel().FirstEmailAccount();
 
@@ -331,10 +331,10 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public IEnumerable<string> GetMultipleusers(string userRole)
+        public async Task<IEnumerable<string>> GetMultipleusers(string userRole)
         {
             List<string> listOfPlEmails = new List<string>();
-            IEnumerable<AccountModel> plAccounts = GetAccounts().Where(j => j.Role == userRole);
+            IEnumerable<AccountModel> plAccounts = (await GetAccounts()).Where(j => j.Role == userRole);
 
             foreach (var pls in plAccounts)
             {

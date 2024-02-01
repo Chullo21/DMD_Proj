@@ -17,10 +17,10 @@ namespace DMD_Prototype.Controllers
             this.ishared = ishared;
         }
 
-        public IActionResult ChangeTravWorker(int ID, string toWorker)
+        public async Task<IActionResult> ChangeTravWorker(int ID, string toWorker)
         {
-            StartWorkModel sw = ishared.GetStartWork().FirstOrDefault(j => j.SWID == ID);
-            sw.UserID = ishared.GetAccounts().FirstOrDefault(j => j.AccName == toWorker).UserID;
+            StartWorkModel sw = (await ishared.GetStartWork()).FirstOrDefault(j => j.SWID == ID);
+            sw.UserID = (await ishared.GetAccounts()).FirstOrDefault(j => j.AccName == toWorker).UserID;
 
             if(ModelState.IsValid)
             {
@@ -31,13 +31,13 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("ShowTravelers", "Home");
         }
 
-        public ContentResult ValidateWorkTransfer(int ID, string toWorker)
+        public async Task<ContentResult> ValidateWorkTransfer(int ID, string toWorker)
         {
             string response = "go";
 
-            string userId = ishared.GetAccounts().FirstOrDefault(j => j.AccName == toWorker).UserID;
+            string userId = (await ishared.GetAccounts()).FirstOrDefault(j => j.AccName == toWorker).UserID;
 
-            StartWorkModel sw = ishared.GetStartWork().FirstOrDefault(j => j.UserID == userId && j.FinishDate == null);
+            StartWorkModel sw = (await ishared.GetStartWork()).FirstOrDefault(j => j.UserID == userId && j.FinishDate == null);
 
             if (sw != null)
             {
@@ -48,11 +48,11 @@ namespace DMD_Prototype.Controllers
             return Content(jsonContent, "application/json");
         }
 
-        public ContentResult GetTravDataForEdit(string sessionId)
+        public async Task<ContentResult> GetTravDataForEdit(string sessionId)
         {
             List<TravDataForEdit> res = new List<TravDataForEdit>();
 
-            using (ExcelPackage package = new ExcelPackage(Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("userTravName"))))
+            using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("userTravName"))))
             {
                 var ws = package.Workbook.Worksheets[0];
                 int row = 11;

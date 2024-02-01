@@ -20,9 +20,9 @@ namespace DMD_Prototype.Controllers
             this.ishare = ishare;
         }
 
-        public IActionResult DownloadExcel(string sessionId, string whichFile)
+        public async Task<IActionResult> DownloadExcel(string sessionId, string whichFile)
         {
-            string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
+            string filePath = Path.Combine(await ishare.GetPath("userDir"), sessionId, await ishare.GetPath(whichFile));
 
             return File(new COMHandler().DownloadExcel(filePath), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }
@@ -38,10 +38,10 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public IActionResult ViewTraveler(string docNo)
+        public async Task<IActionResult> ViewTraveler(string docNo)
         {
-            string filePath = Path.Combine(ishare.GetPath("mainDir"), docNo, ishare.GetPath("travName"));
-            string tempPath = new COMHandler().GetAndConvertExcelFile(filePath, ishare.GetPath("tempDir"));
+            string filePath = Path.Combine(await ishare.GetPath("mainDir"), docNo, await ishare.GetPath("travName"));
+            string tempPath = new COMHandler().GetAndConvertExcelFile(filePath, await ishare.GetPath("tempDir"));
 
             byte[] file = System.IO.File.ReadAllBytes(tempPath);
 
@@ -52,8 +52,14 @@ namespace DMD_Prototype.Controllers
 
         public async Task<IActionResult> ViewExcelFile(string sessionId, string whichFile)
         {
-            string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
-            string tempPath = new COMHandler().GetAndConvertExcelFile(filePath, ishare.GetPath("tempDir"));
+            string filePath = Path.Combine(await ishare.GetPath("userDir"), sessionId, await ishare.GetPath(whichFile));
+
+            if (!System.IO.File.Exists(filePath))
+            { 
+                return NoContent();
+            }
+
+            string tempPath = new COMHandler().GetAndConvertExcelFile(filePath, await ishare.GetPath("tempDir"));
 
             byte[] file = System.IO.File.ReadAllBytes(tempPath);
 
@@ -62,10 +68,10 @@ namespace DMD_Prototype.Controllers
             return File(file, "application/pdf");
         }
 
-        public IActionResult DownloadFileWithFileName(string docNo, string fileName)
+        public async Task<IActionResult> DownloadFileWithFileName(string docNo, string fileName)
         {
-            string filePath = Path.Combine(ishare.GetPath("mainDir"), docNo, fileName);
-            string tempPath = Path.Combine(ishare.GetPath("tempDir"), Guid.NewGuid().ToString().Substring(0, 15) + ".pdf");
+            string filePath = Path.Combine(await ishare.GetPath("mainDir"), docNo, fileName);
+            string tempPath = Path.Combine(await ishare.GetPath("tempDir"), Guid.NewGuid().ToString().Substring(0, 15) + ".pdf");
 
             System.IO.File.Copy(filePath, tempPath, true);
 
@@ -76,10 +82,16 @@ namespace DMD_Prototype.Controllers
             return File(file, "application/pdf", fileName);
         }
 
-        public IActionResult DownloadMainDoc(string docNo, string whichDoc)
+        public async Task<IActionResult> DownloadMainDoc(string docNo, string whichDoc)
         {
-            string filePath = Path.Combine(ishare.GetPath("mainDir"), docNo, ishare.GetPath(whichDoc));
-            string tempPath = Path.Combine(ishare.GetPath("tempDir"), Guid.NewGuid().ToString().Substring(0, 15) + ".pdf");
+            string filePath = Path.Combine(await ishare.GetPath("mainDir"), docNo, await ishare.GetPath(whichDoc));
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NoContent();
+            }
+
+            string tempPath = Path.Combine(await ishare.GetPath("tempDir"), Guid.NewGuid().ToString().Substring(0, 15) + ".pdf");
             System.IO.File.Copy(filePath, tempPath, true);
             AttachWatermarkInPdf(tempPath);
             byte[] file = System.IO.File.ReadAllBytes(tempPath);
@@ -88,10 +100,10 @@ namespace DMD_Prototype.Controllers
             return File(file, "application/pdf", Path.GetFileName(filePath));
         }
 
-        public IActionResult DownloadWS()
+        public async Task<IActionResult> DownloadWS()
         {
-            string filePath = Path.Combine(Path.Combine(ishare.GetPath("mainDir"), ishare.GetPath("wsf"), ishare.GetPath("ws")));
-            string tempPath = Path.Combine(ishare.GetPath("tempDir"), Guid.NewGuid().ToString().Substring(0, 15) + ".pdf");
+            string filePath = Path.Combine(Path.Combine(await ishare.GetPath("mainDir"), await ishare.GetPath("wsf"), await ishare.GetPath("ws")));
+            string tempPath = Path.Combine(await ishare.GetPath("tempDir"), Guid.NewGuid().ToString().Substring(0, 15) + ".pdf");
             System.IO.File.Copy(filePath, tempPath, true);
             AttachWatermarkInPdf(tempPath);
             byte[] file = System.IO.File.ReadAllBytes(tempPath);
@@ -100,10 +112,10 @@ namespace DMD_Prototype.Controllers
             return File(file, "application/pdf", Path.GetFileName(filePath));
         }
 
-        public IActionResult DownloadPdf(string sessionId, string whichFile)
+        public async Task<IActionResult> DownloadPdf(string sessionId, string whichFile)
         {
-            string filePath = Path.Combine(ishare.GetPath("userDir"), sessionId, ishare.GetPath(whichFile));
-            string tempPath = new COMHandler().GetAndConvertExcelFile(filePath, ishare.GetPath("tempDir"));
+            string filePath = Path.Combine(await ishare.GetPath("userDir"), sessionId, await ishare.GetPath(whichFile));
+            string tempPath = new COMHandler().GetAndConvertExcelFile(filePath, await ishare.GetPath("tempDir"));
 
             AttachWatermarkInPdf(tempPath);
             byte[] file = System.IO.File.ReadAllBytes(tempPath);

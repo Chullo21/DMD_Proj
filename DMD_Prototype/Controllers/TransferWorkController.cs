@@ -16,15 +16,15 @@ namespace DMD_Prototype.Controllers
             _Db = _context;
         }
 
-        private List<SVSesViewModel> GetSVSes()
+        private async Task<List<SVSesViewModel>> GetSVSes()
         {
             List<SVSesViewModel> res = new();
 
-            Dictionary<string, string> docs = ishared.GetMTIs().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
-            Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
-            IEnumerable<SerialNumberModel> serialNumbers = ishared.GetSerialNumbers();
-            Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
-            Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
+            Dictionary<string, string> docs = (await ishared.GetMTIs()).ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
+            Dictionary<string, (string, string)> modules = (await ishared.GetModules()).ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
+            IEnumerable<SerialNumberModel> serialNumbers = await ishared.GetSerialNumbers();
+            Dictionary<string, string> accounts = (await ishared.GetAccounts()).Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
+            Dictionary<string, (string, string, string)> sw = (await ishared.GetStartWork()).Where(j => j.FinishDate == null).ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
 
             foreach (var s in sw)
             {
@@ -49,21 +49,10 @@ namespace DMD_Prototype.Controllers
 
         }
 
-        public IActionResult UserTWView()
+        public async Task<IActionResult> UserTWView()
         {
-            return View(GetSVSes());
+            return View(await GetSVSes());
         }
-
-        //public IActionResult TakeSession(string id, string userId)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _Db.RSDb.Add(new RequestSessionModel().CreateSessionRequest(userId, id));
-        //        _Db.SaveChanges();
-        //    }
-
-        //    return View("TakeSessionLoading", "TakeSession");
-        //}
 
         public ContentResult TakeSession(string id, string userId)
         {
@@ -79,15 +68,15 @@ namespace DMD_Prototype.Controllers
             return Content(JsonConvert.SerializeObject(new { r = "f" }), "application/json");
         }
 
-        public IActionResult SVTWView()
+        public async Task<IActionResult> SVTWView()
         {
-            IEnumerable<RequestSessionModel> reqs = ishared.GetRS();
+            IEnumerable<RequestSessionModel> reqs = await ishared.GetRS();
 
-            Dictionary<string, string> docs = ishared.GetMTIs().ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
-            Dictionary<string, (string, string)> modules = ishared.GetModules().ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
-            Dictionary<string, string> accounts = ishared.GetAccounts().Where(j => j.Role == "USER").ToList().ToDictionary(j => j.UserID, j => j.AccName);
-            Dictionary<string, (string, string, string)> sw = ishared.GetStartWork().Where(j => j.FinishDate == null).ToList().ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
-            IEnumerable<SerialNumberModel> serialNumbers = ishared.GetSerialNumbers();
+            Dictionary<string, string> docs = (await ishared.GetMTIs()).ToDictionary(j => j.DocumentNumber, j => j.AssemblyDesc);
+            Dictionary<string, (string, string)> modules = (await ishared.GetModules()).ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
+            Dictionary<string, string> accounts = (await ishared.GetAccounts()).Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
+            Dictionary<string, (string, string, string)> sw = (await ishared.GetStartWork()).Where(j => j.FinishDate == null).ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
+            IEnumerable<SerialNumberModel> serialNumbers = await ishared.GetSerialNumbers();
             List<SVSesViewModel> res = new();
 
             foreach (var req in reqs)
@@ -113,16 +102,16 @@ namespace DMD_Prototype.Controllers
             return View(res);
         }
 
-        public IActionResult ApproveSessionRequest(int RSID)
+        public async Task<IActionResult> ApproveSessionRequest(int RSID)
         {
 
-            RequestSessionModel rs = ishared.GetRS().FirstOrDefault(j => j.TakeSessionID == RSID);
+            RequestSessionModel rs = (await ishared.GetRS()).FirstOrDefault(j => j.TakeSessionID == RSID);
 
             CheckIfTechIsCurrentlyWorking(rs.UserId);
 
-            List<RequestSessionModel> rsList = ishared.GetRS().Where(j => j.SWID == rs.SWID).ToList();
+            List<RequestSessionModel> rsList = (await ishared.GetRS()).Where(j => j.SWID == rs.SWID).ToList();
 
-            StartWorkModel sw = ishared.GetStartWork().FirstOrDefault(j => j.SWID == int.Parse(rs.SWID));
+            StartWorkModel sw = (await ishared.GetStartWork()).FirstOrDefault(j => j.SWID == int.Parse(rs.SWID));
 
             sw.UserID = rs.UserId;
 
@@ -142,14 +131,14 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("SVTWView", "TransferWork");
         }
 
-        public IActionResult TWPartial()
+        public async Task<IActionResult> TWPartial()
         {
-            return PartialView("_TWPartial", GetSVSes());
+            return PartialView("_TWPartial", await GetSVSes());
         }
 
-        public IActionResult RemoveSessionRequest(int RSID)
+        public async Task<IActionResult> RemoveSessionRequest(int RSID)
         {
-            RequestSessionModel rsm = ishared.GetRS().FirstOrDefault(j => j.TakeSessionID == RSID);
+            RequestSessionModel rsm = (await ishared.GetRS()).FirstOrDefault(j => j.TakeSessionID == RSID);
 
             if (ModelState.IsValid)
             {
@@ -160,15 +149,15 @@ namespace DMD_Prototype.Controllers
             return RedirectToAction("SVTWView");
         }
 
-        public ContentResult CheckIfRequestIsApproved(string userId, string SWID)
+        public async Task<ContentResult> CheckIfRequestIsApproved(string userId, string SWID)
         {
             string response = "";
 
-            RequestSessionModel? rs = ishared.GetRS().FirstOrDefault(j => j.UserId == userId && j.SWID == SWID);
+            RequestSessionModel? rs = (await ishared.GetRS()).FirstOrDefault(j => j.UserId == userId && j.SWID == SWID);
 
             if (rs == null)
             {
-                StartWorkModel? sw = ishared.GetStartWork().FirstOrDefault(j => j.UserID == userId && j.SWID == int.Parse(SWID));
+                StartWorkModel? sw = (await ishared.GetStartWork()).FirstOrDefault(j => j.UserID == userId && j.SWID == int.Parse(SWID));
 
                 if (sw != null)
                 {
@@ -183,9 +172,9 @@ namespace DMD_Prototype.Controllers
             return Content(JsonConvert.SerializeObject(new { r = response, link = $"?userID={userId}" + $"&noPW={true}" }), "application/json");
         }
 
-        private void CheckIfTechIsCurrentlyWorking(string userId)
+        private async void CheckIfTechIsCurrentlyWorking(string userId)
         {
-            StartWorkModel sw = ishared.GetStartWork().FirstOrDefault(j => j.FinishDate == null && j.UserID == userId);
+            StartWorkModel sw = (await ishared.GetStartWork()).FirstOrDefault(j => j.FinishDate == null && j.UserID == userId);
 
             if (sw != null)
             {

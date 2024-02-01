@@ -90,7 +90,7 @@
                             </script>
 
                             <div class="modal fade" data-bs-backdrop="static" id="viewtravmodal">
-                                <div class="modal-dialog modal-dialog-centered modal-xl">
+                                <div class="modal-dialog modal-dialog-centered modal-fullscreen">
                                     <div class="modal-content">
                                         <div class="modal-header bg-primary">
                                             <div class="modal-title d-flex text-white">
@@ -105,7 +105,7 @@
                                             @* <div class="position-absolute bg-primary end-0" style="height:60px; width:25%">
                                         </div> *@
                                             <div>
-                                                <iframe class="w-100 border-3 border-dark" id="viewtravmodalbody" src="" style="height:80vh">Traveler Here</iframe>
+                                                <iframe class="w-100 border-3 border-dark" id="viewtravmodalbody" src="" style="height:85vh">Traveler Here</iframe>
                                             </div>
                                         </div>
                                     </div>
@@ -1105,7 +1105,7 @@
                     <div class="position-absolute bg-transparent end-0" style="height:60px; width:25%">                       
                     </div>
                     <div>
-                        <iframe class="border-3 border-dark w-100" style="height:90vh" id="docFrame" src=""></iframe>
+                        <iframe class="border-3 border-dark w-100" style="height:85vh" id="docFrame" src=""></iframe>
                     </div>
                 </div>
             </div>
@@ -1260,7 +1260,7 @@
         </div>
     </div>
 
-    <form asp-controller="Work" asp-action="PauseWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" asp-route-sessID="@Model.SessionID" class="modal fade" id="pausemodal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <form asp-controller="Work" asp-action="PauseWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" class="modal fade" id="pausemodal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-2 border-danger">
                 <div class="modal-header">

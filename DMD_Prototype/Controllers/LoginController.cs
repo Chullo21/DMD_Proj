@@ -19,13 +19,6 @@ namespace DMD_Prototype.Controllers
 
         public IActionResult LoginPage()
         {
-
-            string[]? loggedInUser = TempData["EN"] as string[];
-
-            if (loggedInUser != null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
             
             return View();
         }
@@ -45,9 +38,9 @@ namespace DMD_Prototype.Controllers
         }
 
         [HttpPost]
-        public ContentResult TryLogin(string user, string pass)
+        public async Task<ContentResult> TryLogin(string user, string pass)
         {
-            AccountModel? acc = ishared.GetAccounts().FirstOrDefault(j => j.Username == user && j.Password == pass && !j.isDeleted);
+            AccountModel? acc = (await ishared.GetAccounts()).FirstOrDefault(j => j.Username == user && j.Password == pass && !j.isDeleted);
 
             string jsonContent = string.Empty;
             string val = string.Empty;
@@ -61,12 +54,12 @@ namespace DMD_Prototype.Controllers
                 TempData["EN"] = null;
                 TempData["EN"] = accData;
 
-                if (CheckForActionSessionInSW(acc.UserID))
+                if (await CheckForActionSessionInSW(acc.UserID))
                 {
                     val = $"?userID={acc.UserID}" + $"&noPW={true}";
                     type = 'a';
                 }
-                else if (ishared.GetRS().Any(j => j.UserId == acc.UserID))
+                else if ((await ishared.GetRS()).Any(j => j.UserId == acc.UserID))
                 {
                     type = 'd';
                 }
@@ -81,14 +74,14 @@ namespace DMD_Prototype.Controllers
             return Content(jsonContent, "application/json");
         }
 
-        private bool CheckForActiveSession(string tech)
-        {
-            return ishared.GetPauseWorks().Any(j => j.Technician == tech && j.RestartDT == null);
-        }
+        //private bool CheckForActiveSession(string tech)
+        //{
+        //    return ishared.GetPauseWorks().Any(j => j.Technician == tech && j.RestartDT == null);
+        //}
 
-        private bool CheckForActionSessionInSW(string tech)
+        private async Task<bool> CheckForActionSessionInSW(string tech)
         {
-            return ishared.GetStartWork().Any(j => j.UserID == tech && j.FinishDate == null);
+            return (await ishared.GetStartWork()).Any(j => j.UserID == tech && j.FinishDate == null);
         }
 
     }

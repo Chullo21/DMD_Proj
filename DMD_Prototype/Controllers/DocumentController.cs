@@ -13,11 +13,11 @@ namespace DMD_Prototype.Controllers
             this.ishared = ishared;
         }
 
-        public ContentResult GetConfigDataForEdit(string sessionId)
+        public async Task<ContentResult> GetConfigDataForEdit(string sessionId)
         {
             List<ConfigDataForEdit> res = new List<ConfigDataForEdit>();
 
-            using (ExcelPackage package = new ExcelPackage(Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName"))))
+            using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"))))
             {
                 int page = 0;
                 
@@ -56,9 +56,9 @@ namespace DMD_Prototype.Controllers
             return Content(jsonContent, "application/json");
         }
 
-        public ContentResult SaveTravChanges(string[] Step, string[] Instruction, string[] SinglePara, string[] FirstThreePara, string[] SecondThreePara, string[] ThirdThreePara, bool[] isMerge, string sessionId)
+        public async Task<ContentResult> SaveTravChanges(string[] Step, string[] Instruction, string[] SinglePara, string[] FirstThreePara, string[] SecondThreePara, string[] ThirdThreePara, bool[] isMerge, string sessionId)
         {
-            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("userTravName"));
+            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("userTravName"));
 
             using(ExcelPackage package = new(filePath))
             {
@@ -88,9 +88,9 @@ namespace DMD_Prototype.Controllers
             return Content("", "application/json");
         }
 
-        public ContentResult SaveConfigChanges(string[] PN, string[] Desc, string[] Parameter, string sessionId)
+        public async Task<ContentResult> SaveConfigChanges(string[] PN, string[] Desc, string[] Parameter, string sessionId)
         {
-            string filePath = Path.Combine(ishared.GetPath("userDir"), sessionId, ishared.GetPath("logName"));
+            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"));
 
             using (ExcelPackage package = new(filePath))
             {
