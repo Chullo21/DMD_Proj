@@ -102,8 +102,6 @@
                                             <button class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
-                                            @* <div class="position-absolute bg-primary end-0" style="height:60px; width:25%">
-                                        </div> *@
                                             <div>
                                                 <iframe class="w-100 border-3 border-dark" id="viewtravmodalbody" src="" style="height:85vh">Traveler Here</iframe>
                                             </div>
@@ -459,40 +457,52 @@
                     </div>
                     <div class="card-body flex-column justify-content-center w-100">
                         <div class="d-flex justify-content-center">
-                            <button class="my-1 btn btn-primary border-1 border-dark w-75" onclick="SetDoc('AssyDrawing.pdf', 'Assembly Drawing')" data-bs-toggle="modal" data-bs-target="#docuFrame">Assembly Drawing</button>
-                            @if(!Model.WorkingStat && EN[1] != "USER")
+                            @if (Model.AssyDrawing)
                             {
-                                <a class="btn btn-primary text-white border-1 border-dark btn-sm my-1 mx-1" asp-controller="DocGenerator" asp-action="DownloadMainDoc" asp-route-docNo="@Model.DocumentNumber" asp-route-whichDoc="assy">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
-                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
-                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
-                                </svg>
-                            </a>                                
+                                <button class="my-1 btn btn-primary border-1 border-dark w-75" onclick="SetDoc('AssyDrawing.pdf', 'Assembly Drawing')" data-bs-toggle="modal" data-bs-target="#docuFrame">Assembly Drawing</button>
+                                @if (!Model.WorkingStat && EN[1] != "USER")
+                                {
+                                    <a class="btn btn-primary text-white border-1 border-dark btn-sm my-1 mx-1" asp-controller="DocGenerator" asp-action="DownloadMainDoc" asp-route-docNo="@Model.DocumentNumber" asp-route-whichDoc="assy">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+                                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+                                        </svg>
+                                    </a>
+                                }
                             }
+                            
                         </div>
                         <div class="d-flex justify-content-center">
-                            <button class="my-1 btn btn-primary border-1 border-dark w-75" onclick="SetDoc('BOM.pdf', 'BOM')" data-bs-toggle="modal" data-bs-target="#docuFrame">Bills of Materials</button>
-                            @if (!Model.WorkingStat && EN[1] != "USER")
+                            @if(Model.Bom)
                             {
-                                <a class="btn btn-primary text-white border-1 border-dark btn-sm my-1 mx-1" asp-controller="DocGenerator" asp-action="DownloadMainDoc" asp-route-docNo="@Model.DocumentNumber" asp-route-whichDoc="bom">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
-                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
-                                    </svg>
-                                </a>
+                                <button class="my-1 btn btn-primary border-1 border-dark w-75" onclick="SetDoc('BOM.pdf', 'BOM')" data-bs-toggle="modal" data-bs-target="#docuFrame">Bills of Materials</button>
+                                @if (!Model.WorkingStat && EN[1] != "USER")
+                                {
+                                    <a class="btn btn-primary text-white border-1 border-dark btn-sm my-1 mx-1" asp-controller="DocGenerator" asp-action="DownloadMainDoc" asp-route-docNo="@Model.DocumentNumber" asp-route-whichDoc="bom">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+                                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+                                        </svg>
+                                    </a>
+                                }
                             }
+                            
                         </div>
                         <div class="d-flex justify-content-center">
-                            <button class="my-1 btn btn-primary border-1 border-dark w-75" onclick="SetDoc('SchematicDiag.pdf', 'Schematic Diagram')" data-bs-toggle="modal" data-bs-target="#docuFrame">Schematic Diagram</button>
-                            @if (!Model.WorkingStat && EN[1] != "USER")
+                            @if (Model.SchematicDiagram)
                             {
-                                <a class="btn btn-primary text-white border-1 border-dark btn-sm my-1 mx-1" asp-controller="DocGenerator" asp-action="DownloadMainDoc" asp-route-docNo="@Model.DocumentNumber" asp-route-whichDoc="schema">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
-                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
-                                    </svg>
-                                </a>
+                                 <button class="my-1 btn btn-primary border-1 border-dark w-75" onclick="SetDoc('SchematicDiag.pdf', 'Schematic Diagram')" data-bs-toggle="modal" data-bs-target="#docuFrame">Schematic Diagram</button>
+                                @if (!Model.WorkingStat && EN[1] != "USER")
+                                {
+                                    <a class="btn btn-primary text-white border-1 border-dark btn-sm my-1 mx-1" asp-controller="DocGenerator" asp-action="DownloadMainDoc" asp-route-docNo="@Model.DocumentNumber" asp-route-whichDoc="schema">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+                                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+                                        </svg>
+                                    </a>
+                                }
                             }
+                            
                         </div>
                         <div class="d-flex justify-content-center">
                             <button class="my-1 btn btn-primary border-1 border-dark w-75" onclick="SeeWS()" data-bs-toggle="modal" data-bs-target="#docuFrame">Workmanship Standard (MPI)</button>

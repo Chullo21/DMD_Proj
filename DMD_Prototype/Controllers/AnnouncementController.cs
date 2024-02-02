@@ -16,18 +16,18 @@ namespace DMD_Prototype.Controllers
             this.ishare = ishare;
         }
 
-        public ContentResult SubmitAnnouncement(string message, string announcer)
+        public async Task<IActionResult> SubmitAnnouncement(string message, string announcer)
         {
             if (ModelState.IsValid)
             {
                 Db.AnnouncementDb.Add(new Models.AnnouncementModel().CreateAnnouncement(message, announcer));
-                Db.SaveChanges();
+                await Db.SaveChangesAsync();
             }
 
-            return Content(JsonConvert.SerializeObject(new {response = "g"}), "application/json");
+            return Json(new { response = "g" });
         }
 
-        public async Task<ContentResult> RemoveAnnouncement(int id)
+        public async Task<IActionResult> RemoveAnnouncement(int id)
         {
             var announcement = await ishare.GetAnnouncements();
 
@@ -36,10 +36,10 @@ namespace DMD_Prototype.Controllers
             if (ModelState.IsValid)
             {
                 Db.AnnouncementDb.Remove(ann);
-                Db.SaveChanges();
+                await Db.SaveChangesAsync();
             }
 
-            return Content(JsonConvert.SerializeObject(new { response = "g" }), "application/json");
+            return Json(new { response = "g" });
         }
     }
 }

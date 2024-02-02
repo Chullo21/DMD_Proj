@@ -39,7 +39,7 @@ namespace DMD_Prototype.Controllers
             if (ModelState.IsValid)
             {
                 _Db.MTIDb.Update(mti);
-                _Db.SaveChanges();
+                await _Db.SaveChangesAsync();
             }
 
             return RedirectToAction("MTIList", "Home", new {whichDoc = mti.Product, whichType = mti.DocType});
@@ -58,7 +58,7 @@ namespace DMD_Prototype.Controllers
 
         public async Task<IActionResult> EditDocumentDetails(MTIModel mti, string user)
         {
-            MTIModel tempMTI = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == mti.DocumentNumber);
+            MTIModel tempMTI = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == mti.DocumentNumber && !j.isDeleted);
 
             tempMTI.AssemblyPN = mti.AssemblyPN;
             tempMTI.AssemblyDesc = mti.AssemblyDesc;
@@ -67,6 +67,7 @@ namespace DMD_Prototype.Controllers
             tempMTI.LogsheetDocNo = mti.LogsheetDocNo;
             tempMTI.LogsheetRevNo = mti.LogsheetRevNo;
             tempMTI.ObsoleteStat = mti.ObsoleteStat;
+            tempMTI.DocType = mti.DocType;
 
             if (ModelState.IsValid)
             {
@@ -75,7 +76,7 @@ namespace DMD_Prototype.Controllers
 
                 ishare.RecordOriginatorAction(message, user, DateTime.Now);
                 _Db.MTIDb.Update(tempMTI);
-                _Db.SaveChanges();
+                await _Db.SaveChangesAsync();
             }
 
             return RedirectToAction("MTIList", "Home", new { whichDoc = tempMTI.Product, whichType = tempMTI.DocType});
@@ -104,7 +105,7 @@ namespace DMD_Prototype.Controllers
 
                 _Db.MTIDb.Update(mod);
 
-                _Db.SaveChanges();
+                await _Db.SaveChangesAsync();
             }
 
             if (emailPL)
@@ -153,6 +154,9 @@ namespace DMD_Prototype.Controllers
                 mModel.Product = mti.Product;
                 mModel.DocType = mti.DocType;
                 mModel.ObsoleteStat = mti.ObsoleteStat;
+                mModel.AssyDrawing = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, ishare.GetAssyDrawingName()));
+                mModel.Bom = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, ishare.GetBOMName()));
+                mModel.SchematicDiagram = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, ishare.GetSchemaDiagramName()));
             }
 
             return View(mModel);
@@ -240,18 +244,16 @@ namespace DMD_Prototype.Controllers
         {
 
             MTIModel mti = new MTIModel();
-            {
-                mti.DocumentNumber = documentnumber.ToUpper();
-                mti.AssemblyPN = assynumber;
-                mti.AssemblyDesc = assydesc;
-                mti.RevNo = revnumber;
-                mti.Product = product;
-                mti.DocType = doctype;
-                mti.OriginatorName = (await ishare.GetAccounts()).FirstOrDefault(j => j.AccName == originator).UserID;
-                mti.AfterTravLog = afterTrav;
-                mti.LogsheetDocNo = logsheetDocNo;
-                mti.LogsheetRevNo = logsheetRevNo;
-            }
+            mti.DocumentNumber = documentnumber.ToUpper();
+            mti.AssemblyPN = assynumber;
+            mti.AssemblyDesc = assydesc;
+            mti.RevNo = revnumber;
+            mti.Product = product;
+            mti.DocType = doctype;
+            mti.OriginatorName = (await ishare.GetAccounts()).FirstOrDefault(j => j.AccName == originator).UserID;
+            mti.AfterTravLog = afterTrav;
+            mti.LogsheetDocNo = logsheetDocNo;
+            mti.LogsheetRevNo = logsheetRevNo;
 
             if (ModelState.IsValid)
             {
@@ -263,10 +265,10 @@ namespace DMD_Prototype.Controllers
                 ishare.RecordOriginatorAction($"Uploaded engineering documents/s with Doc Number of {documentnumber}.", originator, DateTime.Now);
 
                 _Db.MTIDb.Add(mti);
-                _Db.SaveChanges();
+                await _Db.SaveChangesAsync();
             }
 
-            return RedirectToAction("MTIList", "Home", new { whichDoc = product });
+            return RedirectToAction("MTIList", "Home", new { whichDoc = product, whichType = mti.DocType});
         }
 
         private async Task CreateNewFolder(string docNumber)
@@ -423,6 +425,9 @@ namespace DMD_Prototype.Controllers
         public string Product { get; set; } = string.Empty;
         public string DocType { get; set; } = string.Empty;
         public bool ObsoleteStat { get; set; } = false;
+        public bool AssyDrawing { get; set; } = false;
+        public bool Bom { get; set; } = false;
+        public bool SchematicDiagram { get; set; } = false;
 
     }
 

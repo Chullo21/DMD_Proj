@@ -155,11 +155,15 @@
             success: function (r) {
 
                 $('#loadingIcon').hide();
+            },
+            error: function (message) {
+                $('#loadingIcon').hide();
             }
         });
     }
 
     function ShowObsoletes() {
+        document.getElementById('obtable').innerHTML = '';
         $('#deleteobsoletedocsmodal').modal('hide');
         $('#loadingIcon').show();
 

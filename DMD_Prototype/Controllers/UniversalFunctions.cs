@@ -9,6 +9,12 @@ namespace DMD_Prototype.Controllers
 {   
     public interface ISharedFunct
     {
+        public string GetAssyDrawingName();
+
+        public string GetBOMName();
+
+        public string GetSchemaDiagramName();
+
         public Task<IActionResult> ShowPdf(string path);
 
         public Task<string> GetPath(string path);
@@ -78,15 +84,32 @@ namespace DMD_Prototype.Controllers
         private readonly string userTravName = "Traveler.xlsx";
         private readonly string userLogName = "Logsheet.xlsx";
 
-        private readonly string travName = "TravelerFileDoNotEdit.xlsx";
-        private readonly string maindocName = "MainDoc.pdf";
-        private readonly string assydrawingName = "AssyDrawing.pdf";
-        private readonly string bomName = "BOM.pdf";
-        private readonly string schemaName = "SchematicDiag.pdf";
-        private readonly string oplName = "OPL.pdf";
-        private readonly string prcoName = "PRCO.pdf";
-        private readonly string derogationName = "Derogation.pdf";
-        private readonly string memoName = "EngineeringMemo.pdf";
+        public readonly string travName = "TravelerFileDoNotEdit.xlsx";
+        public readonly string maindocName = "MainDoc.pdf";
+
+        public readonly string assydrawingName = "AssyDrawing.pdf";
+        public readonly string bomName = "BOM.pdf";
+        public readonly string schemaName = "SchematicDiag.pdf";
+
+        public readonly string oplName = "OPL.pdf";
+        public readonly string prcoName = "PRCO.pdf";
+        public readonly string derogationName = "Derogation.pdf";
+        public readonly string memoName = "EngineeringMemo.pdf";
+
+        public string GetAssyDrawingName()
+        {
+            return this.assydrawingName;
+        }
+
+        public string GetBOMName()
+        {
+            return this.bomName;
+        }
+
+        public string GetSchemaDiagramName()
+        {
+            return this.schemaName;
+        }
 
         public async Task BackupHandler(string logType, whichFileEnum whichFile, string sessionId, string setName)
         {

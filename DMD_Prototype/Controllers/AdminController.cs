@@ -32,7 +32,7 @@ namespace DMD_Prototype.Controllers
             return View((await ishare.GetAccounts()).Where(j => !j.isDeleted));
         }
 
-        public IActionResult CreateAccount(string accname, string email, string sec, 
+        public async Task<IActionResult> CreateAccount(string accname, string email, string sec, 
             string dom, string username, string password, string role)
         {
             if (ModelState.IsValid)
@@ -51,12 +51,12 @@ namespace DMD_Prototype.Controllers
                 };
 
                 _Db.AccountDb.Add(createAcc);
-                _Db.SaveChanges();
+                await _Db.SaveChangesAsync();
             }
             return RedirectToAction("AccountsView");
         }
 
-        public IActionResult EditAccount(AccountModel account)
+        public async Task<IActionResult> EditAccount(AccountModel account)
         {
             if (ModelState.IsValid)
             {
@@ -73,14 +73,14 @@ namespace DMD_Prototype.Controllers
                     editAccount.Role = account.Role;
 
                     _Db.AccountDb.Update(editAccount);
-                    _Db.SaveChanges();
+                    await _Db.SaveChangesAsync();
                 }
             }
 
             return RedirectToAction("AccountsView");
         }
 
-        public IActionResult DeleteAccount(int accid)
+        public async Task<IActionResult> DeleteAccount(int accid)
         {
             AccountModel? deleteAccount = _Db.AccountDb.FirstOrDefault(j => j.AccID == accid);
 
@@ -88,7 +88,7 @@ namespace DMD_Prototype.Controllers
             {
                 deleteAccount.isDeleted = true;
                 _Db.AccountDb.Update(deleteAccount);
-                _Db.SaveChanges();
+                await _Db.SaveChangesAsync();
             }
 
             return RedirectToAction("AccountsView");
@@ -125,7 +125,7 @@ namespace DMD_Prototype.Controllers
                 }
 
                 ishare.RecordOriginatorAction($"{adminName}, have cleared/deleted all obsolete documents.", adminName, DateTime.Now);
-                _Db.SaveChanges();
+                await _Db.SaveChangesAsync();
             }           
 
             return Content(JsonConvert.SerializeObject(new {r = res}), "applicaiton/json");
