@@ -54,7 +54,7 @@
                         </div>
                         @if (!Model.WorkingStat)
                         {
-                            <a class="btn btn-secondary mx-3" asp-controller="Home" asp-action="Index">
+                            <a class="btn btn-secondary mx-3" asp-controller="Home" asp-action="MTIList" asp-route-whichDoc="@Model.Product" asp-route-whichType="@Model.DocType">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-square-fill" viewBox="0 0 16 16">
                                         <path d="M16 14a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12zm-4.5-6.5H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5a.5.5 0 0 0 0-1z" />
@@ -227,7 +227,7 @@
         </div>
 
         <div class="container-fluid w-100">
-            <div class="position-absolute bg-transparent end-0" style="height:60px; width:25%">
+            @* <div class="position-absolute bg-transparent end-0" style="height:60px; width:25%"> *@
             </div>
             <iframe class="w-100 border-3 border-dark" id="MainDoc" style="height:90vh" src="@Url.Action("ShowDoc", "MTI", new {docunumber = Model.DocumentNumber, whichDoc = "MainDoc.pdf"})"></iframe>
         </div>
@@ -315,8 +315,6 @@
             $('#edittravform').submit(function (e){
                 e.preventDefault();
 
-                var formData = $('form').serialize();
-
                 $.ajax({
                     url: $(this).attr('action'),
                     data: $(this).serialize(),
@@ -349,7 +347,7 @@
 
                 $.ajax({
                     url: '@Url.Action("GetTravDataForEdit", "Traveler")',
-                    data: {sessionId: '@Model.SessionID'},
+                    data: {sessionId: '@Model.SessionID', doctype: '@Model.DocType'},
                     success: function (r){
                         r.r.forEach(function(line){
 
@@ -374,7 +372,6 @@
 
     <div class="modal fade" id="confirmStart" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-sm">
-            @* asp-controller ="Work" asp-action="StartWork" asp-route-docNo="@Model.DocumentNumber" asp-route-EN="@EN[0]" *@
             <form  id="startworkform">
                 <div class="modal-content">
                     <div class="modal-header d-flex justify-content-start bg-primary text-white">
@@ -428,7 +425,7 @@
 
                         if (response.response === 'go')
                         {
-                            window.location.href = '@Url.Action("StartWork", "Work")' + '?docno=' + '@Model.DocumentNumber' + '&EN=' + '@EN[0]' + '&wOrder=' + workOrder + '&serialNo=' + serialNo + '&module=' + Module;
+                            window.location.href = '@Url.Action("StartWork", "Work")' + '?docno=' + '@Model.DocumentNumber' + '&EN=' + '@EN[0]' + '&wOrder=' + workOrder + '&serialNo=' + serialNo + '&module=' + Module + '&docType=' + '@Model.DocType';
                         }
                         else{
                             alert(response.message);
@@ -866,7 +863,7 @@
             $(function () {
                 $.ajax({
                     url: '@Url.Action("UserRefreshed", "Work")',
-                    data: { sessionId: '@Model.SessionID' },
+                    data: { sessionId: '@Model.SessionID', docType: '@Model.DocType'},
                     success: function (response) {
 
                         $('#stepnoid').val(response.StepNo);
@@ -1073,8 +1070,8 @@
                 $('#configprogressedit').modal('show');
 
                 $.ajax({
-                    url: '@Url.Action("GetConfigDataForEdit", "Document")',
-                    data: { sessionId: '@Model.SessionID' },
+                    url: '@Url.Action("GetLogsheetDataForEdit", "Document")',
+                    data: { sessionId: '@Model.SessionID', logType: '@Model.AfterTravlog' },
                     success: function (r) {
                         r.r.forEach(function (line) {
                             
@@ -1112,7 +1109,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="document.getElementById('docFrame').src = ''"></button>
                 </div>
                 <div class="modal-body h-100">
-                    <div class="position-absolute bg-transparent end-0" style="height:60px; width:25%">                       
+                    @* <div class="position-absolute bg-transparent end-0" style="height:60px; width:25%"> *@                       
                     </div>
                     <div>
                         <iframe class="border-3 border-dark w-100" style="height:85vh" id="docFrame" src=""></iframe>

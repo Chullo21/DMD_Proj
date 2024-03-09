@@ -3,6 +3,8 @@ using DMD_Prototype.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OfficeOpenXml;
+using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 
 namespace DMD_Prototype.Controllers
 {
@@ -15,6 +17,21 @@ namespace DMD_Prototype.Controllers
         {
             _Db = Db;
             this.ishared = ishared;
+        }
+
+        public async Task<IActionResult> HoldWork(string sessionId)
+        {
+            StartWorkModel sw = (await ishared.GetStartWork()).FirstOrDefault(j => j.SessionID == sessionId);
+
+            sw.UserID = "On Hold";
+
+            if (ModelState.IsValid)
+            {
+                _Db.StartWorkDb.Update(sw);
+                _Db.SaveChanges();
+            }
+
+            return RedirectToAction("ShowTravelers", "Home");
         }
 
         public async Task<IActionResult> ChangeTravWorker(int ID, string toWorker)
@@ -48,48 +65,136 @@ namespace DMD_Prototype.Controllers
             return Content(jsonContent, "application/json");
         }
 
-        public async Task<ContentResult> GetTravDataForEdit(string sessionId)
+        public async Task<ContentResult> GetTravDataForEdit(string sessionId, string docType)
+        {
+            if (docType.ToLower() == "mpi")
+            {
+                return Content(await GetTravelerInputs(sessionId, await new WorkController(null, this.ishared).GetMPITemplate(sessionId)), "application/json");
+            }
+            else
+            {
+                return Content(await GetTravelerInputs(sessionId, await new WorkController(null, this.ishared).GetMTITemplate(sessionId)), "application/json");
+            }
+        }
+
+        private async Task<string> GetTravelerInputs(string sessionId, TravelerMPITemplate config)
         {
             List<TravDataForEdit> res = new List<TravDataForEdit>();
 
             using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("userTravName"))))
             {
                 var ws = package.Workbook.Worksheets[0];
-                int row = 11;
+                int row = int.Parse(Regex.Replace(config.StartStepNumber, "[^0-9]", ""));
+                string stepNumberLocator = Regex.Replace(config.StartStepNumber, "[^a-zA-Z]", "");
+                string taskLocator = Regex.Replace(config.StartTask, "[^a-zA-Z]", "");
+                string technicianLocator = Regex.Replace(config.StartTechnician, "[^a-zA-Z]", "");
+                string dateLocator = Regex.Replace(config.StartDateParameter, "[^a-zA-Z]", "");
+                int pageIndexer = 0;
 
                 do
                 {
-                    if (ws.Cells[row, 9].Value == null)
+                    if (ws.Cells[$"{dateLocator}{row}"].Value == null)
                     {
                         break;
                     }
-
-                    TravDataForEdit trav = new();
-                    trav.Step = ws.Cells[row, 1].Value.ToString();
-                    trav.Instruction = ws.Cells[row, 2].Value.ToString();
-                    trav.Tech = ws.Cells[row, 7].Value.ToString();
-
-                    if (ws.Cells[row, 9, row, 11].Merge)
+                    else if (ws.Cells[$"{dateLocator}{row}"].Value != null)
                     {
-                        trav.SinglePara = ws.Cells[row, 9].Value.ToString();
+                        TravDataForEdit trav = new();
+                        trav.Step = ws.Cells[$"{stepNumberLocator}{row}"].Value.ToString();
+                        trav.Instruction = ws.Cells[$"{taskLocator}{row}"].Value.ToString();
+                        trav.Tech = ws.Cells[$"{technicianLocator}{row}"].Value.ToString();
+
+                        trav.SinglePara = ws.Cells[$"{dateLocator}{row}"].Value.ToString();
+
                         trav.isMerge = true;
+
+                        res.Add(trav);
+
+                        row += int.Parse(config.IncrementValue);
                     }
-                    else
+                    else if (row > int.Parse(config.LastRow) && package.Workbook.Worksheets.Count > 1)
                     {
-                        trav.FirstThreePara = ws.Cells[row, 9].Value.ToString();
-                        trav.SecondThreePara = ws.Cells[row, 10].Value.ToString();
-                        trav.ThirdThreePara = ws.Cells[row, 11].Value.ToString();
+                        pageIndexer++;
+                        package.Workbook.Worksheets.Add($"P{pageIndexer + 1}");
+                        ws = package.Workbook.Worksheets[$"P{pageIndexer + 1}"];
                     }
 
-                    res.Add(trav);
-
-                    row++;
 
                 } while (true);
             }
 
-            string jsonContent = JsonConvert.SerializeObject(new { r = res });
-            return Content(jsonContent, "application/json");
+            return JsonConvert.SerializeObject(new { r = res });
+            
+        }
+
+        private async Task<string> GetTravelerInputs(string sessionId, TravelerMTITemplate config)
+        {
+            List<TravDataForEdit> res = new List<TravDataForEdit>();
+
+            try
+            {
+                using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("userTravName"))))
+                {
+                    var ws = package.Workbook.Worksheets[0];
+                    int row = int.Parse(Regex.Replace(config.StartStepNumber, "[^0-9]", ""));
+                    string stepNumberLocator = Regex.Replace(config.StartStepNumber, "[^a-zA-Z]", "");
+                    string taskLocator = Regex.Replace(config.StartTask, "[^a-zA-Z]", "");
+                    string technicianAndDateLocator = Regex.Replace(config.StartTechnicianAndDate, "[^a-zA-Z]", "");
+                    string parameterLocator = Regex.Replace(config.StartParameter, "[^a-zA-Z]", "");
+                    int pageIndexer = 0;
+
+                    char byThreeChar = char.Parse(Regex.Replace(parameterLocator, "[^a-zA-Z]", ""));
+                    int byThreeToASCII = (int)byThreeChar;
+                    char byThreeFirst = (char)(byThreeToASCII);
+                    char firstByThree = (char)(byThreeToASCII + 1);
+                    char secondByThree = (char)(byThreeToASCII + 2);
+
+                    do
+                    {
+                        if (ws.Cells[$"{parameterLocator}{row}"].Value == null)
+                        {
+                            break;
+                        }
+
+                        TravDataForEdit trav = new();
+                        trav.Step = ws.Cells[$"{stepNumberLocator}{row}"].Value.ToString();
+                        trav.Instruction = ws.Cells[$"{taskLocator}{row}"].Value.ToString();
+                        trav.Tech = ws.Cells[$"{parameterLocator}{row}"].Value.ToString();
+
+                        string startCell = $"{byThreeFirst}{row}";
+                        string endCell = $"{secondByThree}{row}";
+                        ExcelRangeBase mergeRange = ws.Cells[startCell + ":" + endCell];
+
+                        bool merged = mergeRange.Merge;
+
+                        if (merged)
+                        {
+                            trav.SinglePara = ws.Cells[$"{parameterLocator}{row}"].Value.ToString();
+                            trav.isMerge = true;
+                        }
+                        else
+                        {
+                            trav.FirstThreePara = ws.Cells[$"{byThreeFirst}{row}"].Value.ToString();
+                            trav.SecondThreePara = ws.Cells[$"{firstByThree}{row}"].Value.ToString();
+                            trav.ThirdThreePara = ws.Cells[$"{secondByThree}{row}"].Value.ToString();
+                            trav.isMerge = false;
+                        }
+
+                        res.Add(trav);
+
+                        row += int.Parse(config.IncrementValue);
+
+                    } while (true);
+                }
+
+                
+            }
+            catch(Exception ex)
+            {
+
+            }
+
+            return JsonConvert.SerializeObject(new { r = res });
         }
     }
 

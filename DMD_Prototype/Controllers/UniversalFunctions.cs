@@ -9,11 +9,17 @@ namespace DMD_Prototype.Controllers
 {   
     public interface ISharedFunct
     {
-        public string GetAssyDrawingName();
+        public Task<string> GetAssyDrawingName();
 
-        public string GetBOMName();
+        public Task<string> GetBOMName();
 
-        public string GetSchemaDiagramName();
+        public Task<string> GetSchemaDiagramName();
+
+        public Task<string> GetUserDocsPath();
+
+        public Task<string> GetMainDocsPath();
+
+        public Task<string> GetMainDocName();
 
         public Task<IActionResult> ShowPdf(string path);
 
@@ -60,19 +66,29 @@ namespace DMD_Prototype.Controllers
 
         private readonly AppDbContext _Db;
 
-        //private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
-        //private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
-        //private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
-        //private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
-        //private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
-        //private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        private readonly string userDir = "V:\\DMD_Documents_Directory\\User_Sessions";
+        private readonly string mainDir = "V:\\DMD_Documents_Directory\\Documents";
+        private readonly string tempDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        private readonly string travelerForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        private readonly string configForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        private readonly string testForBackupDir = "V:\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        private readonly string configDir = "V:\\DMD_Documents_Directory\\Document Templates\\Configuration Logsheet\\Configuration Logsheet.xlsx";
+        private readonly string testDir = "V:\\DMD_Documents_Directory\\Document Templates\\Test Equipment Logsheet\\Test Equipment Logsheet.xlsx";
+        private readonly string mpiDir = "V:\\DMD_Documents_Directory\\Document Templates\\MPI Traveler\\TravelerConfig.txt";
+        private readonly string mtiDir = "V:\\DMD_Documents_Directory\\Document Templates\\MTI Traveler\\TravelerConfig.txt";
+        private readonly string dispossableDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
 
-        private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
-        private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
-        private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
-        private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
-        private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
-        private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        //private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
+        //private readonly string mainDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Documents";
+        //private readonly string tempDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
+        //private readonly string travelerForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Travelers";
+        //private readonly string configForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Configuration Log";
+        //private readonly string testForBackupDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\ForBackup\\Test Equipment Log";
+        //private readonly string configDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\Configuration Logsheet\\Configuration Logsheet.xlsx";
+        //private readonly string testDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\Test Equipment Logsheet\\Test Equipment Logsheet.xlsx";
+        //private readonly string mpiDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\MPI Traveler\\TravelerConfig.txt";
+        //private readonly string mtiDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\MTI Traveler\\TravelerConfig.txt";
+        //private readonly string dispossableDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
 
         private readonly string travelerBackupDir = "A:\\DMD Portal Backups\\Travelers";
         private readonly string configBackupDir = "A:\\DMD Portal Backups\\Configuration Logs";
@@ -96,17 +112,32 @@ namespace DMD_Prototype.Controllers
         public readonly string derogationName = "Derogation.pdf";
         public readonly string memoName = "EngineeringMemo.pdf";
 
-        public string GetAssyDrawingName()
+        public async Task<string> GetMainDocName()
+        {
+            return this.maindocName;
+        }
+
+        public async Task<string> GetUserDocsPath()
+        {
+            return this.userDir;
+        }
+
+        public async Task<string> GetMainDocsPath()
+        {
+            return this.mainDir;
+        }
+
+        public async Task<string> GetAssyDrawingName()
         {
             return this.assydrawingName;
         }
 
-        public string GetBOMName()
+        public async Task<string> GetBOMName()
         {
             return this.bomName;
         }
 
-        public string GetSchemaDiagramName()
+        public async Task<string> GetSchemaDiagramName()
         {
             return this.schemaName;
         }
@@ -202,6 +233,26 @@ namespace DMD_Prototype.Controllers
         {
             switch (whichPath)
             {
+                case "disDir":
+                    {
+                        return dispossableDir;
+                    }
+                case "testDir":
+                    {
+                        return testDir;
+                    }
+                case "configDir":
+                    {
+                        return configDir;
+                    }
+                case "mtiDir":
+                    {
+                        return mtiDir;
+                    }
+                case "mpiDir":
+                    {
+                        return mpiDir;
+                    }
                 case "plBackup":
                     {
                         return plBackupDir;

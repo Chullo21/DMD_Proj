@@ -18,8 +18,7 @@ namespace DMD_Prototype.Controllers
         }
 
         public IActionResult LoginPage()
-        {
-            
+        {           
             return View();
         }
 

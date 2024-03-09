@@ -14,6 +14,12 @@ builder.Services.AddScoped<ISharedFunct, UniversalFunctions>();
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSession(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 var app = builder.Build();
@@ -24,10 +30,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=ATS}/{action=ATSMenu}/{id?}");
+    pattern: "{controller=Login}/{action=LoginPage}/{id?}");
 
 app.Run();

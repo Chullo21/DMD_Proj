@@ -61,7 +61,7 @@
 
   <ItemGroup>
     <Reference Include="DMDLibrary">
-      <HintPath>..\..\DMD_Libraries\DMDLibrary\bin\Release\net6.0\DMDLibrary.dll</HintPath>
+      <HintPath>..\..\DMD_Libraries\DMDLibrary\bin\Debug\net6.0\DMDLibrary.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -81,6 +81,10 @@
     <Content Update="wwwroot\js\site.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Class\" />
   </ItemGroup>
 
 </Project>

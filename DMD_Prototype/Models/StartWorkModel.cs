@@ -12,6 +12,7 @@ namespace DMD_Prototype.Models
         public DateTime? FinishDate { get; set; }
         public string? LogType { get; set; }
         public string UserID { get; set; }
+        public bool isObsolete { get; set; } = false;
 
         public StartWorkModel CreateSW(string docNo, string userID, string logType)
         {

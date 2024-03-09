@@ -18,26 +18,37 @@
 </script>
 
 <div class="loader" id="loadingIcon"></div>
-<div class="container-fluid d-flex">
-    <div class="w-25 bg-dark border-dark border-2 align-self-center mx-3">
-        <marquee class="text-white">
-            Welcome to Admin Lounge, please contact the developer if you have concerns or feedback. Thank you and have a great day!
-        </marquee>
-    </div>
-    <div class="d-flex justify-content-start">
-        <button class="btn btn-danger btn-sm d-flex" data-bs-toggle="modal" data-bs-target="#deleteobsoletedocsmodal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-dash-fill my-auto mx-1" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5zM6 6a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1H6z" />
-            </svg>
-            <p class="my-auto">Delete Obsolete Docs</p>
-        </button>
-        <a class="btn btn-primary mx-1 d-flex" asp-controller="Admin" asp-action="AccountsView">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-rolodex my-auto mx-1" viewBox="0 0 16 16">
-                <path d="M8 9.05a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-                <path d="M1 1a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h.5a.5.5 0 0 0 .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h.5a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H6.707L6 1.293A1 1 0 0 0 5.293 1H1Zm0 1h4.293L6 2.707A1 1 0 0 0 6.707 3H15v10h-.085a1.5 1.5 0 0 0-2.4-.63C11.885 11.223 10.554 10 8 10c-2.555 0-3.886 1.224-4.514 2.37a1.5 1.5 0 0 0-2.4.63H1V2Z" />
-            </svg>
-            <p class="my-auto">Accounts</p>
-        </a>
+<div class="container-fluid row">   
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="w-100 h-100 bg-dark border-dark border-2 align-self-center mx-3">
+                <marquee class="text-white my-auto">
+                    Welcome to Admin Lounge, please contact the developer if you have concerns or feedback. Thank you and have a great day!
+                </marquee>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-6 col-lg-2">
+            <button class="btn btn-danger d-flex h-100 w-100 text-center" data-bs-toggle="modal" data-bs-target="#deleteobsoletedocsmodal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-dash-fill my-auto mx-1" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5zM6 6a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1H6z" />
+                </svg>
+                <p class="my-auto">Delete Obsolete Docs</p>
+            </button>
+       </div>
+        <div class="col-sm-12 col-md-6 col-lg-2">
+            <a class="btn btn-success d-flex h-100 text-center w-100" asp-controller="Admin" asp-action="AccountsView">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-rolodex my-auto mx-1" viewBox="0 0 16 16">
+                    <path d="M8 9.05a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                    <path d="M1 1a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h.5a.5.5 0 0 0 .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h.5a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H6.707L6 1.293A1 1 0 0 0 5.293 1H1Zm0 1h4.293L6 2.707A1 1 0 0 0 6.707 3H15v10h-.085a1.5 1.5 0 0 0-2.4-.63C11.885 11.223 10.554 10 8 10c-2.555 0-3.886 1.224-4.514 2.37a1.5 1.5 0 0 0-2.4.63H1V2Z" />
+                </svg>
+                <p class="my-auto">Accounts</p>
+            </a>
+        </div>
+        <div class="col-sm-12 col-md-6 col-lg-2">
+            <button class="btn btn-primary d-flex h-100 text-center w-100" data-bs-toggle="modal" data-bs-target="#updateDocumentModal">
+                Templates
+            </button>
+        </div>
     </div>
 </div>
 
@@ -83,6 +94,561 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="updateDocumentModal" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary fs-5 fw-bold text-white">
+                Update Documents
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="close" onclick="SelectTemplate('')"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="row">
+                    <div class="col-12">
+                        <select class="form-select text-center mb-2" onchange="SelectTemplate(this.value)">
+                            <option selected hidden>Select Template</option>
+                            <option value="config">Configuration Logsheet</option>
+                            <option value="test">Test Equipment Logsheet</option>
+                            <option value="mpi">Process Traveler</option>
+                            <option value="mti">Test Traveler</option>
+                        </select>
+                    </div>
+                    <form class="col-12" id="updateConfigLogForm" enctype="multipart/form-data" hidden>
+                        <div class="mx-auto row">
+                            <div class="col-sm-12 col-lg-6 row">
+                                <div class="col-12">
+                                    <div class="h-100 w-100 d-flex justify-content-center">
+                                        <button class="btn btn-primary align-self-center btn-sm" type="button" onclick="PreviewTemplate('configDir', 'c')">Preview Current Template</button>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Configuration Logsheet File:</label>
+                                    <input class="form-control" type="file" name="file" accept=".xlsx" />
+                                </div>                               
+                                <div class="col-6">
+                                    <label class="form-label">Assembly Part Number:</label>
+                                    <input class="form-control" type="text" name="assemblyPartNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Assembly Description:</label>
+                                    <input class="form-control" type="text" name="assemblyDescription" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Document Control Number:</label>
+                                    <input class="form-control" type="text" name="DocumentControlNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Reference MTI:</label>
+                                    <input class="form-control" type="text" name="reference" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Revision Number:</label>
+                                    <input class="form-control" type="text" name="revisionNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Work Order:</label>
+                                    <input class="form-control" type="text" name="workOrder" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Serial Number:</label>
+                                    <input class="form-control" type="text" name="serialNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Start Date:</label>
+                                    <input class="form-control" type="text" name="startDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Complete Date:</label>
+                                    <input class="form-control" type="text" name="completeDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Page:</label>
+                                    <input class="form-control" type="text" name="page" required />
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-lg-6 row">
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Part Number:</label>
+                                    <input class="form-control" type="text" name="startPartNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Description:</label>
+                                    <input class="form-control" type="text" name="startDescription" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Serial Number:</label>
+                                    <input class="form-control" type="text" name="startSerialNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Increment Value:</label>
+                                    <input class="form-control" type="number" name="incrementValue" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Last Row:</label>
+                                    <input class="form-control" type="number" name="lastRow" required />
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex justify-content-center my-4">
+                                <button class="btn btn-primary col-6" type="button" onclick="UpdateTemplate('#updateConfigLogForm', 'configDir', 'c');">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="col-12" id="updateTELLogForm" enctype="multipart/form-data" hidden>
+                        <div class="mx-auto row">
+                            <div class="col-sm-12 col-lg-6 row">
+                                <div class="col-12">
+                                    <div class="h-100 w-100 d-flex justify-content-center">
+                                        <button class="btn btn-primary align-self-center btn-sm" type="button" onclick="PreviewTemplate('testDir', 't')">Preview Current Template</button>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Test Equipment Logsheet File:</label>
+                                    <input class="form-control" type="file" name="file" accept=".xlsx" />
+                                </div>                                
+                                <div class="col-6">
+                                    <label class="form-label">Assembly Part Number:</label>
+                                    <input class="form-control" type="text" name="AssemblyPartNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Assembly Description:</label>
+                                    <input class="form-control" type="text" name="AssemblyDescription" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Document Control Number:</label>
+                                    <input class="form-control" type="text" name="DocumentControlNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Reference MTI:</label>
+                                    <input class="form-control" type="text" name="Reference" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Revision Number:</label>
+                                    <input class="form-control" type="text" name="RevisionNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Work Order:</label>
+                                    <input class="form-control" type="text" name="WorkOrder" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Serial Number:</label>
+                                    <input class="form-control" type="text" name="SerialNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Start Date:</label>
+                                    <input class="form-control" type="text" name="StartDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Complete Date:</label>
+                                    <input class="form-control" type="text" name="CompleteDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Page:</label>
+                                    <input class="form-control" type="text" name="Page" required />
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-lg-6 row">
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for FAP Number:</label>
+                                    <input class="form-control" type="text" name="StartFAPNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Description:</label>
+                                    <input class="form-control" type="text" name="StartDescription" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Calibrate Due Date:</label>
+                                    <input class="form-control" type="text" name="startCalibrationDueDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Increment Value:</label>
+                                    <input class="form-control" type="number" name="IncrementValue" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Last Row:</label>
+                                    <input class="form-control" type="number" name="LastRow" required />
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex justify-content-center my-4">
+                                <button class="btn btn-primary col-6" type="button" onclick="UpdateTemplate('#updateTELLogForm', 'testDir', 't');">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="col-12" id="mpiForm" hidden>
+                        <div class="mx-auto row">
+                            <div class="col-sm-12 col-lg-6 row">
+                                <div class="col-12">
+                                    <label class="form-label">Try MPI Traveler Configuration:</label>
+                                    <input class="form-control" type="file" name="file" accept=".xlsx" />
+                                </div>
+                                <div class="col-12">
+                                    <div class="h-100 w-100 d-flex justify-content-center">
+                                        <button class="btn btn-primary align-self-center" type="button" onclick="PreviewTraveler('mpiDir', document.getElementById('mpiForm').querySelector('input[type=file]'), 'p')">Preview Current Template</button>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Assembly Part Number:</label>
+                                    <input class="form-control" type="text" name="AssemblyPartNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Description:</label>
+                                    <input class="form-control" type="text" name="Description" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Document Control Number:</label>
+                                    <input class="form-control" type="text" name="DocumentControlNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Reference MPI Number:</label>
+                                    <input class="form-control" type="text" name="ReferenceMPINumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Revision Number:</label>
+                                    <input class="form-control" type="text" name="RevisionNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Work Order:</label>
+                                    <input class="form-control" type="text" name="WorkOrder" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Serial Number:</label>
+                                    <input class="form-control" type="text" name="SerialNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Start Date:</label>
+                                    <input class="form-control" type="text" name="StartDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Complete Date:</label>
+                                    <input class="form-control" type="text" name="CompleteDate" required />
+                                </div>  
+                                <div class="col-6">
+                                    <label class="form-label">Page:</label>
+                                    <input class="form-control" type="text" name="Page" />
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-lg-6 row">
+                               
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Step Number:</label>
+                                    <input class="form-control" type="text" name="StartStepNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Task:</label>
+                                    <input class="form-control" type="text" name="StartTask" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Technician:</label>
+                                    <input class="form-control" type="text" name="StartTechnician" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Date:</label>
+                                    <input class="form-control" type="text" name="StartDateParameter" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Increment Value:</label>
+                                    <input class="form-control" type="number" name="IncrementValue" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Last Row:</label>
+                                    <input class="form-control" type="number" name="LastRow" required />
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex justify-content-center my-4">
+                                <button class="btn btn-primary col-6" type="button" onclick="UpdateTraveler('#mpiForm', 'mpiDir');">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="col-12" id="mtiForm" enctype="multipart/form-data" hidden>
+                        <div class="mx-auto row">
+                            <div class="col-sm-12 col-lg-6 row">
+                                <div class="col-12">
+                                    <label class="form-label">Try MTI Traveler Configuration:</label>
+                                    <input class="form-control" type="file" name="file" accept=".xlsx" />
+                                </div>
+                                <div class="col-12">
+                                    <div class="h-100 w-100 d-flex justify-content-center">
+                                        <button class="btn btn-primary align-self-center" type="button" onclick="PreviewTraveler('mtiDir', document.getElementById('mtiForm').querySelector('input[type=file]'), 't')">Preview Current Template</button>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Assembly Part Number:</label>
+                                    <input class="form-control" type="text" name="AssemblyPartNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Description:</label>
+                                    <input class="form-control" type="text" name="Description" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Document Control Number:</label>
+                                    <input class="form-control" type="text" name="DocumentControlNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Reference MTI:</label>
+                                    <input class="form-control" type="text" name="Reference" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Revision Number:</label>
+                                    <input class="form-control" type="text" name="RevisionNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Work Order:</label>
+                                    <input class="form-control" type="text" name="WorkOrder" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Serial Number:</label>
+                                    <input class="form-control" type="text" name="SerialNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Start Date:</label>
+                                    <input class="form-control" type="text" name="StartDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Complete Date:</label>
+                                    <input class="form-control" type="text" name="CompleteDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Page:</label>
+                                    <input class="form-control" type="text" name="Page" />
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-lg-6 row">
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for FAP Number:</label>
+                                    <input class="form-control" type="text" name="StartStepNumber" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Description:</label>
+                                    <input class="form-control" type="text" name="StartTask" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Calibrate Due Date:</label>
+                                    <input class="form-control" type="text" name="StartTechnicianAndDate" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Starting Cell for Calibrate Due Date:</label>
+                                    <input class="form-control" type="text" name="StartParameter" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Increment Value:</label>
+                                    <input class="form-control" type="number" name="IncrementValue" required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Last Row:</label>
+                                    <input class="form-control" type="number" name="LastRow" required />
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex justify-content-center my-4">
+                                <button class="btn btn-primary col-6" type="button" onclick="UpdateTraveler('#mtiForm', 'mtiDir');">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="tryDocumentConfig">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white fs-5 fw-bold">
+                Please Wait...
+                <button class="btn-close" data-bs-dismiss="modal" onclick="$('#tryDocumentConfigFrame').attr('src', '');"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="tryDocumentConfigFrame" style="height: 80vh; width: 100%" alt="Please Wait..."></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function SelectTemplate(template) {
+        var config = document.getElementById('updateConfigLogForm');
+        var test = document.getElementById('updateTELLogForm');
+        var mpi = document.getElementById('mpiForm');
+        var mti = document.getElementById('mtiForm');
+
+        switch (template) {
+            case 'config': {
+                config.removeAttribute('hidden');
+                test.setAttribute('hidden', true);
+                mpi.setAttribute('hidden', true);
+                mti.setAttribute('hidden', true);
+                break;
+            }
+            case 'test':{
+                test.removeAttribute('hidden');
+                config.setAttribute('hidden', true);
+                mpi.setAttribute('hidden', true);
+                mti.setAttribute('hidden', true);
+                break;
+            }
+            case 'mpi':{
+                mpi.removeAttribute('hidden');
+                config.setAttribute('hidden', true);
+                test.setAttribute('hidden', true);
+                mti.setAttribute('hidden', true);
+                break;
+            }
+            case 'mti': {
+                mti.removeAttribute('hidden');
+                config.setAttribute('hidden', true);
+                test.setAttribute('hidden', true);
+                mpi.setAttribute('hidden', true);
+                break;
+            }
+            default:{
+                mti.setAttribute('hidden', true);
+                config.setAttribute('hidden', true);
+                test.setAttribute('hidden', true);
+                mpi.setAttribute('hidden', true);
+            }
+
+        }
+
+    }
+
+    function PreviewTemplate(directory, type) {
+        $('#tryDocumentConfig').modal('show');
+        $('#tryDocumentConfigFrame').attr('src', '~/stuff/frank-castle-wait.gif');
+        $('#tryDocumentConfigFrame').attr('src', '@Url.Action("TryLogsheetTemplate", "Document")' + '?directory=' + directory + '&logsheetType=' + type);
+    }
+
+    function PreviewTraveler(directory, file, travelerType) {
+        $('#tryDocumentConfig').modal('show');
+
+        var formData = new FormData();
+        formData.append('template', file.files[0]);
+        formData.append('directory', directory);
+        formData.append('travelerType', travelerType);
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("TryTravelerTemplate", "Document")',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+
+                $('#tryDocumentConfigFrame').attr('src', '@Url.Action("GetTravelerSampleFromDisposable", "Document")' + '?path=' + response.path);
+            },
+            error: function (error) {
+
+                console.log(error);
+            }
+        });
+    }
+
+    function UpdateTraveler(formID, directory) {
+        $('#loadingIcon').show();
+
+        var formData = new FormData($(formID)[0]);
+        
+        var configData = {};
+        formData.forEach(function (value, key) {
+            if (!$(formID).find('[name="' + key + '"]').is(':file')) {
+                configData[key] = value;
+            }
+        });
+
+        $.ajax({
+            url: '@Url.Action("UpdateTravelerTemplate", "Document")',
+            data: {config: JSON.stringify(configData), directory: directory},
+            success: function (r) {
+                $('#loadingIcon').hide();
+                console.log('Server Response:', r);
+
+                if (r.message === 'success') {
+                    alert('Pattern Recorded');
+                } else {
+                    alert('Something went wrong. Please try again. ' + r.message);
+                }
+
+                $(formID).trigger('reset');
+                $('#updateDocumentModal').modal('hide');
+            },
+            error: function (xhr, status, error) {
+                $('#loadingIcon').hide();
+                console.error('AJAX Error:', status, error);
+                alert('An error occurred during the AJAX request. Please check the console for more details.');
+            }
+        });
+    }
+
+
+    function UpdateTemplate(formID, directory, logsheetType) {
+        $('#loadingIcon').show();
+
+        var NewFormData = new FormData();
+        var formData = new FormData($(formID)[0]);
+        var inputs = {};
+
+        formData.forEach(function (value, key) {
+            if (!$(formID).find('[name="' + key + '"]').is(':file')) {
+                inputs[key] = value;
+            }
+            else if ($(formID).find('[name="' + key + '"]').is(':file')) {
+                NewFormData.append('file', value);
+            }
+        });
+       
+        NewFormData.append('model', JSON.stringify(inputs));
+        NewFormData.append('directory', directory);
+
+        $.ajax({
+            url: '@Url.Action("UpdateTemplate", "Document")',
+            type: 'POST',
+            data: NewFormData,
+            processData: false,
+            contentType: false,
+            success: function (r) {
+                $('#loadingIcon').hide();
+                if (r.message == 'success') {
+                    $('#tryDocumentConfigFrame').attr('src', '@Url.Action("TryLogsheetTemplate", "Document")' + '?directory=' + directory + '&logsheetType=' + logsheetType);
+                } else {
+                    alert('Something went wrong. Please try again. ' + r.message);
+                }
+
+                $(formID).trigger("reset");
+
+                $('#updateDocumentModal').modal('hide');
+                $('#tryDocumentConfig').modal('show');
+            }
+        });
+    }
+
+    // $('#updateDocsForm').submit(function (e) {
+    //     e.preventDefault();
+
+    //     $('#loadingIcon').show();
+
+    //     var formData = new FormData(this);
+
+    //     $.ajax({
+    //         url: '@Url.Action("UpdateDocumentTemplates", "Document")',
+    //         type: 'POST',
+    //         data: formData,
+    //         processData: false,
+    //         contentType: false,
+    //         success: function (r) {
+    //             $('#loadingIcon').hide();
+    //             if (r.message == 'success') {
+    //                 alert('Action Successful!');
+    //             }
+    //             else
+    //             {
+    //                 alert('Something went wrong. Please try again. ' + r.message);
+    //             }
+
+    //             $('#updateDocsForm').trigger("reset");
+
+    //             $('#updateDocumentsModal').modal('hide');
+    //         }
+    //     });
+            
+    // });
+</script>
 
 <div class="modal fade" data-bs-backdrop="static" id="deleteobsoletedocsmodal">
     <div class="modal-dialog modal-dialog-centered modal-sm">

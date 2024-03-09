@@ -4,6 +4,13 @@
 
     string[]? EN = TempData["EN"] as string[];
     TempData.Keep();
+
+    string information = "";
+
+    if (ViewBag.Information != null)
+    {
+        information = ViewBag.Information;
+    }
 }
 <div class="container-fluid row mx-0">   
     <div class="col-md-12 col-lg-4 mx-auto mb-md-2">       

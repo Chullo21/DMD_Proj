@@ -9,6 +9,11 @@ using System.Net;
 using System.Reflection;
 using System.Collections;
 using System.Linq;
+using System.Text.RegularExpressions;
+using PdfSharp.Charting;
+using System.Data;
+using System.Net.Sockets;
+using Microsoft.Data.SqlClient;
 
 namespace DMD_Prototype.Controllers
 {
@@ -26,7 +31,33 @@ namespace DMD_Prototype.Controllers
             this.ishared = ishared;
         }
 
-        private async Task<string> UserIDGetter(string name)
+        public async Task<ConfigDataTemplate> GetConfigTemplate(string sessionID)
+        {
+            using (ExcelPackage package = new(Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("logName"))))
+            {
+                return JsonConvert.DeserializeObject<ConfigDataTemplate>(package.Workbook.Worksheets["Configuration"].Cells["A1"].Value.ToString());
+            }
+        }
+
+        public async Task<TELDataTemplate> GetTELTemplate(string sessionID)
+        {
+            using (ExcelPackage package = new(Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("logName"))))
+            {
+                return JsonConvert.DeserializeObject<TELDataTemplate>(package.Workbook.Worksheets["Configuration"].Cells["A1"].Value.ToString());
+            }
+        }
+
+        public async Task<TravelerMPITemplate> GetMPITemplate(string sessionID)
+        {
+            return JsonConvert.DeserializeObject<TravelerMPITemplate>(System.IO.File.ReadAllText(await ishared.GetPath("mpiDir")).ToString());
+        }
+
+        public async Task<TravelerMTITemplate> GetMTITemplate(string sessionID)
+        {
+            return JsonConvert.DeserializeObject<TravelerMTITemplate>(System.IO.File.ReadAllText(await ishared.GetPath("mtiDir")).ToString());
+        }
+
+        public async Task<string> UserIDGetter(string name)
         {
             string userid = (await ishared.GetAccounts()).FirstOrDefault(j => j.AccName == name).UserID;
 
@@ -65,22 +96,51 @@ namespace DMD_Prototype.Controllers
             Directory.CreateDirectory(filePath);
         }
 
-        private async Task CopyTravToSession(string docNo, string wOrder, string serialNo)
+        private async Task CopyTravToSession(string docNo, string wOrder, string serialNo, string docType)
         {
-            string filePath = Path.Combine(await ishared.GetPath("mainDir"), docNo, await ishared.GetPath("travName"));
-
-            using(ExcelPackage package = new ExcelPackage(filePath))
+            try
             {
-                for (int i = 0; i < package.Workbook.Worksheets.Count(); i++)
+                string dateLocator = "";
+                string workOrderLocator = "";
+                string serialNumberLocator = "";
+                string pageLocator = "";
+
+                if (docType == "MPI")
                 {
-                    var ws = package.Workbook.Worksheets[i];
-                    ws.Cells[8, 3].Value = DateTime.Now.ToShortDateString();
-                    ws.Cells[6, 9].Value = wOrder;
-                    ws.Cells[7, 9].Value = serialNo;
-                    ws.Cells[1, 10].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
+                    TravelerMPITemplate telData = await GetMPITemplate(sesID);
+                    dateLocator = telData.StartDate;
+                    workOrderLocator = telData.WorkOrder;
+                    serialNumberLocator = telData.SerialNumber;
+                    pageLocator = telData.Page;
+                }
+                else
+                {
+                    TravelerMTITemplate configData = await GetMTITemplate(sesID);
+                    dateLocator = configData.StartDate;
+                    workOrderLocator = configData.WorkOrder;
+                    serialNumberLocator = configData.SerialNumber;
+                    pageLocator = configData.Page;
                 }
 
-                package.SaveAs(Path.Combine(await ishared.GetPath("userDir"), sesID, await ishared.GetPath("userTravName")));
+                string filePath = Path.Combine(await ishared.GetPath("mainDir"), docNo, await ishared.GetPath("travName"));
+
+                using (ExcelPackage package = new ExcelPackage(filePath))
+                {
+                    for (int i = 0; i < package.Workbook.Worksheets.Count(); i++)
+                    {
+                        var ws = package.Workbook.Worksheets[i];
+                        ws.Cells[dateLocator].Value = DateTime.Now.ToShortDateString();
+                        ws.Cells[workOrderLocator].Value = wOrder;
+                        ws.Cells[serialNumberLocator].Value = serialNo;
+                        ws.Cells[pageLocator].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
+                    }
+
+                    package.SaveAs(Path.Combine(await ishared.GetPath("userDir"), sesID, await ishared.GetPath("userTravName")));
+                }
+            }
+            catch (Exception ex)
+            {
+
             }
         }
 
@@ -100,25 +160,23 @@ namespace DMD_Prototype.Controllers
 
             if (logType == "T")
             {
-                filePath = "DMD_Prototype.wwwroot.Common.Templates.TEL.xlsx";
+                filePath = await ishared.GetPath("testDir");
             }
             else
             {
-                filePath = "DMD_Prototype.wwwroot.Common.Templates.CL.xlsx";
+                filePath = await ishared.GetPath("configDir");
             }
-
-            Assembly assembly = Assembly.GetExecutingAssembly();
-
-            Stream stream = assembly.GetManifestResourceStream(filePath);
 
             ModuleModel module = (await ishared.GetModules()).FirstOrDefault(j => j.SessionID == sessionId);
             SerialNumberModel serialNumber = (await ishared.GetSerialNumbers()).FirstOrDefault(j => j.SessionId == sessionId);
 
-            using (ExcelPackage package = new ExcelPackage(stream))
+            using (ExcelPackage package = new ExcelPackage(filePath))
             {
+                //package.Workbook.Worksheets["Configuration"].Hidden = eWorkSheetHidden.VeryHidden;
                 package.Workbook.Worksheets[0].Cells[5, 3].Value = DateTime.Now.ToShortDateString();
                 package.Workbook.Worksheets[0].Cells[4, 6].Value = module.WorkOrder;
                 package.Workbook.Worksheets[0].Cells[5, 6].Value = serialNumber.SerialNumber;
+                package.Workbook.Worksheets[0].Name = "P1";
 
                 package.SaveAs(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName")));
             }
@@ -156,11 +214,11 @@ namespace DMD_Prototype.Controllers
             return Content(JsonConvert.SerializeObject(new { response = response}), "application/json");
         }
 
-        public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo, string module)
+        public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo, string module, string docType)
         {
             SessionSaver(docNo, EN, wOrder, serialNo, module);
             CreateNewFolder(sesID);
-            CopyTravToSession(docNo, wOrder, serialNo);
+            CopyTravToSession(docNo, wOrder, serialNo, docType);
 
             return RedirectToAction("MTIView", "MTI", new {docuNumber = docNo, workStat = true,
                 sesID = sesID});
@@ -188,17 +246,38 @@ namespace DMD_Prototype.Controllers
 
             ContinuePausedWork(swmodel.SessionID);
 
-            return RedirectToAction("MTIView", "MTI", new {docuNumber = swmodel.DocNo, workStat = true, sesID = swmodel.SessionID
-            , travelerProgress = GetProgressFromTraveler(swmodel.SessionID)
-            });
+            if ((await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == swmodel.DocNo).DocType == "MPI")
+            {
+                return RedirectToAction("MTIView", "MTI", new
+                {
+                    docuNumber = swmodel.DocNo,
+                    workStat = true,
+                    sesID = swmodel.SessionID
+           ,
+                    travelerProgress = GetProgressFromTraveler(swmodel.SessionID, await GetMPITemplate(swmodel.SessionID))
+                });
+            }
+            else
+            {
+                return RedirectToAction("MTIView", "MTI", new
+                {
+                    docuNumber = swmodel.DocNo,
+                    workStat = true,
+                    sesID = swmodel.SessionID
+           ,
+                    travelerProgress = GetProgressFromTraveler(swmodel.SessionID, await GetMTITemplate(swmodel.SessionID))
+                });
+            }         
         }
 
         public async Task<IActionResult> FinishWork(string sessionId, string logType, string docNo)
         {
             await CompleteWork(sessionId);
-            SubmitDateFinished(sessionId, logType, docNo);
-
+            
             MTIModel docDet = (await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docNo);
+
+            await SubmitDateFinished(sessionId, logType, docDet);
+
             ModuleModel module = (await ishared.GetModules()).FirstOrDefault(j => j.SessionID == sessionId);
             SerialNumberModel serialNumber = (await ishared.GetSerialNumbers()).FirstOrDefault(j => j.SessionId == sessionId);
 
@@ -211,61 +290,152 @@ namespace DMD_Prototype.Controllers
 
         public async Task<ContentResult> SubmitLog(string logcellone, string logcelltwo, string logcellthree, string sessionId, string logType)
         {
-            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"));
-
-            int rowCount = 10;
-
-            using(ExcelPackage package = new ExcelPackage(filePath))
+            try
             {
-                int pageCount = package.Workbook.Worksheets.Count <= 1 ? 0 : package.Workbook.Worksheets.Count - 1;
+                string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"));
 
-                do
+                string[] logs = { logcellone, logcelltwo, logcellthree };
+
+                if (logType == "T")
                 {
-                    var ws = package.Workbook.Worksheets[pageCount];
-
-                    if (rowCount >= 46 && ws.Cells[rowCount, 1].Value != null)
-                    {
-                        rowCount = 7;
-                        pageCount++;
-                        package.Workbook.Worksheets.Add($"P{pageCount + 1}", GetLogsheetTemplate(logType));
-                    }
-                   
-                    if (ws.Cells[rowCount, 1].Value == null)
-                    {
-                        ws.Cells[rowCount, 1].Value = logcellone;
-                        ws.Cells[rowCount, 3].Value = logcelltwo;
-                        ws.Cells[rowCount, 7].Value = logcellthree;
-
-                        break;
-                    }
-
-                    rowCount += 3;
-
-                } while (true);
-
-                package.Save();
+                    await AddLog(logs, await GetTELTemplate(sessionId), filePath);
+                }
+                else
+                {
+                    await AddLog(logs, await GetConfigTemplate(sessionId), filePath);
+                }                
+            }
+            catch(Exception ex)
+            {
+                return Content(JsonConvert.SerializeObject(ex.Message), "application/json");
             }
 
             return Content(JsonConvert.SerializeObject(null), "application/json");
         }
 
-        private ExcelWorksheet GetLogsheetTemplate(string logType)
+        private async Task AddLog(string[] log, ConfigDataTemplate config, string filePath)
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
+            try
+            {
+                int rowCount = int.Parse(Regex.Replace(config.StartPartNumber, "[^0-9]", ""));
+                int lastRow = int.Parse(Regex.Replace(config.LastRow, "[^0-9]", ""));
+                string partNumberLocator = Regex.Replace(config.StartPartNumber, "[^a-zA-Z]", "");
+                string descriptionLocator = Regex.Replace(config.StartDescription, "[^a-zA-Z]", "");
+                string serialNumberLocator = Regex.Replace(config.StartSerialNumber, "[^a-zA-Z]", "");
+                int incrementValue = int.Parse(Regex.Replace(config.IncrementValue, "[^0-9]", ""));
+
+                using (ExcelPackage package = new ExcelPackage(filePath))
+                {
+                    int pageCount = 0;
+
+                    string lastPage = package.Workbook.Worksheets.Last().Name;
+                    if (lastPage.Contains('P'))
+                    {
+                        pageCount = int.Parse(Regex.Replace(lastPage, "[^0-9]", "")) - 1;
+                    }
+
+                    do
+                    {
+                        var ws = package.Workbook.Worksheets[$"P{pageCount + 1}"];
+
+                        if (rowCount > lastRow)
+                        {
+                            rowCount = int.Parse(Regex.Replace(config.StartPartNumber, "[^0-9]", ""));
+                            pageCount++;
+                            package.Workbook.Worksheets.Add($"P{pageCount + 1}", await GetLogsheetTemplate(""));
+                        }
+                        else if (ws.Cells[$"{partNumberLocator}{rowCount}"].Value == null)
+                        {
+                            ws.Cells[$"{partNumberLocator}{rowCount}"].Value = log[0];
+                            ws.Cells[$"{descriptionLocator}{rowCount}"].Value = log[1];
+                            ws.Cells[$"{serialNumberLocator}{rowCount}"].Value = log[2];
+
+                            break;
+                        }
+                        else
+                        {
+                            rowCount += incrementValue;
+                        }
+
+                    } while (true);
+
+                    package.Save();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+        private async Task AddLog(string[] log, TELDataTemplate config, string filePath)
+        {
+            try
+            {
+                int rowCount = int.Parse(Regex.Replace(config.StartFAPNumber, "[^0-9]", ""));
+                int lastRow = int.Parse(Regex.Replace(config.LastRow, "[^0-9]", ""));
+                string partNumberLocator = Regex.Replace(config.StartFAPNumber, "[^a-zA-Z]", "");
+                string descriptionLocator = Regex.Replace(config.StartDescription, "[^a-zA-Z]", "");
+                string serialNumberLocator = Regex.Replace(config.StartCalibrationDueDate, "[^a-zA-Z]", "");
+                int incrementValue = int.Parse(Regex.Replace(config.IncrementValue, "[^0-9]", ""));
+
+                using (ExcelPackage package = new ExcelPackage(filePath))
+                {
+                    int pageCount = 0;
+
+                    string lastPage = package.Workbook.Worksheets.Last().Name;
+                    if (lastPage.Contains('P'))
+                    {
+                        pageCount = int.Parse(Regex.Replace(lastPage, "[^0-9]", "")) - 1;
+                    }
+
+                    do
+                    {
+                        var ws = package.Workbook.Worksheets[$"P{pageCount + 1}"];
+
+                        if (rowCount > lastRow)
+                        {
+                            rowCount = int.Parse(Regex.Replace(config.StartFAPNumber, "[^0-9]", ""));
+                            pageCount++;
+                            package.Workbook.Worksheets.Add($"P{pageCount + 1}", await GetLogsheetTemplate("T"));
+                        }
+                        else if (ws.Cells[$"{partNumberLocator}{rowCount}"].Value == null)
+                        {
+                            ws.Cells[$"{partNumberLocator}{rowCount}"].Value = log[0];
+                            ws.Cells[$"{descriptionLocator}{rowCount}"].Value = log[1];
+                            ws.Cells[$"{serialNumberLocator}{rowCount}"].Value = log[2];
+
+                            break;
+                        }
+                        else
+                        {
+                            rowCount += incrementValue;
+                        }
+
+                    } while (true);
+
+                    package.Save();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        private async Task<ExcelWorksheet> GetLogsheetTemplate(string logType)
+        {
             string filePath;
 
             if (logType == "T")
             {
-                filePath = "DMD_Prototype.wwwroot.Common.Templates.TEL.xlsx";
+                filePath = await ishared.GetPath("testDir");
             }
             else
             {
-                filePath = "DMD_Prototype.wwwroot.Common.Templates.CL.xlsx";
+                filePath = await ishared.GetPath("configDir");
             }
 
-            Stream stream = assembly.GetManifestResourceStream(filePath);
-
-            ExcelPackage package = new ExcelPackage(stream);
+            ExcelPackage package = new ExcelPackage(filePath);
 
             return package.Workbook.Worksheets[0];
         }
@@ -281,45 +451,102 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        private async Task SubmitDateFinished(string sessionId, string logType, string docNo)
+        private async Task SubmitDateFinished(string sessionId, string logType, MTIModel docDet)
         {
-            MTIModel mTIModel = (await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docNo);
-
             string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("userTravName"));
             string dateNow = DateTime.Now.ToShortDateString();
 
+            if (docDet.DocType.ToLower() == "mpi")
+            {
+                TravelerMPITemplate temp = await GetMPITemplate(sessionId);
+                FinishTraveler(filePath, dateNow, temp.CompleteDate);
+            }
+            else
+            {
+                TravelerMTITemplate temp = await GetMTITemplate(sessionId);
+                FinishTraveler(filePath, dateNow, temp.CompleteDate);
+            }
+       
+            if (logType.ToLower() != "n")
+            {
+                if (logType.ToLower() != "c")
+                {
+                    FinishLogsheet(sessionId, docDet, await GetConfigTemplate(sessionId));
+                }
+                else
+                {
+                    FinishLogsheet(sessionId, docDet, await GetTELTemplate(sessionId));
+                }
+            }
+        }
+
+        private async Task FinishLogsheet(string sessionId, MTIModel docDet, ConfigDataTemplate config)
+        {
+            using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"))))
+            {
+                string? startDate = package.Workbook.Worksheets.First().Cells[config.StartDate].Value == null ? "" : package.Workbook.Worksheets.First().Cells[config.StartDate].Value.ToString();
+                string? workOrder = package.Workbook.Worksheets[0].Cells[config.WorkOrder].Value.ToString();
+                string? serialNumber = package.Workbook.Worksheets[0].Cells[config.SerialNumber].Value.ToString();
+
+                for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
+                {
+                    var ws = package.Workbook.Worksheets[i];
+                    ws.Cells[config.CompleteDate].Value = DateTime.Now.ToShortDateString();                   
+                    ws.Cells[config.AssemblyPartNumber].Value = docDet.AssemblyPN;
+                    ws.Cells[config.AssemblyDescription].Value = docDet.AssemblyDesc;
+                    ws.Cells[config.Reference].Value = docDet.LogsheetDocNo;
+                    ws.Cells[config.DocumentControlNumber].Value = docDet.DocumentNumber;
+                    ws.Cells[config.RevisionNumber].Value = docDet.LogsheetRevNo;
+                    ws.Cells[config.Page].Value = $"{i + 1} of {package.Workbook.Worksheets.Count}";
+                    ws.Cells[config.WorkOrder].Value = string.IsNullOrEmpty(workOrder) ? "Incorrect Traveler Pattern" : workOrder;
+                    ws.Cells[config.SerialNumber].Value = string.IsNullOrEmpty(serialNumber) ? "Incorrect Traveler Pattern" : serialNumber;
+                    ws.Cells[config.StartDate].Value = string.IsNullOrEmpty(startDate) ? "Incorrect Traveler Pattern" : startDate;
+                }
+
+                package.Workbook.Worksheets.Delete("Configuration");
+                package.Save();
+            }
+        }
+
+        private async Task FinishLogsheet(string sessionId, MTIModel docDet, TELDataTemplate config)
+        {
+            using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"))))
+            {
+                string? startDate = package.Workbook.Worksheets.First().Cells[config.StartDate].Value.ToString();
+                string? workOrder = package.Workbook.Worksheets[0].Cells[config.WorkOrder].Value.ToString();
+                string? serialNumber = package.Workbook.Worksheets[0].Cells[config.SerialNumber].Value.ToString();
+
+                for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
+                {
+                    var ws = package.Workbook.Worksheets[i];
+                    ws.Cells[config.CompleteDate].Value = DateTime.Now.ToShortDateString();
+                    ws.Cells[config.AssemblyPartNumber].Value = docDet.AssemblyPN;
+                    ws.Cells[config.AssemblyDescription].Value = docDet.AssemblyDesc;
+                    ws.Cells[config.Reference].Value = docDet.LogsheetDocNo;
+                    ws.Cells[config.DocumentControlNumber].Value = docDet.DocumentNumber;
+                    ws.Cells[config.RevisionNumber].Value = docDet.LogsheetRevNo;
+                    ws.Cells[config.Page].Value = $"{i + 1} of {package.Workbook.Worksheets.Count}";
+                    ws.Cells[config.WorkOrder].Value = string.IsNullOrEmpty(workOrder) ? "Incorrect Traveler Pattern" : workOrder;
+                    ws.Cells[config.SerialNumber].Value = string.IsNullOrEmpty(serialNumber) ? "Incorrect Traveler Pattern" : serialNumber;
+                    ws.Cells[config.StartDate].Value = string.IsNullOrEmpty(startDate) ? "Incorrect Traveler Pattern" : startDate;
+                }
+
+                package.Workbook.Worksheets.Delete("Configuration");
+                package.Save();
+            }
+        }
+
+        private async Task FinishTraveler(string filePath, string dateNow, string position)
+        {
             using (ExcelPackage package = new ExcelPackage(filePath))
             {
                 for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
                 {
                     var ws = package.Workbook.Worksheets[i];
-                    ws.Cells[8, 9].Value = dateNow;                   
+                    ws.Cells[position].Value = dateNow;
                 }
 
                 package.Save();
-            }
-
-            if (logType != "N")
-            {
-                using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"))))
-                {
-                    string startDate = package.Workbook.Worksheets.First().Cells[5, 3].Value.ToString();
-
-                    for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
-                    {
-                        var ws = package.Workbook.Worksheets[i];
-                        ws.Cells[6, 3].Value = dateNow;
-                        ws.Cells[5, 3].Value = startDate;
-                        ws.Cells[3, 3].Value = mTIModel.AssemblyPN;
-                        ws.Cells[4, 3].Value = mTIModel.AssemblyDesc;
-                        ws.Cells[2, 5].Value = mTIModel.LogsheetDocNo;
-                        ws.Cells[2, 8].Value = mTIModel.DocumentNumber;
-                        ws.Cells[3, 6].Value = mTIModel.LogsheetRevNo;
-                        ws.Cells[3, 9].Value = $"{i + 1} of {package.Workbook.Worksheets.Count}";
-                    }
-
-                    package.Save();
-                }
             }
         }
 
@@ -344,13 +571,23 @@ namespace DMD_Prototype.Controllers
             }
         }
 
-        public async Task<ContentResult> UserRefreshed(string sessionId)
+        public async Task<ContentResult> UserRefreshed(string sessionId, string docType)
         {
-            string[] res = await GetProgressFromTraveler(sessionId);
+            string[] res;
+
+            if (docType == "MPI")
+            {
+                res = await GetProgressFromTraveler(sessionId, await GetMPITemplate(sessionId));
+            }
+            else
+            {
+                res = await GetProgressFromTraveler(sessionId, await GetMTITemplate(sessionId));
+            }
+
             return Content(JsonConvert.SerializeObject(new { StepNo = res[0], Task = res[1], Div = res[2] }), "application/json");
         }
 
-        private async Task<string[]> GetProgressFromTraveler(string? sessionID)
+        private async Task<string[]> GetProgressFromTraveler(string? sessionID, TravelerMPITemplate config)
         {
             string[] progress = new string[3];
 
@@ -360,7 +597,76 @@ namespace DMD_Prototype.Controllers
             }
 
             string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("userTravName"));
-            int rowCount = 11;
+            int rowCount = int.Parse(Regex.Replace(config.StartStepNumber, "[^0-9]", ""));
+
+            using (ExcelPackage package = new ExcelPackage(filePath))
+            {
+                var worksheet = package.Workbook;
+                int pageCount = package.Workbook.Worksheets.Count();
+                int sheetCounter = 0;
+                string stepNoLocator = Regex.Replace(config.StartStepNumber, "[^a-zA-Z]", "");
+                string taskLocator = Regex.Replace(config.StartTask, "[^a-zA-Z]", "");
+                string technicianLocator = Regex.Replace(config.StartTechnician, "[^a-zA-Z]", "");
+                string dateLocator = Regex.Replace(config.StartDateParameter, "[^a-zA-Z]", "");
+
+                if (package.Workbook.Worksheets.Count == null || package.Workbook.Worksheets.Count <= 0)
+                {
+                    return progress;
+                }
+
+                do
+                {
+                    string getTask = worksheet.Worksheets[sheetCounter].Cells[$"{taskLocator}{rowCount}"].Value == null ? "" : worksheet.Worksheets[sheetCounter].Cells[$"{taskLocator}{rowCount}"].Value.ToString();
+
+                    if (string.IsNullOrEmpty(getTask))
+                    {
+                        if (pageCount <= (sheetCounter + 1))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            sheetCounter++;
+                            rowCount = int.Parse(Regex.Replace(config.StartStepNumber, "[^0-9]", ""));
+                        }
+                        
+                    }
+
+                    if (!string.IsNullOrEmpty(getTask) &&
+                        (worksheet.Worksheets[sheetCounter].Cells[$"{technicianLocator}{rowCount}"].Value == null &&
+                        worksheet.Worksheets[sheetCounter].Cells[$"{dateLocator}{rowCount}"].Value == null))
+                    {
+                        progress[0] = worksheet.Worksheets[sheetCounter].Cells[$"{stepNoLocator}{rowCount}"].Value.ToString();
+                        progress[1] = worksheet.Worksheets[sheetCounter].Cells[$"{taskLocator}{rowCount}"].Value.ToString();
+                        progress[2] = "s";
+
+                        break;
+                    }
+
+                    rowCount += int.Parse(config.IncrementValue);
+
+                } while (true);
+            }
+
+            return progress;
+        }
+
+        private async Task<string[]> GetProgressFromTraveler(string? sessionID, TravelerMTITemplate config)
+        {
+            string[] progress = new string[3];
+
+            if (string.IsNullOrEmpty(sessionID))
+            {
+                return progress;
+            }
+
+            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("userTravName"));
+            int rowCount = int.Parse(Regex.Replace(config.StartStepNumber, "[^0-9]", ""));
+
+            string stepNoLocator = Regex.Replace(config.StartStepNumber, "[^a-zA-Z]", "");
+            string taskLocator = Regex.Replace(config.StartTask, "[^a-zA-Z]", "");
+            string technicianAndDateLocator = Regex.Replace(config.StartTechnicianAndDate, "[^a-zA-Z]", "");
+            string parameterLocator = Regex.Replace(config.StartParameter, "[^a-zA-Z]", "");
 
             using (ExcelPackage package = new ExcelPackage(filePath))
             {
@@ -375,7 +681,7 @@ namespace DMD_Prototype.Controllers
 
                 do
                 {
-                    string getTask = worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value == null ? "" : worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString();
+                    string getTask = worksheet.Worksheets[sheetCounter].Cells[$"{taskLocator}{rowCount}"].Value == null ? "" : worksheet.Worksheets[sheetCounter].Cells[$"{taskLocator}{rowCount}"].Value.ToString();
 
                     if (string.IsNullOrEmpty(getTask))
                     {
@@ -386,23 +692,23 @@ namespace DMD_Prototype.Controllers
                         else
                         {
                             sheetCounter++;
-                            rowCount = 10;
+                            rowCount = int.Parse(Regex.Replace(config.StartStepNumber, "[^0-9]", ""));
                         }
-                        
+
                     }
 
                     if (!string.IsNullOrEmpty(getTask) &&
-                        (worksheet.Worksheets[sheetCounter].Cells[rowCount, 4].Value == null &&
-                        worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value == null))
+                        (worksheet.Worksheets[sheetCounter].Cells[$"{technicianAndDateLocator}{rowCount}"].Value == null &&
+                        worksheet.Worksheets[sheetCounter].Cells[$"{parameterLocator}{rowCount}"].Value == null))
                     {
-                        progress[0] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value.ToString();
-                        progress[1] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString();
-                        progress[2] = worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Merge ? "s" : "t";
+                        progress[0] = worksheet.Worksheets[sheetCounter].Cells[$"{stepNoLocator}{rowCount}"].Value.ToString();
+                        progress[1] = worksheet.Worksheets[sheetCounter].Cells[$"{taskLocator}{rowCount}"].Value.ToString();
+                        progress[2] = worksheet.Worksheets[sheetCounter].Cells[$"{parameterLocator}{rowCount}"].Merge ? "s" : "t";
 
                         break;
                     }
 
-                    rowCount++;
+                    rowCount += int.Parse(config.IncrementValue);
 
                 } while (true);
             }
@@ -410,67 +716,131 @@ namespace DMD_Prototype.Controllers
             return progress;
         }
 
-        private async Task SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date, string docType)
+        private async Task SaveTravLog(string stepNo, string tAsk, string? singlePara, string sessionID, string tech, TravelerMPITemplate config)
         {
-            string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("userTravName"));
-            int rowCount = 11;
-            int sheetCounter = 0;
-
-            using(ExcelPackage package = new ExcelPackage(filePath))
+            try
             {
-                var worksheet = package.Workbook;
+                string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("userTravName"));
+                int rowCount = int.Parse(Regex.Replace(config.StartStepNumber, "[^0-9]", ""));
+                int sheetCounter = 0;
 
-                do
+                using (ExcelPackage package = new ExcelPackage(filePath))
                 {
-                    if (worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value == null)
+                    var worksheet = package.Workbook;
+
+                    do
                     {
-                        sheetCounter++;
-                        rowCount = 11;
-                    }
+                        if (worksheet.Worksheets[sheetCounter].Cells[$"{Regex.Replace(config.StartStepNumber, "[^a-zA-Z]", "")}{rowCount}"].Value == null)
+                        {
+                            sheetCounter++;
+                            rowCount = int.Parse(Regex.Replace(config.StartStepNumber, "[^a-zA-Z]", ""));
+                        }
 
-                    if (worksheet.Worksheets[sheetCounter].Cells[rowCount, 1].Value.ToString() == stepNo && worksheet.Worksheets[sheetCounter].Cells[rowCount, 2].Value.ToString() == tAsk
-                        && worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Value == null)
+                        if (worksheet.Worksheets[sheetCounter].Cells[$"{Regex.Replace(config.StartStepNumber, "[^a-zA-Z]", "")}{rowCount}"].Value.ToString() == stepNo && worksheet.Worksheets[sheetCounter].Cells[$"{Regex.Replace(config.StartTask, "[^a-zA-Z]", "")}{rowCount}"].Value.ToString() == tAsk
+                            && worksheet.Worksheets[sheetCounter].Cells[$"{Regex.Replace(config.StartTechnician, "[^a-zA-Z]", "")}{rowCount}"].Value == null)
+                        {
+                            worksheet.Worksheets[sheetCounter].Cells[$"{Regex.Replace(config.StartDateParameter, "[^a-zA-Z]", "")}{rowCount}"].Value = singlePara;
+                            worksheet.Worksheets[sheetCounter].Cells[$"{Regex.Replace(config.StartTechnician, "[^a-zA-Z]", "")}{rowCount}"].Value = $"{tech}";
+                            worksheet.Worksheets[sheetCounter].Cells[$"{Regex.Replace(config.StartTechnician, "[^a-zA-Z]", "")}{rowCount}"].Style.ShrinkToFit = true;
+
+                            break;
+                        }
+
+                        rowCount++;
+
+                    } while (true);
+
+                    package.SaveAs(filePath);
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
+        }
+
+        private async Task SaveTravLog(string stepNo, string tAsk, string[]? byThree, string? singlePara, string sessionID, string tech, string date, TravelerMTITemplate config)
+        {
+            try
+            {
+                string filePath = Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("userTravName"));
+                int rowCount = 11;
+                int sheetCounter = 0;
+
+                char byThreeChar = char.Parse(Regex.Replace(config.StartParameter, "[^a-zA-Z]", ""));
+                int byThreeToASCII = (int)byThreeChar;
+                char byThreeFirst = (char)(byThreeToASCII);
+                char firstByThree = (char)(byThreeToASCII + 1);
+                char secondByThree = (char)(byThreeToASCII + 2);
+
+                string stepNumberLocator = Regex.Replace(config.StartStepNumber, "[^a-zA-Z]", "");
+                string taskLocator = Regex.Replace(config.StartTask, "[^a-zA-Z]", "");
+                string parameterLocator = Regex.Replace(config.StartParameter, "[^a-zA-Z]", "");
+                string technicianAndDateLocator = Regex.Replace(config.StartTechnicianAndDate, "[^a-zA-Z]", "");
+
+                using (ExcelPackage package = new ExcelPackage(filePath))
+                {
+                    var worksheet = package.Workbook;
+
+                    do
                     {
-                        if (string.IsNullOrEmpty(singlePara))
+                        if (worksheet.Worksheets[sheetCounter].Cells[$"{stepNumberLocator}{rowCount}"].Value == null)
                         {
-                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Value = byThree[0];
-                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 10].Value = byThree[1];
-                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 11].Value = byThree[2];
-                        }
-                        else
-                        {
-                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 9].Value = singlePara;
+                            sheetCounter++;
+                            rowCount = 11;
                         }
 
-                        if (docType == "MTI")
+                        if (worksheet.Worksheets[sheetCounter].Cells[$"{stepNumberLocator}{rowCount}"].Value.ToString() == stepNo && worksheet.Worksheets[sheetCounter].Cells[$"{taskLocator}{rowCount}"].Value.ToString() == tAsk
+                            && worksheet.Worksheets[sheetCounter].Cells[$"{parameterLocator}{rowCount}"].Value == null)
                         {
-                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value = $"{tech}||{date}";
+                            if (string.IsNullOrEmpty(singlePara))
+                            {
+                                worksheet.Worksheets[sheetCounter].Cells[$"{byThreeFirst}{rowCount}"].Value = byThree[0];
+                                worksheet.Worksheets[sheetCounter].Cells[$"{firstByThree}{rowCount}"].Value = byThree[1];
+                                worksheet.Worksheets[sheetCounter].Cells[$"{secondByThree}{rowCount}"].Value = byThree[2];
+                            }
+                            else
+                            {
+                                worksheet.Worksheets[sheetCounter].Cells[$"{parameterLocator}{rowCount}"].Value = singlePara;
+                            }
+
+                            worksheet.Worksheets[sheetCounter].Cells[$"{technicianAndDateLocator}{rowCount}"].Value = $"{tech} {date}";
+
+                            worksheet.Worksheets[sheetCounter].Cells[$"{technicianAndDateLocator}{rowCount}"].Style.ShrinkToFit = true;
+
+                            break;
                         }
-                        else
-                        {
-                            worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Value = $"{tech}";
-                        }
 
-                        worksheet.Worksheets[sheetCounter].Cells[rowCount, 7].Style.ShrinkToFit = true;
+                        rowCount++;
 
-                        break;
-                    }
+                    } while (true);
 
-                    rowCount++;
+                    package.SaveAs(filePath);
+                }
+            }
+            catch(Exception ex)
+            {
 
-                } while (true);
-
-                package.SaveAs(filePath);
             }
         }
 
         [HttpPost]
         public async Task<ContentResult> SubmitTravelerLog(string stepNo, string tAsk, string[]? byThree,
             string? singlePara, string sessionID, string tech, string date, string docType)
-        {           
-            SaveTravLog(stepNo, tAsk, byThree, singlePara, sessionID, tech, date, docType);
+        {
+            string[] res;
 
-            string[] res = await GetProgressFromTraveler(sessionID);
+           if (docType == "MPI")
+           {
+                SaveTravLog(stepNo, tAsk, singlePara, sessionID, tech, await GetMPITemplate(sessionID));
+                res = await GetProgressFromTraveler(sessionID, await GetMPITemplate(sessionID));
+            }
+           else
+           {
+                SaveTravLog(stepNo, tAsk, byThree, singlePara, sessionID, tech, date, await GetMTITemplate(sessionID));
+                res = await GetProgressFromTraveler(sessionID, await GetMTITemplate(sessionID));
+            }
+          
             string jsonData = JsonConvert.SerializeObject(new { StepNo = res[0], Task = res[1], Div = res[2] });
             return Content(jsonData, "application/json");
         }

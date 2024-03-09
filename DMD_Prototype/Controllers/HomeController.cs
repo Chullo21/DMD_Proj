@@ -17,6 +17,20 @@ namespace DMD_Prototype.Controllers
             ishare = _ishared;
         }
 
+        public async Task<IActionResult> ObsoleteTraveler(string SWID)
+        {
+            StartWorkModel work = (await ishare.GetStartWork()).FirstOrDefault(j => j.SWID.ToString() == SWID);
+            work.isObsolete = true;
+            work.UserID = "";
+
+            if (ModelState.IsValid)
+            {
+                _Db.StartWorkDb.Update(work);
+                _Db.SaveChanges();
+            }
+            return RedirectToAction("ShowTravelers", "Home");
+        }
+
         public async Task<ContentResult> SearchDocument(string searchString)
         {
             MTIModel model = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == searchString || j.AssemblyPN == searchString || j.AssemblyDesc == searchString);
@@ -96,7 +110,7 @@ namespace DMD_Prototype.Controllers
             IEnumerable<ModuleModel> module = await ishare.GetModules();
             IEnumerable<SerialNumberModel> serialNumbers = await ishare.GetSerialNumbers();
 
-            Dictionary<string, (string, string?, string?, string, string, string)> sw = (await ishare.GetStartWork()).OrderByDescending(j => j.FinishDate).ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.HasValue ? j.FinishDate.Value.ToShortDateString() : "NF", j.UserID, j.DocNo, j.SWID.ToString(), j.LogType));
+            Dictionary<string, (string, string?, string?, string, string, string)> sw = (await ishare.GetStartWork()).Where(j => !j.isObsolete).OrderByDescending(j => j.FinishDate).ToDictionary(j => j.SessionID, j => (j.StartDate.ToShortDateString(), j.FinishDate.HasValue ? j.FinishDate.Value.ToShortDateString() : "NF", j.UserID, j.DocNo, j.SWID.ToString(), j.LogType));
             Dictionary<string, string> accs = (await ishare.GetAccounts()).Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
 
             TravelerViewModel res = new();
@@ -140,7 +154,7 @@ namespace DMD_Prototype.Controllers
         public async Task<ContentResult> GetSessionsCountAsync()
         {
             int rsCount = (await ishare.GetRS()).ToList().Count;
-            int usCount = (await ishare.GetStartWork()).Count(j => j.FinishDate == null);
+            int usCount = (await ishare.GetStartWork()).Count(j => j.FinishDate == null && !j.isObsolete);
 
             return Content(JsonConvert.SerializeObject(new {r = rsCount, usCount = usCount}), "application/json");
         }

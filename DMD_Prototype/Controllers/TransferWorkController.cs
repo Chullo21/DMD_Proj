@@ -24,7 +24,7 @@ namespace DMD_Prototype.Controllers
             Dictionary<string, (string, string)> modules = (await ishared.GetModules()).ToDictionary(j => j.SessionID, j => (j.Module, j.WorkOrder));
             IEnumerable<SerialNumberModel> serialNumbers = await ishared.GetSerialNumbers();
             Dictionary<string, string> accounts = (await ishared.GetAccounts()).Where(j => j.Role == "USER").ToDictionary(j => j.UserID, j => j.AccName);
-            Dictionary<string, (string, string, string)> sw = (await ishared.GetStartWork()).Where(j => j.FinishDate == null).ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
+            Dictionary<string, (string, string, string)> sw = (await ishared.GetStartWork()).Where(j => j.FinishDate == null && !j.isObsolete).ToDictionary(j => j.SWID.ToString(), j => (j.UserID, j.DocNo, j.SessionID));
 
             foreach (var s in sw)
             {
@@ -35,9 +35,9 @@ namespace DMD_Prototype.Controllers
 
                 string session = s.Value.Item3;
                 vm.Module = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item1;
-                vm.SerialNo = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item2;
-                vm.WorkOrder = serialNumbers.FirstOrDefault(j => j.SessionId == s.Value.Item3).SerialNumber;
-
+                vm.SerialNo = serialNumbers.FirstOrDefault(j => j.SessionId == s.Value.Item3).SerialNumber;
+                vm.WorkOrder = modules.FirstOrDefault(j => j.Key == s.Value.Item3).Value.Item2;
+                
                 vm.CurrentTech = accounts.FirstOrDefault(j => j.Key == s.Value.Item1).Value;
 
                 vm.SWID = s.Key;

@@ -4,6 +4,7 @@ using DMD_Prototype.Models;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
+using OfficeOpenXml;
 
 namespace DMD_Prototype.Controllers
 {
@@ -71,8 +72,8 @@ namespace DMD_Prototype.Controllers
 
             if (ModelState.IsValid)
             {
-                string message = $"{user}, updated details of engineering Document with Doc Number of {mti.DocumentNumber}.";
-                if (mti.ObsoleteStat) message = $"{user}, marked {mti.DocumentNumber} as obsolete.";
+                string message = $", updated details of engineering Document with Doc Number of {mti.DocumentNumber}.";
+                if (mti.ObsoleteStat) message = $", marked {mti.DocumentNumber} as obsolete.";
 
                 ishare.RecordOriginatorAction(message, user, DateTime.Now);
                 _Db.MTIDb.Update(tempMTI);
@@ -136,28 +137,31 @@ namespace DMD_Prototype.Controllers
 
         public async Task<IActionResult> MTIView(string docuNumber, bool workStat, string sesID)
         {
+            if (!System.IO.File.Exists(Path.Combine(await ishare.GetMainDocsPath(), docuNumber, await ishare.GetMainDocName())))
+            {
+                return NotFound("The Document you are working on or looking for could be deleted, not found or missing. Please contact the document's originator.");
+            }
+
             MTIModel mti = (await ishare.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docuNumber && !j.isDeleted);
 
-            MTIViewModel mModel = new MTIViewModel();
-            {
-                mModel.DocumentNumber = docuNumber;
-                mModel.Opl = await DeviationDocNames("o", docuNumber);
-                mModel.Prco = await DeviationDocNames("p", docuNumber);
-                mModel.Derogation = await DeviationDocNames("d", docuNumber);
-                mModel.Memo = await DeviationDocNames("m", docuNumber);
-                mModel.WorkingStat = workStat;
-                mModel.SessionID = sesID;
-                mModel.AssyNo = mti.AssemblyPN;
-                mModel.AssyDesc = mti.AssemblyDesc;
-                mModel.RevNo = mti.RevNo;
-                mModel.AfterTravlog = mti.AfterTravLog;
-                mModel.Product = mti.Product;
-                mModel.DocType = mti.DocType;
-                mModel.ObsoleteStat = mti.ObsoleteStat;
-                mModel.AssyDrawing = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, ishare.GetAssyDrawingName()));
-                mModel.Bom = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, ishare.GetBOMName()));
-                mModel.SchematicDiagram = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, ishare.GetSchemaDiagramName()));
-            }
+            MTIViewModel mModel = new();
+            mModel.DocumentNumber = docuNumber;
+            mModel.Opl = await DeviationDocNames("o", docuNumber);
+            mModel.Prco = await DeviationDocNames("p", docuNumber);
+            mModel.Derogation = await DeviationDocNames("d", docuNumber);
+            mModel.Memo = await DeviationDocNames("m", docuNumber);
+            mModel.WorkingStat = workStat;
+            mModel.SessionID = sesID;
+            mModel.AssyNo = mti.AssemblyPN;
+            mModel.AssyDesc = mti.AssemblyDesc;
+            mModel.RevNo = mti.RevNo;
+            mModel.AfterTravlog = mti.AfterTravLog;
+            mModel.Product = mti.Product;
+            mModel.DocType = mti.DocType;
+            mModel.ObsoleteStat = mti.ObsoleteStat;
+            mModel.AssyDrawing = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, await ishare.GetAssyDrawingName()));
+            mModel.Bom = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, await ishare.GetBOMName()));
+            mModel.SchematicDiagram = System.IO.File.Exists(Path.Combine(await ishare.GetPath("mainDir"), docuNumber, await ishare.GetSchemaDiagramName()));
 
             return View(mModel);
         }
