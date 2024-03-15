@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using DMD_Prototype.Models;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Authorization;
-using OfficeOpenXml;
 
 namespace DMD_Prototype.Controllers
 {
@@ -75,7 +73,7 @@ namespace DMD_Prototype.Controllers
                 string message = $", updated details of engineering Document with Doc Number of {mti.DocumentNumber}.";
                 if (mti.ObsoleteStat) message = $", marked {mti.DocumentNumber} as obsolete.";
 
-                ishare.RecordOriginatorAction(message, user, DateTime.Now);
+                await ishare.RecordOriginatorAction(message, user, DateTime.Now);
                 _Db.MTIDb.Update(tempMTI);
                 await _Db.SaveChangesAsync();
             }
@@ -100,8 +98,8 @@ namespace DMD_Prototype.Controllers
             {
                 DocumentNumberVar = docuno;
 
-                if (DirsTobeDeleted.Count > 0) DeleteMultipleFiles(DirsTobeDeleted, docuno);
-                CopyNoneMultipleDocs(mpti, drawing, bom, schema, travFile);
+                if (DirsTobeDeleted.Count > 0) await DeleteMultipleFiles(DirsTobeDeleted, docuno);
+                await CopyNoneMultipleDocs(mpti, drawing, bom, schema, travFile);
                 CopyMultipleDocs(opl, prco, derogation, memo);
 
                 _Db.MTIDb.Update(mod);
@@ -115,7 +113,7 @@ namespace DMD_Prototype.Controllers
                 string remarkSetter = string.IsNullOrEmpty(remarks) ? "No remarks" : remarks;
                 string subject = $"DMD Portal, Document update {statusSetter}";
                 string body = $"Good day!\r\n{user} has updated a document/s with document number of {docuno}, having the details of the following:\r\n\r\nStatus: {statusSetter}\r\nAssembly Part Number: {mod.AssemblyPN}\r\nDescription: {mod.AssemblyDesc}\r\nRevision Number: {mod.RevNo}\r\nRemaks:{remarkSetter}\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a great day!";
-                ishare.SendEmailNotification((await ishare.GetMultipleusers("PL_INTERVENOR")).ToList(), subject, body);
+                await ishare.SendEmailNotification((await ishare.GetMultipleusers("PL_INTERVENOR")).ToList(), subject, body);
             }
 
             return RedirectToAction("MTIView", new {docuNumber = docuno, workStat = false});
@@ -263,10 +261,10 @@ namespace DMD_Prototype.Controllers
             {
                 DocumentNumberVar = documentnumber;
 
-                CreateNewFolder(documentnumber);
-                CopyNoneMultipleDocs(mpti, assemblydrawing, billsofmaterial, schematicdiagram, TravelerFile);
+                await CreateNewFolder(documentnumber);
+                await CopyNoneMultipleDocs(mpti, assemblydrawing, billsofmaterial, schematicdiagram, TravelerFile);
                 CopyMultipleDocs(onepointlesson, prco, derogation, engineeringmemo);
-                ishare.RecordOriginatorAction($"Uploaded engineering documents/s with Doc Number of {documentnumber}.", originator, DateTime.Now);
+                await ishare.RecordOriginatorAction($"Uploaded engineering documents/s with Doc Number of {documentnumber}.", originator, DateTime.Now);
 
                 _Db.MTIDb.Add(mti);
                 await _Db.SaveChangesAsync();
@@ -295,7 +293,7 @@ namespace DMD_Prototype.Controllers
                 using (FileStream fs = new FileStream(Path.Combine(await ishare.GetPath("mainDir"), DocumentNumberVar, file.Key), FileMode.Create))
                 {
                     file.Value.CopyTo(fs);
-                    ishare.RecordOriginatorAction($"Uploaded {Path.GetFileName(fs.Name)} to {DocumentNumberVar}.", GetUserData()[0], DateTime.Now);
+                    await ishare.RecordOriginatorAction($"Uploaded {Path.GetFileName(fs.Name)} to {DocumentNumberVar}.", GetUserData()[0], DateTime.Now);
                 }
             }
         }
@@ -309,7 +307,7 @@ namespace DMD_Prototype.Controllers
                 using (FileStream fs = new FileStream(Path.Combine(filePath, $"({whichDoc}){file.FileName}"), FileMode.Create))
                 {
                     file.CopyTo(fs);
-                    ishare.RecordOriginatorAction($"Uploaded {Path.GetFileName(fs.Name).Substring(3)} to {DocumentNumberVar}.", GetUserData()[0], DateTime.Now);
+                    await ishare.RecordOriginatorAction($"Uploaded {Path.GetFileName(fs.Name).Substring(3)} to {DocumentNumberVar}.", GetUserData()[0], DateTime.Now);
                 }
             }
         }

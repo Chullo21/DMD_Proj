@@ -19,15 +19,28 @@ namespace DMD_Prototype.Controllers
 
         public async Task<IActionResult> ObsoleteTraveler(string SWID)
         {
-            StartWorkModel work = (await ishare.GetStartWork()).FirstOrDefault(j => j.SWID.ToString() == SWID);
-            work.isObsolete = true;
-            work.UserID = "";
-
-            if (ModelState.IsValid)
+            try
             {
-                _Db.StartWorkDb.Update(work);
-                _Db.SaveChanges();
+                StartWorkModel work = (await ishare.GetStartWork()).FirstOrDefault(j => j.SWID.ToString() == SWID);
+                ModuleModel module = (await ishare.GetModules()).FirstOrDefault(j => j.SessionID == work.SessionID);
+                SerialNumberModel serial = (await ishare.GetSerialNumbers()).FirstOrDefault(j => j.SessionId == work.SessionID);
+
+
+                if (ModelState.IsValid)
+                {
+                    _Db.StartWorkDb.Remove(work);
+                    _Db.ModuleDb.Remove(module);
+                    _Db.SerialNumberDb.Remove(serial);
+                    _Db.SaveChanges();
+
+                    Directory.Delete(Path.Combine(await ishare.GetPath("userDir"), work.SessionID), true);
+                }
             }
+            catch(Exception ex)
+            {
+
+            }
+
             return RedirectToAction("ShowTravelers", "Home");
         }
 
@@ -64,6 +77,7 @@ namespace DMD_Prototype.Controllers
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

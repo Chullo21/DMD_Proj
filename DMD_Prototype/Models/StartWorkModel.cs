@@ -14,9 +14,9 @@ namespace DMD_Prototype.Models
         public string UserID { get; set; }
         public bool isObsolete { get; set; } = false;
 
-        public StartWorkModel CreateSW(string docNo, string userID, string logType)
+        public StartWorkModel CreateSW(string docNo, string userID, string logType, string moreString)
         {
-            SessionID = SessionIDGenerator();
+            SessionID = $"{userID}-{DateTime.Now.ToShortDateString().Replace("/", "-")}-{moreString}-{SessionIDGenerator()}";
             DocNo = docNo;
             UserID = userID;
             LogType = logType;
@@ -27,7 +27,7 @@ namespace DMD_Prototype.Models
         private string SessionIDGenerator()
         {
             Guid guid = Guid.NewGuid();
-            return guid.ToString()[..20];
+            return guid.ToString()[..10];
         }
     }
 

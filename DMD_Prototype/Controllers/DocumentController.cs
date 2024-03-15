@@ -265,11 +265,16 @@ namespace DMD_Prototype.Controllers
             return Json(new { message = "success" });
         }
 
-        public async Task<IActionResult> UpdateTravelerTemplate(string config, string directory)
+        public async Task<IActionResult> UpdateTravelerTemplate(string config, string directory, IFormFile file, string travelerType)
         {
             try
             {
                 System.IO.File.WriteAllText(await ishared.GetPath(directory), config);
+                //System.IO.File.Copy(file.OpenReadStream(), await ishared.GetPath(directory), true);
+                using(FileStream fs = new(await ishared.GetPath(travelerType), FileMode.Create))
+                {
+                    file.CopyTo(fs);
+                }
             }
             catch(Exception ex)
             {
@@ -310,7 +315,7 @@ namespace DMD_Prototype.Controllers
                     temp = JsonConvert.DeserializeObject<TravelerMTITemplate>(config);
                 }
 
-                path = new DMDLibrary.COMHandler().ConvertExcelIntoPDFThenByte(await PerformTravelerTrial(package, temp), await ishared.GetPath("disDir"));
+                path = new DMDLibrary.COMHandler().ConvertExcelIntoPDFThenByte(PerformTravelerTrial(package, temp), await ishared.GetPath("disDir"));
 
                 return Json(new { path = path });
             }            
@@ -349,14 +354,14 @@ namespace DMD_Prototype.Controllers
             return File(file.ToArray(), "application/pdf");
         }
 
-        private async Task<ExcelPackage> PerformTravelerTrial(ExcelPackage package, TravelerMPITemplate config)
+        private ExcelPackage PerformTravelerTrial(ExcelPackage package, TravelerMPITemplate config)
         {
             try
             {
                 var ws = package.Workbook.Worksheets[0];
 
                 ws.Cells[config.AssemblyPartNumber].Value = "Assembly Part Number";
-                ws.Cells[config.Description].Value = "Description";
+                ws.Cells[config.Description].Value = "Description Example";
                 ws.Cells[config.DocumentControlNumber].Value = "Document Control Number";
                 ws.Cells[config.ReferenceMPINumber].Value = "Reference";
                 ws.Cells[config.RevisionNumber].Value = "Revision Number";
@@ -385,14 +390,13 @@ namespace DMD_Prototype.Controllers
             return package;
         }
 
-        private async Task<ExcelPackage> PerformTravelerTrial(ExcelPackage package, TravelerMTITemplate config)
+        private ExcelPackage PerformTravelerTrial(ExcelPackage package, TravelerMTITemplate config)
         {
+            var ws = package.Workbook.Worksheets[0];
             try
             {
-                var ws = package.Workbook.Worksheets[0];
-
                 ws.Cells[config.AssemblyPartNumber].Value = "Assembly Part Number";
-                ws.Cells[config.Description].Value = "Description";
+                ws.Cells[config.Description].Value = "Description Example";
                 ws.Cells[config.DocumentControlNumber].Value = "Document Control Number";
                 ws.Cells[config.Reference].Value = "Reference";
                 ws.Cells[config.RevisionNumber].Value = "Revision Number";
@@ -401,8 +405,16 @@ namespace DMD_Prototype.Controllers
                 ws.Cells[config.StartDate].Value = "Start Date";
                 ws.Cells[config.CompleteDate].Value = "Complete Date";
 
-                if (config.Page != null) ws.Cells[config.Page].Value = "Page";
+                if (!string.IsNullOrEmpty(config.Page)) ws.Cells[config.Page].Value = "Page";
+                
+            }
+            catch (Exception ex)
+            {
+                return package;
+            }
 
+            try
+            {
                 int startingRow = int.Parse(Regex.Replace(config.StartStepNumber, "[^0-9]", ""));
 
                 for (int i = startingRow; i <= int.Parse(config.LastRow); i += int.Parse(config.IncrementValue))
@@ -410,7 +422,23 @@ namespace DMD_Prototype.Controllers
                     ws.Cells[$"{Regex.Replace(config.StartStepNumber, "[0-9]", "")}{i}"].Value = "Step Number Example";
                     ws.Cells[$"{Regex.Replace(config.StartTask, "[0-9]", "")}{i}"].Value = "Task Example";
                     ws.Cells[$"{Regex.Replace(config.StartTechnicianAndDate, "[0-9]", "")}{i}"].Value = "Calibration Due Date Example";
-                    ws.Cells[$"{Regex.Replace(config.StartParameter, "[0-9]", "")}{i}"].Value = "Date Example";
+
+                    if (!ws.Cells[$"{Regex.Replace(config.StartParameter, "[0-9]", "")}{i}"].Merge)
+                    {
+                        ws.Cells[$"{Regex.Replace(config.StartParameter, "[0-9]", "")}{i}"].Value = "Date Example";
+                    }
+                    else
+                    {
+                        char byThreeChar = char.Parse(Regex.Replace(config.StartParameter, "[^a-zA-Z]", ""));
+                        int byThreeToASCII = (int)byThreeChar;
+                        char byThreeFirst = (char)(byThreeToASCII);
+                        char firstByThree = (char)(byThreeToASCII + 1);
+                        char secondByThree = (char)(byThreeToASCII + 2);
+
+                        ws.Cells[$"{byThreeFirst}{i}"].Value = "Date Example";
+                        ws.Cells[$"{firstByThree}{i}"].Value = "Date Example";
+                        ws.Cells[$"{secondByThree}{i}"].Value = "Date Example";
+                    }
                 }
             }
             catch (Exception ex)

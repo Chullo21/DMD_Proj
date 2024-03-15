@@ -10,10 +10,16 @@ namespace DMD_Prototype.Controllers
     {
         private readonly AppDbContext _Db;
         private readonly ISharedFunct ishare;
+        public readonly string connectionString = "This is a connection string";
         public AdminController(AppDbContext dataBase, ISharedFunct shared)
         {
             _Db = dataBase;
             ishare = shared;
+        }
+
+        public string GetConnectionString()
+        {
+            return connectionString;
         }
 
         public ContentResult ShowTravelers()
@@ -124,7 +130,7 @@ namespace DMD_Prototype.Controllers
                     _Db.MTIDb.Update(mti);
                 }
 
-                ishare.RecordOriginatorAction($"{adminName}, have cleared/deleted all obsolete documents.", adminName, DateTime.Now);
+                await ishare.RecordOriginatorAction($"{adminName}, have cleared/deleted all obsolete documents.", adminName, DateTime.Now);
                 await _Db.SaveChangesAsync();
             }           
 

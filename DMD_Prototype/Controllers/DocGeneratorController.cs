@@ -27,14 +27,17 @@ namespace DMD_Prototype.Controllers
             return File(new COMHandler().DownloadExcel(filePath), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }
 
-        public IActionResult DownloadTravelerTemplate(string docType)
+        public async Task<IActionResult> DownloadTravelerTemplate(string whichTraveler)
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-
-            using (ExcelPackage package = new ExcelPackage(assembly.GetManifestResourceStream($"DMD_Prototype.wwwroot.Common.Templates.{docType}.xlsx")))
+            using (ExcelPackage package = new ExcelPackage(await ishare.GetPath(whichTraveler)))
             {
+                if (package.Workbook.Worksheets.Count <= 0)
+                {
+                    return Ok("Template not found or does not exist");
+                }
+
                 string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                return File(package.GetAsByteArray(), contentType, $"{docType.ToLower()}_Template.xlsx");
+                return File(package.GetAsByteArray(), contentType, $"{whichTraveler.ToLower()}_Template.xlsx");
             }
         }
 

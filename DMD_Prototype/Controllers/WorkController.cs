@@ -21,7 +21,7 @@ namespace DMD_Prototype.Controllers
     {
         private readonly AppDbContext _Db;
 
-        private string sesID;
+        //private string sesID;
 
         private readonly ISharedFunct ishared;
 
@@ -64,18 +64,19 @@ namespace DMD_Prototype.Controllers
             return userid;
         }
 
-        private async Task SessionSaver(string docNo, string user, string wo, string serialNo, string module)
+        private async Task<string> SessionSaver(string docNo, string user, string wo, string serialNo, string module)
         {
-            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, await UserIDGetter(user), (await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docNo).AfterTravLog);
-            sesID = swModel.SessionID;
+            StartWorkModel swModel = new StartWorkModel().CreateSW(docNo, await UserIDGetter(user), (await ishared.GetMTIs()).FirstOrDefault(j => j.DocumentNumber == docNo).AfterTravLog, $"{wo}");
 
             if (ModelState.IsValid)
             {
-                _Db.ModuleDb.Add(new ModuleModel().CreateModule(sesID, module, wo));
-                _Db.SerialNumberDb.Add(new SerialNumberModel().SubmitSerialNumber(serialNo, sesID));
+                _Db.ModuleDb.Add(new ModuleModel().CreateModule(swModel.SessionID, module, wo));
+                _Db.SerialNumberDb.Add(new SerialNumberModel().SubmitSerialNumber(serialNo, swModel.SessionID));
                 _Db.StartWorkDb.Add(swModel);
                 _Db.SaveChanges();
             }
+
+            return swModel.SessionID;
         }
 
         private void PauseSession(string reason, string tech)
@@ -96,7 +97,7 @@ namespace DMD_Prototype.Controllers
             Directory.CreateDirectory(filePath);
         }
 
-        private async Task CopyTravToSession(string docNo, string wOrder, string serialNo, string docType)
+        private async Task CopyTravToSession(string docNo, string wOrder, string serialNo, string docType, string sessionID)
         {
             try
             {
@@ -107,7 +108,7 @@ namespace DMD_Prototype.Controllers
 
                 if (docType == "MPI")
                 {
-                    TravelerMPITemplate telData = await GetMPITemplate(sesID);
+                    TravelerMPITemplate telData = await GetMPITemplate(sessionID);
                     dateLocator = telData.StartDate;
                     workOrderLocator = telData.WorkOrder;
                     serialNumberLocator = telData.SerialNumber;
@@ -115,7 +116,7 @@ namespace DMD_Prototype.Controllers
                 }
                 else
                 {
-                    TravelerMTITemplate configData = await GetMTITemplate(sesID);
+                    TravelerMTITemplate configData = await GetMTITemplate(sessionID);
                     dateLocator = configData.StartDate;
                     workOrderLocator = configData.WorkOrder;
                     serialNumberLocator = configData.SerialNumber;
@@ -132,10 +133,10 @@ namespace DMD_Prototype.Controllers
                         ws.Cells[dateLocator].Value = DateTime.Now.ToShortDateString();
                         ws.Cells[workOrderLocator].Value = wOrder;
                         ws.Cells[serialNumberLocator].Value = serialNo;
-                        ws.Cells[pageLocator].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
+                        if (!string.IsNullOrEmpty(pageLocator)) ws.Cells[pageLocator].Value = $"Page {i + 1} of {package.Workbook.Worksheets.Count}";
                     }
 
-                    package.SaveAs(Path.Combine(await ishared.GetPath("userDir"), sesID, await ishared.GetPath("userTravName")));
+                    package.SaveAs(Path.Combine(await ishared.GetPath("userDir"), sessionID, await ishared.GetPath("userTravName")));
                 }
             }
             catch (Exception ex)
@@ -214,14 +215,13 @@ namespace DMD_Prototype.Controllers
             return Content(JsonConvert.SerializeObject(new { response = response}), "application/json");
         }
 
-        public IActionResult StartWork(string docNo, string EN, string wOrder, string serialNo, string module, string docType)
+        public async Task<IActionResult> StartWorkAsync(string docNo, string EN, string wOrder, string serialNo, string module, string docType)
         {
-            SessionSaver(docNo, EN, wOrder, serialNo, module);
-            CreateNewFolder(sesID);
-            CopyTravToSession(docNo, wOrder, serialNo, docType);
+            string sessionID = await SessionSaver(docNo, EN, wOrder, serialNo, module);
+            CreateNewFolder(sessionID);
+            CopyTravToSession(docNo, wOrder, serialNo, docType, sessionID);
 
-            return RedirectToAction("MTIView", "MTI", new {docuNumber = docNo, workStat = true,
-                sesID = sesID});
+            return RedirectToAction("MTIView", "MTI", new {docuNumber = docNo, workStat = true, sesID = sessionID});
         }
 
         public IActionResult PauseWork(string EN, string reason)
@@ -469,7 +469,7 @@ namespace DMD_Prototype.Controllers
        
             if (logType.ToLower() != "n")
             {
-                if (logType.ToLower() != "c")
+                if (logType.ToLower() == "c")
                 {
                     FinishLogsheet(sessionId, docDet, await GetConfigTemplate(sessionId));
                 }
@@ -484,12 +484,13 @@ namespace DMD_Prototype.Controllers
         {
             using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"))))
             {
-                string? startDate = package.Workbook.Worksheets.First().Cells[config.StartDate].Value == null ? "" : package.Workbook.Worksheets.First().Cells[config.StartDate].Value.ToString();
-                string? workOrder = package.Workbook.Worksheets[0].Cells[config.WorkOrder].Value.ToString();
-                string? serialNumber = package.Workbook.Worksheets[0].Cells[config.SerialNumber].Value.ToString();
+                string startDate = package.Workbook.Worksheets[0].Cells[config.StartDate].Value == null ? "Incorrect Traveler Pattern" : package.Workbook.Worksheets.First().Cells[config.StartDate].Value.ToString();
+                string workOrder = package.Workbook.Worksheets[0].Cells[config.WorkOrder].Value == null ? "Incorrect Traveler Pattern" : package.Workbook.Worksheets[0].Cells[config.WorkOrder].Value.ToString();
+                string serialNumber = package.Workbook.Worksheets[0].Cells[config.SerialNumber].Value == null ? "Incorrect Traveler Pattern" : package.Workbook.Worksheets[0].Cells[config.SerialNumber].Value.ToString();
 
                 for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
                 {
+                    package.Workbook.Worksheets.Delete("Configuration");
                     var ws = package.Workbook.Worksheets[i];
                     ws.Cells[config.CompleteDate].Value = DateTime.Now.ToShortDateString();                   
                     ws.Cells[config.AssemblyPartNumber].Value = docDet.AssemblyPN;
@@ -498,12 +499,11 @@ namespace DMD_Prototype.Controllers
                     ws.Cells[config.DocumentControlNumber].Value = docDet.DocumentNumber;
                     ws.Cells[config.RevisionNumber].Value = docDet.LogsheetRevNo;
                     ws.Cells[config.Page].Value = $"{i + 1} of {package.Workbook.Worksheets.Count}";
-                    ws.Cells[config.WorkOrder].Value = string.IsNullOrEmpty(workOrder) ? "Incorrect Traveler Pattern" : workOrder;
-                    ws.Cells[config.SerialNumber].Value = string.IsNullOrEmpty(serialNumber) ? "Incorrect Traveler Pattern" : serialNumber;
-                    ws.Cells[config.StartDate].Value = string.IsNullOrEmpty(startDate) ? "Incorrect Traveler Pattern" : startDate;
+                    ws.Cells[config.WorkOrder].Value = workOrder;
+                    ws.Cells[config.SerialNumber].Value = serialNumber;
+                    ws.Cells[config.StartDate].Value = startDate;
                 }
 
-                package.Workbook.Worksheets.Delete("Configuration");
                 package.Save();
             }
         }
@@ -512,9 +512,10 @@ namespace DMD_Prototype.Controllers
         {
             using (ExcelPackage package = new ExcelPackage(Path.Combine(await ishared.GetPath("userDir"), sessionId, await ishared.GetPath("logName"))))
             {
-                string? startDate = package.Workbook.Worksheets.First().Cells[config.StartDate].Value.ToString();
-                string? workOrder = package.Workbook.Worksheets[0].Cells[config.WorkOrder].Value.ToString();
-                string? serialNumber = package.Workbook.Worksheets[0].Cells[config.SerialNumber].Value.ToString();
+                package.Workbook.Worksheets.Delete("Configuration");
+                string startDate = package.Workbook.Worksheets[0].Cells[config.StartDate].Value == null ? "Incorrect Traveler Pattern" : package.Workbook.Worksheets.First().Cells[config.StartDate].Value.ToString();
+                string workOrder = package.Workbook.Worksheets[0].Cells[config.WorkOrder].Value == null ? "Incorrect Traveler Pattern" : package.Workbook.Worksheets[0].Cells[config.WorkOrder].Value.ToString();
+                string serialNumber = package.Workbook.Worksheets[0].Cells[config.SerialNumber].Value == null ? "Incorrect Traveler Pattern" : package.Workbook.Worksheets[0].Cells[config.SerialNumber].Value.ToString();
 
                 for (int i = 0; i < package.Workbook.Worksheets.Count; i++)
                 {
@@ -526,12 +527,11 @@ namespace DMD_Prototype.Controllers
                     ws.Cells[config.DocumentControlNumber].Value = docDet.DocumentNumber;
                     ws.Cells[config.RevisionNumber].Value = docDet.LogsheetRevNo;
                     ws.Cells[config.Page].Value = $"{i + 1} of {package.Workbook.Worksheets.Count}";
-                    ws.Cells[config.WorkOrder].Value = string.IsNullOrEmpty(workOrder) ? "Incorrect Traveler Pattern" : workOrder;
-                    ws.Cells[config.SerialNumber].Value = string.IsNullOrEmpty(serialNumber) ? "Incorrect Traveler Pattern" : serialNumber;
-                    ws.Cells[config.StartDate].Value = string.IsNullOrEmpty(startDate) ? "Incorrect Traveler Pattern" : startDate;
+                    ws.Cells[config.WorkOrder].Value =  workOrder;
+                    ws.Cells[config.SerialNumber].Value = serialNumber;
+                    ws.Cells[config.StartDate].Value = startDate;
                 }
-
-                package.Workbook.Worksheets.Delete("Configuration");
+              
                 package.Save();
             }
         }

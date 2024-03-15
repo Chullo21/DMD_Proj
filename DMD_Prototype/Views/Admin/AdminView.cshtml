@@ -100,12 +100,12 @@
         <div class="modal-content">
             <div class="modal-header bg-primary fs-5 fw-bold text-white">
                 Update Documents
-                <button class="btn-close" data-bs-dismiss="modal" aria-label="close" onclick="SelectTemplate('')"></button>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="close" onclick="SelectTemplate(''); document.getElementById('templateSelect').selectedIndex = 0"></button>
             </div>
             <div class="modal-body text-center">
                 <div class="row">
                     <div class="col-12">
-                        <select class="form-select text-center mb-2" onchange="SelectTemplate(this.value)">
+                        <select class="form-select text-center mb-2" onchange="SelectTemplate(this.value)" id="templateSelect">
                             <option selected hidden>Select Template</option>
                             <option value="config">Configuration Logsheet</option>
                             <option value="test">Test Equipment Logsheet</option>
@@ -278,7 +278,7 @@
                             <div class="col-sm-12 col-lg-6 row">
                                 <div class="col-12">
                                     <label class="form-label">Try MPI Traveler Configuration:</label>
-                                    <input class="form-control" type="file" name="file" accept=".xlsx" />
+                                    <input class="form-control" type="file" name="file" accept=".xlsx" required/>
                                 </div>
                                 <div class="col-12">
                                     <div class="h-100 w-100 d-flex justify-content-center">
@@ -354,7 +354,7 @@
                                 </div>
                             </div>
                             <div class="col-12 d-flex justify-content-center my-4">
-                                <button class="btn btn-primary col-6" type="button" onclick="UpdateTraveler('#mpiForm', 'mpiDir');">Submit</button>
+                                <button class="btn btn-primary col-6" type="button" onclick="UpdateTraveler('#mpiForm', 'mpiDir', 'mpiFileDir');">Submit</button>
                             </div>
                         </div>
                     </form>
@@ -363,7 +363,7 @@
                             <div class="col-sm-12 col-lg-6 row">
                                 <div class="col-12">
                                     <label class="form-label">Try MTI Traveler Configuration:</label>
-                                    <input class="form-control" type="file" name="file" accept=".xlsx" />
+                                    <input class="form-control" type="file" name="file" accept=".xlsx" required/>
                                 </div>
                                 <div class="col-12">
                                     <div class="h-100 w-100 d-flex justify-content-center">
@@ -438,7 +438,7 @@
                                 </div>
                             </div>
                             <div class="col-12 d-flex justify-content-center my-4">
-                                <button class="btn btn-primary col-6" type="button" onclick="UpdateTraveler('#mtiForm', 'mtiDir');">Submit</button>
+                                <button class="btn btn-primary col-6" type="button" onclick="UpdateTraveler('#mtiForm', 'mtiDir', 'mtiFileDir');">Submit</button>
                             </div>
                         </div>
                     </form>
@@ -468,6 +468,11 @@
         var test = document.getElementById('updateTELLogForm');
         var mpi = document.getElementById('mpiForm');
         var mti = document.getElementById('mtiForm');
+
+        mti.setAttribute('hidden', true);
+        config.setAttribute('hidden', true);
+        test.setAttribute('hidden', true);
+        mpi.setAttribute('hidden', true);
 
         switch (template) {
             case 'config': {
@@ -513,6 +518,7 @@
         $('#tryDocumentConfig').modal('show');
         $('#tryDocumentConfigFrame').attr('src', '~/stuff/frank-castle-wait.gif');
         $('#tryDocumentConfigFrame').attr('src', '@Url.Action("TryLogsheetTemplate", "Document")' + '?directory=' + directory + '&logsheetType=' + type);
+        document.getElementById('templateSelect').selectedIndex = 0
     }
 
     function PreviewTraveler(directory, file, travelerType) {
@@ -538,26 +544,38 @@
                 console.log(error);
             }
         });
+
+        document.getElementById('templateSelect').selectedIndex = 0
     }
 
-    function UpdateTraveler(formID, directory) {
+    function UpdateTraveler(formID, directory, travDir) {
         $('#loadingIcon').show();
-
-        var formData = new FormData($(formID)[0]);
         
-        var configData = {};
+        var NewFormData = new FormData();
+        var formData = new FormData($(formID)[0]);
+        var inputs = {};
+
         formData.forEach(function (value, key) {
             if (!$(formID).find('[name="' + key + '"]').is(':file')) {
-                configData[key] = value;
+                inputs[key] = value;
+            }
+            else if ($(formID).find('[name="' + key + '"]').is(':file')) {
+                NewFormData.append(key, value);
             }
         });
 
+        NewFormData.append('config', JSON.stringify(inputs));
+        NewFormData.append('directory', directory);
+        NewFormData.append('travelerType', travDir);
+
         $.ajax({
             url: '@Url.Action("UpdateTravelerTemplate", "Document")',
-            data: {config: JSON.stringify(configData), directory: directory},
+            type: 'POST',
+            data: NewFormData,
+            processData: false,
+            contentType: false,
             success: function (r) {
                 $('#loadingIcon').hide();
-                console.log('Server Response:', r);
 
                 if (r.message === 'success') {
                     alert('Pattern Recorded');
@@ -574,6 +592,8 @@
                 alert('An error occurred during the AJAX request. Please check the console for more details.');
             }
         });
+
+        document.getElementById('templateSelect').selectedIndex = 0
     }
 
 
@@ -616,6 +636,8 @@
                 $('#tryDocumentConfig').modal('show');
             }
         });
+
+        document.getElementById('templateSelect').selectedIndex = 0
     }
 
     // $('#updateDocsForm').submit(function (e) {

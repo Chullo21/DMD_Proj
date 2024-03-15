@@ -36,7 +36,7 @@ namespace DMD_Prototype.Controllers
         {
             string subject = "Valid Problem Log";
             string body = $"Good day!\r\nAn Originator have validated a problem log with PL number of {plNo} as valid.\r\nPlease refer to our DMD Portal to process this.\r\n\r\nThis is a system generated email, please do not reply. Thank you and have a nice day";
-            ishare.SendEmailNotification((await ishare.GetMultipleusers("PL_INTERVENOR")).ToList(), subject, body);
+            await ishare.SendEmailNotification((await ishare.GetMultipleusers("PL_INTERVENOR")).ToList(), subject, body);
         }
 
         private Stream GetProblemLogTemplate()

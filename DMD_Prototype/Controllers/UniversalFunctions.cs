@@ -75,7 +75,9 @@ namespace DMD_Prototype.Controllers
         private readonly string configDir = "V:\\DMD_Documents_Directory\\Document Templates\\Configuration Logsheet\\Configuration Logsheet.xlsx";
         private readonly string testDir = "V:\\DMD_Documents_Directory\\Document Templates\\Test Equipment Logsheet\\Test Equipment Logsheet.xlsx";
         private readonly string mpiDir = "V:\\DMD_Documents_Directory\\Document Templates\\MPI Traveler\\TravelerConfig.txt";
+        private readonly string mpiFileDir = "V:\\DMD_Documents_Directory\\Document Templates\\MPI Traveler\\MPITemplate.xlsx";
         private readonly string mtiDir = "V:\\DMD_Documents_Directory\\Document Templates\\MTI Traveler\\TravelerConfig.txt";
+        private readonly string mtiFileDir = "V:\\DMD_Documents_Directory\\Document Templates\\MPI Traveler\\MTITemplate.xlsx";
         private readonly string dispossableDir = "V:\\DMD_Documents_Directory\\DMD_Temporary_Files";
 
         //private readonly string userDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\User_Sessions";
@@ -87,7 +89,9 @@ namespace DMD_Prototype.Controllers
         //private readonly string configDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\Configuration Logsheet\\Configuration Logsheet.xlsx";
         //private readonly string testDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\Test Equipment Logsheet\\Test Equipment Logsheet.xlsx";
         //private readonly string mpiDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\MPI Traveler\\TravelerConfig.txt";
+        //private readonly string mpiFileDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\MPI Traveler\\MPITemplate.xlsx";
         //private readonly string mtiDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\MTI Traveler\\TravelerConfig.txt";
+        //private readonly string mtiFileDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\Document Templates\\MPI Traveler\\MTITemplate.xlsx";
         //private readonly string dispossableDir = "D:\\DMDPortalFiles\\DMD_Documents_Directory\\DMD_Temporary_Files";
 
         private readonly string travelerBackupDir = "A:\\DMD Portal Backups\\Travelers";
@@ -233,6 +237,14 @@ namespace DMD_Prototype.Controllers
         {
             switch (whichPath)
             {
+                case "mpiFileDir":
+                    {
+                        return mpiFileDir;
+                    }
+                case "mtiFileDir":
+                    {
+                        return mtiFileDir;
+                    }
                 case "disDir":
                     {
                         return dispossableDir;

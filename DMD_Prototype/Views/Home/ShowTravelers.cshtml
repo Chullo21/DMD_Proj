@@ -189,9 +189,9 @@
                                     @if (EN[1] == "ADMIN")
                                     {
                                         <div class="col-sm-12 col-lg-12">
-                                            <a class="btn btn-warning mx-2 d-flex btn-sm mx-1 text-danger border border-danger" asp-controller="Home" asp-action="ObsoleteTraveler" asp-route-SWID="@item.SWID">
+                                            <button class="btn btn-warning mx-2 d-flex btn-sm mx-1 text-danger border border-danger" onclick="DeleteTraveler('@item.SWID')">
                                                 <p class="w-100 text-center my-auto">Obsolete/Delete</p>
-                                            </a>
+                                            </button>
                                         </div>
                                     }
                                 </div>
@@ -204,14 +204,24 @@
     </div>
 </div>
 
-<script>
-    function ChangeTravWorker(prevworker, id)
-    {
-        document.getElementById('travID').value = id;
-        document.getElementById('currentWorker').value = prevworker;
-        document.getElementById('currentworkerselect').innerHTML = prevworker;
-    }
-</script>
+<div class="modal fade" data-bs-backdrop="static" id="confirmDeleteModal">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white fw-bold">
+                Confirm Traveler Delete
+                <button class="btn-close" data-bs-dismiss="modal" onclick="document.getElementById('confirmDeleteButton').removeAttribute('asp-route-SWID');"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure?
+            </div>
+            <div class="modal-footer">
+                <a class="btn btn-warning" id="confirmDeleteButton">
+                    Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" data-bs-backdrop="static" id="changeworker">
     <div class="modal-dialog modal-dialog-centered">
@@ -297,6 +307,17 @@
             $('#closechangeworkermodal').click();
         });
     });
+
+    function ChangeTravWorker(prevworker, id) {
+        document.getElementById('travID').value = id;
+        document.getElementById('currentWorker').value = prevworker;
+        document.getElementById('currentworkerselect').innerHTML = prevworker;
+    }
+
+    function DeleteTraveler(id) {
+        $('#confirmDeleteModal').modal('show');
+        $('#confirmDeleteButton').attr('href', '@Url.Action("ObsoleteTraveler", "Home")' + '?SWID=' + id);
+    }
 </script>
 
 <div class="modal fade" data-bs-backdrop="static" id="viewtravmodal">

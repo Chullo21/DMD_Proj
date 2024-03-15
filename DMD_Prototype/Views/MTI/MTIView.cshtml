@@ -342,6 +342,10 @@
                 if (sub === 'readonly' || '@Model.DocType' === 'MPI') {
                     subb.style.display = 'none';
                 }
+                else
+                {
+                    subb.style.display = 'block';
+                }
 
                 $('#travprogressedit').modal('show');
 
@@ -1075,7 +1079,7 @@
                     success: function (r) {
                         r.r.forEach(function (line) {
                             
-                            configbody.innerHTML += '<tr><td><input class="form-control" name="PN" value="' + line.PN + '" ' + type + ' /></td><td><input class="form-control" name="Desc" value="' + line.Desc + '" ' + type + ' /></td><td><input class="form-control" name="Parameter" value="' + line.Parameter + '" ' + type + ' /></td></tr>'
+                            configbody.innerHTML += '<tr><td><input class="form-control" name="PN" value="' + line.PN + '" ' + type + ' required/></td><td><input class="form-control" name="Desc" value="' + line.Desc + '" ' + type + ' required/></td><td><input class="form-control" name="Parameter" value="' + line.Parameter + '" ' + type + ' required/></td></tr>'
                         });
                     }
                 });

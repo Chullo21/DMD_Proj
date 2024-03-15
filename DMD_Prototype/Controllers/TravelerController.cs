@@ -141,7 +141,6 @@ namespace DMD_Prototype.Controllers
                     string taskLocator = Regex.Replace(config.StartTask, "[^a-zA-Z]", "");
                     string technicianAndDateLocator = Regex.Replace(config.StartTechnicianAndDate, "[^a-zA-Z]", "");
                     string parameterLocator = Regex.Replace(config.StartParameter, "[^a-zA-Z]", "");
-                    int pageIndexer = 0;
 
                     char byThreeChar = char.Parse(Regex.Replace(parameterLocator, "[^a-zA-Z]", ""));
                     int byThreeToASCII = (int)byThreeChar;
